@@ -82,25 +82,4 @@ python -m ruff check .
 python -m mypy app
 ```
 
-## Iniciando uma feature
 
-Cada integrante deve atualizar `develop` e criar sua própria branch:
-
-```powershell
-git switch develop
-git pull origin develop
-git switch -c feature/nome-da-feature
-```
-
-Ao terminar, deve enviar a branch da feature e abrir um pull request para
-`develop`:
-
-```powershell
-git add .
-git commit -m "feat: descricao da feature"
-git push -u origin feature/nome-da-feature
-```
-
-As regras de negócio que dependem de transações (controle de estoque, validação
-de pagamentos, PIN de entrega, contestação e repasse) devem ser implementadas na
-camada de serviços. As restrições estruturais já estão protegidas no banco.
