@@ -2,7 +2,7 @@ import type { CadastroUsuarioForm, ErrosCadastro } from './types'
 
 const EMAIL_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-export function validarCadastro(dados: CadastroUsuarioForm): ErrosCadastro {
+export function validarCadastro(dados: CadastroUsuarioForm, termosAceitos: boolean): ErrosCadastro {
   const erros: ErrosCadastro = {}
   const nome = dados.nome.trim()
   const email = dados.email.trim()
@@ -36,7 +36,30 @@ export function validarCadastro(dados: CadastroUsuarioForm): ErrosCadastro {
     erros.confirmarSenha = 'As senhas não coincidem.'
   }
 
+  if (!termosAceitos) {
+    erros.termos = 'É preciso aceitar os Termos de Uso.'
+  }
+
   return erros
+}
+
+/** Feedback visual imediato (ex.: ícone de "e-mail válido"), independente do
+ * envio do formulário — não deve ser usado para decidir se pode submeter. */
+export function emailEhValido(valor: string): boolean {
+  return EMAIL_VALIDO.test(valor.trim())
+}
+
+export type ForcaSenha = 0 | 1 | 2 | 3
+
+/** 0 = vazia, 1 = fraca, 2 = média, 3 = forte — soma um ponto por critério
+ * atendido (tamanho mínimo, maiúsculas e minúsculas, dígito ou símbolo). */
+export function forcaDaSenha(senha: string): ForcaSenha {
+  if (!senha) return 0
+  let pontos = 0
+  if (senha.length >= 8) pontos++
+  if (/[A-Z]/.test(senha) && /[a-z]/.test(senha)) pontos++
+  if (/[0-9\W]/.test(senha)) pontos++
+  return Math.max(1, pontos) as ForcaSenha
 }
 
 function validarTelefone(valor: string): string | undefined {

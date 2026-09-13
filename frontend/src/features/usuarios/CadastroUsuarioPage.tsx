@@ -1,8 +1,8 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
 import { ApiError } from '../../lib/api'
 import type { CadastroUsuarioForm, CampoCadastro, ErrosCadastro, Usuario } from './types'
 import { cadastrarUsuario } from './usuarioApi'
-import { validarCadastro } from './validacaoCadastro'
+import { emailEhValido, forcaDaSenha, validarCadastro } from './validacaoCadastro'
 
 const formularioInicial: CadastroUsuarioForm = {
   nome: '',
@@ -12,8 +12,11 @@ const formularioInicial: CadastroUsuarioForm = {
   confirmarSenha: '',
 }
 
+const TEXTO_FORCA = ['', 'Fraca', 'Média', 'Forte'] as const
+
 export function CadastroUsuarioPage() {
   const [formulario, setFormulario] = useState(formularioInicial)
+  const [termos, setTermos] = useState(false)
   const [erros, setErros] = useState<ErrosCadastro>({})
   const [erroGeral, setErroGeral] = useState('')
   const [enviando, setEnviando] = useState(false)
@@ -28,9 +31,15 @@ export function CadastroUsuarioPage() {
     setErroGeral('')
   }
 
+  function alternarTermos() {
+    setTermos((atual) => !atual)
+    setErros((atuais) => ({ ...atuais, termos: undefined }))
+    setErroGeral('')
+  }
+
   async function enviarFormulario(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
-    const novosErros = validarCadastro(formulario)
+    const novosErros = validarCadastro(formulario, termos)
     setErros(novosErros)
     setErroGeral('')
 
@@ -49,6 +58,7 @@ export function CadastroUsuarioPage() {
       })
       setUsuarioCriado(usuario)
       setFormulario(formularioInicial)
+      setTermos(false)
     } catch (erro) {
       setErroGeral(
         erro instanceof ApiError
@@ -65,6 +75,9 @@ export function CadastroUsuarioPage() {
     setErros({})
     setErroGeral('')
   }
+
+  const forca = forcaDaSenha(formulario.senha)
+  const emailValido = !!formulario.email && emailEhValido(formulario.email)
 
   return (
     <main className="signup-shell">
@@ -96,8 +109,6 @@ export function CadastroUsuarioPage() {
             </span>
           </li>
         </ul>
-
-        <p className="brand-footnote">Obra Circular · Menos descarte, mais possibilidades.</p>
       </section>
 
       <section className="form-panel">
@@ -113,7 +124,7 @@ export function CadastroUsuarioPage() {
               <header className="form-heading">
                 <span className="step-label">Comece por aqui</span>
                 <h2>Crie sua conta</h2>
-                <p>Leva menos de dois minutos. Você poderá comprar e anunciar materiais.</p>
+                <p>Leva menos de dois minutos. Comece a comprar, vender e reaproveitar materiais.</p>
               </header>
 
               <form
@@ -132,6 +143,7 @@ export function CadastroUsuarioPage() {
                   error={erros.nome}
                   onChange={atualizarCampo}
                   maxLength={150}
+                  icon={<UserIcon />}
                 />
 
                 <CampoTexto
@@ -145,6 +157,8 @@ export function CadastroUsuarioPage() {
                   value={formulario.email}
                   error={erros.email}
                   onChange={atualizarCampo}
+                  icon={<MailIcon />}
+                  adorno={emailValido ? <CheckIcon /> : null}
                 />
 
                 <CampoTexto
@@ -160,6 +174,7 @@ export function CadastroUsuarioPage() {
                   error={erros.telefone}
                   onChange={atualizarCampo}
                   maxLength={20}
+                  icon={<PhoneIcon />}
                 />
 
                 <div className="password-grid">
@@ -190,14 +205,60 @@ export function CadastroUsuarioPage() {
                   />
                 </div>
 
-                <label className="show-password">
-                  <input
-                    type="checkbox"
-                    checked={mostrarSenha}
-                    onChange={(evento) => setMostrarSenha(evento.target.checked)}
-                  />
-                  Mostrar senhas
-                </label>
+                {formulario.senha && (
+                  <div className="password-strength">
+                    <div className="password-strength-bars">
+                      {[1, 2, 3].map((nivel) => (
+                        <div
+                          key={nivel}
+                          className={`password-strength-bar ${
+                            forca >= nivel ? `password-strength-bar--${forca}` : ''
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span>{TEXTO_FORCA[forca]}</span>
+                  </div>
+                )}
+
+                <div className="check-option">
+                  <button
+                    type="button"
+                    role="checkbox"
+                    aria-checked={mostrarSenha}
+                    aria-label="Mostrar senhas"
+                    className={`check-toggle ${mostrarSenha ? 'check-toggle--marcado' : ''}`}
+                    onClick={() => setMostrarSenha((atual) => !atual)}
+                  >
+                    <CheckIcon />
+                  </button>
+                  <span>Mostrar senhas</span>
+                </div>
+
+                <div className="check-option check-option--termos">
+                  <button
+                    type="button"
+                    role="checkbox"
+                    aria-checked={termos}
+                    aria-label="Aceitar termos de uso"
+                    aria-describedby={erros.termos ? 'termos-error' : undefined}
+                    className={`check-toggle ${termos ? 'check-toggle--marcado' : ''} ${
+                      erros.termos ? 'check-toggle--erro' : ''
+                    }`}
+                    onClick={alternarTermos}
+                  >
+                    <CheckIcon />
+                  </button>
+                  <p>
+                    Li e aceito os <a href="#">Termos de Uso</a> e a{' '}
+                    <a href="#">Política de Privacidade</a>.
+                  </p>
+                </div>
+                {erros.termos && (
+                  <p className="field-error field-error--termos" id="termos-error">
+                    {erros.termos}
+                  </p>
+                )}
 
                 {erroGeral && (
                   <div className="form-alert" role="alert">
@@ -225,6 +286,11 @@ export function CadastroUsuarioPage() {
                   manter seus dados atualizados.
                 </p>
               </form>
+
+              <div className="form-divider" />
+              <p className="login-hint">
+                Já possui uma conta? <a href="#">Entrar</a>
+              </p>
             </>
           )}
         </div>
@@ -245,10 +311,13 @@ interface CampoTextoProps {
   autoComplete?: string
   placeholder?: string
   maxLength?: number
+  icon?: ReactNode
+  /** Elemento exibido dentro da caixa, depois do input (ex.: ícone de "e-mail válido"). */
+  adorno?: ReactNode
   onChange: (evento: ChangeEvent<HTMLInputElement>) => void
 }
 
-function CampoTexto({ label, error, optional, ...inputProps }: CampoTextoProps) {
+function CampoTexto({ label, error, optional, icon, adorno, ...inputProps }: CampoTextoProps) {
   const errorId = `${inputProps.id}-error`
   return (
     <div className="field-group">
@@ -256,12 +325,16 @@ function CampoTexto({ label, error, optional, ...inputProps }: CampoTextoProps) 
         {label}
         {optional && <span>Opcional</span>}
       </label>
-      <input
-        {...inputProps}
-        required={!optional}
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? errorId : undefined}
-      />
+      <div className={`field-box ${error ? 'field-box--erro' : ''}`}>
+        {icon && <span className="field-icon">{icon}</span>}
+        <input
+          {...inputProps}
+          required={!optional}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? errorId : undefined}
+        />
+        {adorno && <span className="field-adorno">{adorno}</span>}
+      </div>
       {error && (
         <p className="field-error" id={errorId}>
           {error}
@@ -300,15 +373,43 @@ function CadastroConcluido({
 function Logo() {
   return (
     <div className="brand-logo" aria-label="Obra Circular">
-      <span className="logo-mark" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </span>
+      <svg className="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="4.4" />
+        <ellipse cx="16" cy="16" rx="13" ry="6" transform="rotate(30 16 16)" />
+        <ellipse cx="16" cy="16" rx="13" ry="6" transform="rotate(90 16 16)" />
+        <ellipse cx="16" cy="16" rx="13" ry="6" transform="rotate(150 16 16)" />
+      </svg>
       <span className="logo-type">
         Obra <strong>Circular</strong>
       </span>
     </div>
+  )
+}
+
+function UserIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4.5 20c1.6-3.4 4.3-5 7.5-5s5.9 1.6 7.5 5" />
+    </svg>
+  )
+}
+
+function MailIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="14" rx="3" />
+      <path d="M4 8l8 5 8-5" />
+    </svg>
+  )
+}
+
+function PhoneIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="6.5" y="2.5" width="11" height="19" rx="3" />
+      <path d="M11 18.5h2" />
+    </svg>
   )
 }
 

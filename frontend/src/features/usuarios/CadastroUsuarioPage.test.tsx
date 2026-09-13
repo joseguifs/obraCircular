@@ -30,6 +30,7 @@ describe('CadastroUsuarioPage', () => {
     expect(await screen.findByText('Informe seu nome.')).toBeInTheDocument()
     expect(screen.getByText('Informe seu e-mail.')).toBeInTheDocument()
     expect(screen.getByText('A senha deve ter pelo menos 8 caracteres.')).toBeInTheDocument()
+    expect(screen.getByText('É preciso aceitar os Termos de Uso.')).toBeInTheDocument()
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
@@ -84,5 +85,6 @@ async function preencherFormulario(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText(/Telefone/), '(11) 98765-4321')
   await user.type(screen.getByLabelText('Senha'), 'senha-forte-123')
   await user.type(screen.getByLabelText('Confirmar senha'), 'senha-forte-123')
+  await user.click(screen.getByRole('checkbox', { name: 'Aceitar termos de uso' }))
   await waitFor(() => expect(screen.getByLabelText('Nome completo')).toHaveValue('Ana Silva'))
 }
