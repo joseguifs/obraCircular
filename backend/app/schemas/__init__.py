@@ -7,6 +7,13 @@ from app.schemas.anuncio import (
     AnuncioResponse,
     AnuncioUpdate,
 )
+from app.schemas.categoria import (
+    CategoriaCreate,
+    CategoriaFilters,
+    CategoriaListResponse,
+    CategoriaResponse,
+    CategoriaUpdate,
+)
 
 __all__ = [
     "AnuncioCreate",
@@ -14,4 +21,9 @@ __all__ = [
     "AnuncioListResponse",
     "AnuncioResponse",
     "AnuncioUpdate",
+    "CategoriaCreate",
+    "CategoriaFilters",
+    "CategoriaListResponse",
+    "CategoriaResponse",
+    "CategoriaUpdate",
 ]
