@@ -8,4 +8,9 @@
   `endereco_entrega_snapshot`.
 - Alterar ou excluir o endereço cadastrado não modifica o snapshot de pedidos
   existentes.
+- A exclusão do endereço é lógica (`deletado_em`): a linha permanece no banco
+  para preservar as referências de `anuncios` e `pedidos`, e endereços
+  excluídos não aparecem nas consultas do usuário.
+- O usuário acessa apenas os próprios endereços; um endereço de outro usuário
+  responde 404, igual a um endereço inexistente.
 - Pedidos com modalidade `RETIRADA` não possuem endereço de entrega nem snapshot.
