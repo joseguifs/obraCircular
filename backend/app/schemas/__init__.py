@@ -7,6 +7,7 @@ from app.schemas.anuncio import (
     AnuncioResponse,
     AnuncioUpdate,
 )
+from app.schemas.autenticacao import LoginRequest, RefreshTokenRequest, TokenResponse
 from app.schemas.categoria import (
     CategoriaCreate,
     CategoriaFilters,
@@ -21,6 +22,9 @@ __all__ = [
     "AnuncioListResponse",
     "AnuncioResponse",
     "AnuncioUpdate",
+    "LoginRequest",
+    "RefreshTokenRequest",
+    "TokenResponse",
     "CategoriaCreate",
     "CategoriaFilters",
     "CategoriaListResponse",

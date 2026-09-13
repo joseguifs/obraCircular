@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Response, status
 
-from app.api.dependencies import CurrentUserId, DatabaseSession
+from app.api.dependencies import CurrentUser, DatabaseSession
 from app.schemas.anuncio import (
     AnuncioCreate,
     AnuncioFilters,
@@ -21,14 +21,14 @@ user_router = APIRouter(prefix="/users", tags=["anúncios"])
     "",
     response_model=AnuncioResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Cria um anúncio para o usuário informado no cabeçalho",
+    summary="Cria um anúncio para o vendedor autenticado",
 )
 async def criar_anuncio(
     dados: AnuncioCreate,
     session: DatabaseSession,
-    vendedor_id: CurrentUserId,
+    vendedor: CurrentUser,
 ) -> AnuncioResponse:
-    anuncio = await AnuncioService(session).criar(dados, vendedor_id)
+    anuncio = await AnuncioService(session).criar(dados, vendedor.id)
     return AnuncioResponse.model_validate(anuncio)
 
 
@@ -63,9 +63,9 @@ async def atualizar_anuncio(
     anuncio_id: UUID,
     dados: AnuncioUpdate,
     session: DatabaseSession,
-    vendedor_id: CurrentUserId,
+    vendedor: CurrentUser,
 ) -> AnuncioResponse:
-    anuncio = await AnuncioService(session).atualizar(anuncio_id, dados, vendedor_id)
+    anuncio = await AnuncioService(session).atualizar(anuncio_id, dados, vendedor.id)
     return AnuncioResponse.model_validate(anuncio)
 
 
@@ -77,9 +77,9 @@ async def atualizar_anuncio(
 async def excluir_anuncio(
     anuncio_id: UUID,
     session: DatabaseSession,
-    vendedor_id: CurrentUserId,
+    vendedor: CurrentUser,
 ) -> Response:
-    await AnuncioService(session).excluir(anuncio_id, vendedor_id)
+    await AnuncioService(session).excluir(anuncio_id, vendedor.id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

@@ -83,4 +83,5 @@ async def test_criacao_exige_usuario_atual() -> None:
             },
         )
 
-    assert response.status_code == 422
+    assert response.status_code == 401
+    assert response.json()["code"] == "AUTHENTICATION_REQUIRED"

@@ -6,6 +6,7 @@ from httpx import ASGITransport, AsyncClient
 import app.api.routes.enderecos as enderecos_routes
 from app.core.exceptions import AppError
 from app.main import app
+from app.models.usuario import Usuario
 from app.schemas.endereco import EnderecoFilters, EnderecoListResponse
 
 DADOS_VALIDOS = {
@@ -22,7 +23,10 @@ def cliente() -> AsyncClient:
     return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
 
-async def test_listagem_expoe_paginacao_e_usuario_atual(monkeypatch: Any) -> None:
+async def test_listagem_expoe_paginacao_e_usuario_atual(
+    monkeypatch: Any,
+    usuario_autenticado: Usuario,
+) -> None:
     chamadas: list[tuple[EnderecoFilters, object]] = []
 
     class FakeService:
@@ -38,21 +42,22 @@ async def test_listagem_expoe_paginacao_e_usuario_atual(monkeypatch: Any) -> Non
             )
 
     monkeypatch.setattr(enderecos_routes, "EnderecoService", FakeService)
-    usuario_id = uuid4()
     async with cliente() as client:
         response = await client.get(
             "/api/v1/users/me/addresses",
             params={"offset": 5, "limit": 10},
-            headers={"X-User-Id": str(usuario_id)},
         )
 
     assert response.status_code == 200
     assert response.json() == {"items": [], "total": 0, "offset": 5, "limit": 10}
     assert chamadas[0][0].offset == 5
-    assert chamadas[0][1] == usuario_id
+    assert chamadas[0][1] == usuario_autenticado.id
 
 
-async def test_erro_de_dominio_possui_formato_padronizado(monkeypatch: Any) -> None:
+async def test_erro_de_dominio_possui_formato_padronizado(
+    monkeypatch: Any,
+    usuario_autenticado: Usuario,
+) -> None:
     class FakeService:
         def __init__(self, _: object) -> None:
             pass
@@ -68,7 +73,6 @@ async def test_erro_de_dominio_possui_formato_padronizado(monkeypatch: Any) -> N
     async with cliente() as client:
         response = await client.get(
             f"/api/v1/users/me/addresses/{uuid4()}",
-            headers={"X-User-Id": str(uuid4())},
         )
 
     assert response.status_code == 404
@@ -79,10 +83,14 @@ async def test_endpoints_exigem_usuario_atual() -> None:
     async with cliente() as client:
         response = await client.get("/api/v1/users/me/addresses")
 
-    assert response.status_code == 422
+    assert response.status_code == 401
+    assert response.json()["code"] == "AUTHENTICATION_REQUIRED"
 
 
-async def test_criacao_normaliza_cep_e_estado_antes_do_servico(monkeypatch: Any) -> None:
+async def test_criacao_normaliza_cep_e_estado_antes_do_servico(
+    monkeypatch: Any,
+    usuario_autenticado: Usuario,
+) -> None:
     recebidos: list[Any] = []
 
     class FakeService:
@@ -109,7 +117,6 @@ async def test_criacao_normaliza_cep_e_estado_antes_do_servico(monkeypatch: Any)
         response = await client.post(
             "/api/v1/users/me/addresses",
             json=DADOS_VALIDOS,
-            headers={"X-User-Id": str(uuid4())},
         )
 
     assert response.status_code == 201
@@ -118,18 +125,23 @@ async def test_criacao_normaliza_cep_e_estado_antes_do_servico(monkeypatch: Any)
     assert response.json()["cep"] == "01001000"
 
 
-async def test_cep_invalido_retorna_422(monkeypatch: Any) -> None:
+async def test_cep_invalido_retorna_422(
+    monkeypatch: Any,
+    usuario_autenticado: Usuario,
+) -> None:
     async with cliente() as client:
         response = await client.post(
             "/api/v1/users/me/addresses",
             json={**DADOS_VALIDOS, "cep": "123"},
-            headers={"X-User-Id": str(uuid4())},
         )
 
     assert response.status_code == 422
 
 
-async def test_exclusao_retorna_204(monkeypatch: Any) -> None:
+async def test_exclusao_retorna_204(
+    monkeypatch: Any,
+    usuario_autenticado: Usuario,
+) -> None:
     class FakeService:
         def __init__(self, _: object) -> None:
             pass
@@ -141,7 +153,6 @@ async def test_exclusao_retorna_204(monkeypatch: Any) -> None:
     async with cliente() as client:
         response = await client.delete(
             f"/api/v1/users/me/addresses/{uuid4()}",
-            headers={"X-User-Id": str(uuid4())},
         )
 
     assert response.status_code == 204

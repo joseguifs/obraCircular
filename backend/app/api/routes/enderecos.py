@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Response, status
 
-from app.api.dependencies import CurrentUserId, DatabaseSession
+from app.api.dependencies import CurrentUser, DatabaseSession
 from app.schemas.endereco import (
     EnderecoCreate,
     EnderecoFilters,
@@ -25,9 +25,9 @@ router = APIRouter(prefix="/users/me/addresses", tags=["endereços"])
 async def criar_endereco(
     dados: EnderecoCreate,
     session: DatabaseSession,
-    usuario_id: CurrentUserId,
+    usuario: CurrentUser,
 ) -> EnderecoResponse:
-    endereco = await EnderecoService(session).criar(dados, usuario_id)
+    endereco = await EnderecoService(session).criar(dados, usuario.id)
     return EnderecoResponse.model_validate(endereco)
 
 
@@ -38,10 +38,10 @@ async def criar_endereco(
 )
 async def listar_enderecos(
     session: DatabaseSession,
-    usuario_id: CurrentUserId,
+    usuario: CurrentUser,
     filtros: Annotated[EnderecoFilters, Query()],
 ) -> EnderecoListResponse:
-    return await EnderecoService(session).listar(filtros, usuario_id)
+    return await EnderecoService(session).listar(filtros, usuario.id)
 
 
 @router.get(
@@ -52,9 +52,9 @@ async def listar_enderecos(
 async def buscar_endereco(
     endereco_id: UUID,
     session: DatabaseSession,
-    usuario_id: CurrentUserId,
+    usuario: CurrentUser,
 ) -> EnderecoResponse:
-    endereco = await EnderecoService(session).buscar(endereco_id, usuario_id)
+    endereco = await EnderecoService(session).buscar(endereco_id, usuario.id)
     return EnderecoResponse.model_validate(endereco)
 
 
@@ -67,9 +67,9 @@ async def atualizar_endereco(
     endereco_id: UUID,
     dados: EnderecoUpdate,
     session: DatabaseSession,
-    usuario_id: CurrentUserId,
+    usuario: CurrentUser,
 ) -> EnderecoResponse:
-    endereco = await EnderecoService(session).atualizar(endereco_id, dados, usuario_id)
+    endereco = await EnderecoService(session).atualizar(endereco_id, dados, usuario.id)
     return EnderecoResponse.model_validate(endereco)
 
 
@@ -81,7 +81,7 @@ async def atualizar_endereco(
 async def excluir_endereco(
     endereco_id: UUID,
     session: DatabaseSession,
-    usuario_id: CurrentUserId,
+    usuario: CurrentUser,
 ) -> Response:
-    await EnderecoService(session).excluir(endereco_id, usuario_id)
+    await EnderecoService(session).excluir(endereco_id, usuario.id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

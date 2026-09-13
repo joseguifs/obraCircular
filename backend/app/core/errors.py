@@ -15,3 +15,11 @@ class NotFoundError(DomainError):
 
 class ConflictError(DomainError):
     """A operação conflita com o estado atual dos dados (ex.: e-mail em uso)."""
+
+
+class AuthenticationError(DomainError):
+    """As credenciais de autenticação estão ausentes, inválidas ou expiradas."""
+
+
+class AuthorizationError(DomainError):
+    """O usuário autenticado não pode executar a operação solicitada."""

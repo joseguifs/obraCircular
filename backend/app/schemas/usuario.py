@@ -8,11 +8,12 @@ from app.models.enums import UsuarioStatus
 
 
 class UsuarioCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     nome: str = Field(min_length=1, max_length=150)
     email: EmailStr
     senha: str = Field(min_length=8, max_length=72)
     telefone: str | None = Field(default=None, max_length=20)
-    status: UsuarioStatus = UsuarioStatus.ATIVO
 
     @field_validator("nome")
     @classmethod
@@ -33,11 +34,12 @@ class UsuarioCreate(BaseModel):
 class UsuarioUpdate(BaseModel):
     """Todos os campos são opcionais: apenas os enviados são alterados (PATCH)."""
 
+    model_config = ConfigDict(extra="forbid")
+
     nome: str | None = Field(default=None, min_length=1, max_length=150)
     email: EmailStr | None = None
     senha: str | None = Field(default=None, min_length=8, max_length=72)
     telefone: str | None = Field(default=None, max_length=20)
-    status: UsuarioStatus | None = None
 
     @field_validator("nome")
     @classmethod
