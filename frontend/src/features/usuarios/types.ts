@@ -24,4 +24,4 @@ export interface Usuario {
 }
 
 export type CampoCadastro = keyof CadastroUsuarioForm
-export type ErrosCadastro = Partial<Record<CampoCadastro, string>>
+export type ErrosCadastro = Partial<Record<CampoCadastro, string>> & { termos?: string }
