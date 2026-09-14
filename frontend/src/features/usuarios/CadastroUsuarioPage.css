@@ -2,6 +2,7 @@
   display: grid;
   min-height: 100vh;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+  font-family: Arial, sans-serif;
 }
 
 .brand-panel {
@@ -92,7 +93,7 @@
   max-width: 520px;
   margin: 18px 0 22px;
   color: #fff;
-  font-family: var(--fonte-titulo);
+  font-family: Arial, sans-serif;
   font-size: clamp(38px, 4.2vw, 58px);
   font-weight: 400;
   letter-spacing: -1.4px;
@@ -176,7 +177,7 @@
 .success-state h2 {
   margin: 10px 0 10px;
   color: var(--azul-marinho);
-  font-family: var(--fonte-titulo);
+  font-family: Arial, sans-serif;
   font-size: clamp(32px, 3vw, 40px);
   font-weight: 600;
   letter-spacing: -1.2px;
@@ -272,6 +273,7 @@
   border: 0;
   color: var(--azul-marinho);
   background: transparent;
+  font-family: var(--fonte-corpo);
   font-size: 15px;
   font-weight: 500;
 }

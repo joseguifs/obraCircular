@@ -1,0 +1,55 @@
+.not-found-page {
+  display: grid;
+  min-height: 100vh;
+  grid-template-rows: auto 1fr;
+  padding: 34px clamp(24px, 6vw, 88px) 60px;
+  color: var(--azul-marinho);
+  background: linear-gradient(var(--fundo-grade) 1px, transparent 1px),
+    linear-gradient(90deg, var(--fundo-grade) 1px, transparent 1px), var(--fundo-pagina);
+  background-size: 26px 26px;
+}
+
+.not-found-page > .brand-logo {
+  color: var(--azul-marinho);
+}
+
+.not-found-card {
+  width: min(100%, 620px);
+  margin: auto;
+  padding: 52px;
+  border: 1px solid var(--cinza-borda);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(12, 30, 54, 0.1);
+  text-align: center;
+}
+
+.not-found-card h1 {
+  margin: 12px 0;
+  font-family: var(--fonte-titulo);
+  font-size: clamp(34px, 5vw, 50px);
+}
+
+.not-found-card p {
+  margin: 0 0 30px;
+  color: var(--cinza-texto);
+  line-height: 1.6;
+}
+
+.not-found-card a {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  padding: 0 22px;
+  border-radius: 12px;
+  color: #fff;
+  background: var(--azul-marinho);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+@media (max-width: 560px) {
+  .not-found-card {
+    padding: 38px 22px;
+  }
+}

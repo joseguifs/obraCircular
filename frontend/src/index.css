@@ -1,4 +1,7 @@
 @import url('./features/usuarios/CadastroUsuarioPage.css');
+@import url('./features/autenticacao/LoginPage.css');
+@import url('./features/home/HomePage.css');
+@import url('./features/not-found/NotFoundPage.css');
 
 :root {
   font-family: 'Manrope', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;

@@ -1,7 +1,7 @@
-import { CadastroUsuarioPage } from './features/usuarios/CadastroUsuarioPage'
+import { AppRouter } from './app/router'
 
 function App() {
-  return <CadastroUsuarioPage />
+  return <AppRouter />
 }
 
 export default App
