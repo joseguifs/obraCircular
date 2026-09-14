@@ -8,8 +8,13 @@ from fastapi.responses import JSONResponse
 from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.database import engine
+from app.core.errors import (
+    AuthenticationError,
+    AuthorizationError,
+    ConflictError,
+    NotFoundError,
+)
 from app.core.exceptions import AppError, app_error_handler
-from app.core.errors import ConflictError, NotFoundError
 
 settings = get_settings()
 
@@ -45,6 +50,23 @@ async def not_found_handler(_: Request, exc: NotFoundError) -> JSONResponse:
 @app.exception_handler(ConflictError)
 async def conflict_handler(_: Request, exc: ConflictError) -> JSONResponse:
     return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+
+@app.exception_handler(AuthenticationError)
+async def authentication_handler(_: Request, exc: AuthenticationError) -> JSONResponse:
+    return JSONResponse(
+        status_code=401,
+        content={"detail": str(exc), "code": "AUTHENTICATION_REQUIRED"},
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
+@app.exception_handler(AuthorizationError)
+async def authorization_handler(_: Request, exc: AuthorizationError) -> JSONResponse:
+    return JSONResponse(
+        status_code=403,
+        content={"detail": str(exc), "code": "FORBIDDEN"},
+    )
 
 
 @app.get("/", include_in_schema=False)

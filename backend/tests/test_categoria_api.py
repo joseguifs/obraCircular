@@ -6,6 +6,7 @@ from httpx import ASGITransport, AsyncClient
 import app.api.routes.categorias as categorias_routes
 from app.core.exceptions import AppError
 from app.main import app
+from app.models.usuario import Usuario
 from app.schemas.categoria import CategoriaFilters, CategoriaListResponse
 
 DADOS_VALIDOS = {"nome": "Ferramentas", "descricao": "Ferramentas manuais e elétricas"}
@@ -15,7 +16,10 @@ def cliente() -> AsyncClient:
     return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
 
-async def test_criacao_normaliza_nome_antes_do_servico(monkeypatch: Any) -> None:
+async def test_criacao_normaliza_nome_antes_do_servico(
+    monkeypatch: Any,
+    usuario_autenticado: Usuario,
+) -> None:
     recebidos: list[Any] = []
 
     class FakeService:
@@ -47,7 +51,7 @@ async def test_criacao_normaliza_nome_antes_do_servico(monkeypatch: Any) -> None
     assert response.json()["nome"] == "Ferramentas"
 
 
-async def test_nome_vazio_retorna_422() -> None:
+async def test_nome_vazio_retorna_422(usuario_autenticado: Usuario) -> None:
     async with cliente() as client:
         response = await client.post("/api/v1/categories", json={"nome": "   "})
 
@@ -117,7 +121,10 @@ async def test_erro_de_dominio_possui_formato_padronizado(monkeypatch: Any) -> N
     assert response.json() == {"detail": "Categoria não encontrada.", "code": "CATEGORY_NOT_FOUND"}
 
 
-async def test_exclusao_retorna_204(monkeypatch: Any) -> None:
+async def test_exclusao_retorna_204(
+    monkeypatch: Any,
+    usuario_autenticado: Usuario,
+) -> None:
     class FakeService:
         def __init__(self, _: object) -> None:
             pass
@@ -132,8 +139,16 @@ async def test_exclusao_retorna_204(monkeypatch: Any) -> None:
     assert response.status_code == 204
 
 
-async def test_atualizacao_sem_campos_retorna_422() -> None:
+async def test_atualizacao_sem_campos_retorna_422(usuario_autenticado: Usuario) -> None:
     async with cliente() as client:
         response = await client.patch(f"/api/v1/categories/{uuid4()}", json={})
 
     assert response.status_code == 422
+
+
+async def test_escrita_exige_autenticacao() -> None:
+    async with cliente() as client:
+        response = await client.post("/api/v1/categories", json=DADOS_VALIDOS)
+
+    assert response.status_code == 401
+    assert response.json()["code"] == "AUTHENTICATION_REQUIRED"

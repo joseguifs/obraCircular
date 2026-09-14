@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Response, status
 
-from app.api.dependencies import DatabaseSession
+from app.api.dependencies import CurrentUser, DatabaseSession
 from app.schemas.categoria import (
     CategoriaCreate,
     CategoriaFilters,
@@ -22,7 +22,11 @@ router = APIRouter(prefix="/categories", tags=["categorias"])
     status_code=status.HTTP_201_CREATED,
     summary="Cria uma categoria",
 )
-async def criar_categoria(dados: CategoriaCreate, session: DatabaseSession) -> CategoriaResponse:
+async def criar_categoria(
+    dados: CategoriaCreate,
+    session: DatabaseSession,
+    _usuario: CurrentUser,
+) -> CategoriaResponse:
     categoria = await CategoriaService(session).criar(dados)
     return CategoriaResponse.model_validate(categoria)
 
@@ -58,6 +62,7 @@ async def atualizar_categoria(
     categoria_id: UUID,
     dados: CategoriaUpdate,
     session: DatabaseSession,
+    _usuario: CurrentUser,
 ) -> CategoriaResponse:
     categoria = await CategoriaService(session).atualizar(categoria_id, dados)
     return CategoriaResponse.model_validate(categoria)
@@ -68,6 +73,10 @@ async def atualizar_categoria(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Inativa uma categoria (exclusão lógica)",
 )
-async def excluir_categoria(categoria_id: UUID, session: DatabaseSession) -> Response:
+async def excluir_categoria(
+    categoria_id: UUID,
+    session: DatabaseSession,
+    _usuario: CurrentUser,
+) -> Response:
     await CategoriaService(session).excluir(categoria_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

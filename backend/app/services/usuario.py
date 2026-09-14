@@ -25,7 +25,7 @@ class UsuarioService:
             email=dados.email,
             senha_hash=hash_senha(dados.senha),
             telefone=dados.telefone,
-            status=dados.status,
+            status=UsuarioStatus.ATIVO,
         )
         self._repositorio.adicionar(usuario)
         await self._session.commit()
