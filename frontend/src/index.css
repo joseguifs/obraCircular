@@ -1,0 +1,72 @@
+@import url('./features/usuarios/CadastroUsuarioPage.css');
+@import url('./features/autenticacao/LoginPage.css');
+@import url('./features/home/HomePage.css');
+@import url('./features/not-found/NotFoundPage.css');
+
+:root {
+  font-family: 'Manrope', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #0c1e36;
+  background: #f5f7fb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+
+  --azul-marinho: #0c1e36;
+  --azul-marinho-hover: #15335a;
+  --azul: #2f7fd4;
+  --azul-escuro: #1b5fa8;
+  --azul-claro: #6fa8e8;
+  --azul-texto-claro: #7fb3ea;
+  --azul-suave-bg: #eaf2fc;
+  --azul-suave-borda: #c3dbf7;
+  --vermelho: #c2412d;
+  --cinza-borda: #e3e8f0;
+  --cinza-linha: #edf1f6;
+  --cinza-fundo-input: #fafbfd;
+  --cinza-texto: #5b6b7e;
+  --cinza-texto-forte: #3f4e5f;
+  --cinza-icone: #8b97a8;
+  --cinza-acinzentado-1: #b9c6d8;
+  --cinza-acinzentado-2: #9fb2c9;
+  --fundo-pagina: #f5f7fb;
+  --fundo-grade: #e5eaf2;
+  --fonte-corpo: 'Manrope', system-ui, sans-serif;
+  --fonte-titulo: 'Source Serif 4', Georgia, serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--fundo-pagina);
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid rgba(47, 127, 212, 0.3);
+  outline-offset: 2px;
+}
+
+::selection {
+  color: #fff;
+  background: var(--azul);
+}
