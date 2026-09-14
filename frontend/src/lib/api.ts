@@ -74,5 +74,5 @@ function mensagemDoErro(body: ApiErrorBody | null, status: number): string {
   if (status >= 500) {
     return 'O servidor encontrou um problema. Tente novamente em instantes.'
   }
-  return 'Não foi possível concluir o cadastro. Revise os dados e tente novamente.'
+  return 'Não foi possível concluir a solicitação. Revise os dados e tente novamente.'
 }

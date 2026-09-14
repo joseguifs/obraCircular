@@ -1,0 +1,32 @@
+.login-card {
+  width: min(100%, 480px);
+}
+
+.login-form {
+  display: grid;
+  margin-top: 32px;
+  gap: 20px;
+}
+
+.login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.login-hint button {
+  padding: 0;
+  border: 0;
+  color: var(--azul-marinho);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+@media (max-width: 560px) {
+  .login-card {
+    min-height: calc(100vh - 82px);
+  }
+}
