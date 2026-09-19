@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { LoginPage } from '../features/autenticacao/LoginPage'
+import { AnuncioPublicadoPage } from '../features/anuncios/AnuncioPublicadoPage'
+import { PublicarAnuncioPage } from '../features/anuncios/PublicarAnuncioPage'
 import type { Sessao } from '../features/autenticacao/types'
 import { useAuth } from '../features/autenticacao/useAuth'
 import { HomePage } from '../features/home/HomePage'
@@ -24,6 +26,8 @@ export function AppRouter() {
           <Route element={<MarketplaceLayout />}>
             <Route index element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<HomePage />} />
+            <Route path="/anuncios/novo" element={<PublicarAnuncioPage />} />
+            <Route path="/anuncios/:anuncioId/publicado" element={<AnuncioPublicadoPage />} />
           </Route>
         </Route>
 
@@ -64,6 +68,8 @@ function AtualizarTitulo() {
     if (pathname === '/login') document.title = 'Entrar | Obra Circular'
     else if (pathname === '/cadastro') document.title = 'Crie sua conta | Obra Circular'
     else if (pathname === '/home' || pathname === '/') document.title = 'Início | Obra Circular'
+    else if (pathname === '/anuncios/novo') document.title = 'Publicar anúncio | Obra Circular'
+    else if (/^\/anuncios\/[^/]+\/publicado$/.test(pathname)) document.title = 'Anúncio publicado | Obra Circular'
     else document.title = 'Página não encontrada | Obra Circular'
   }, [pathname])
 
