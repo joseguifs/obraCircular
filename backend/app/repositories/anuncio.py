@@ -35,7 +35,15 @@ class AnuncioRepository:
         return await self.session.get(Categoria, categoria_id)
 
     async def buscar_endereco(self, endereco_id: UUID) -> Endereco | None:
-        return await self.session.get(Endereco, endereco_id)
+        return cast(
+            Endereco | None,
+            await self.session.scalar(
+                select(Endereco).where(
+                    Endereco.id == endereco_id,
+                    Endereco.deletado_em.is_(None),
+                )
+            ),
+        )
 
     async def criar(self, anuncio: Anuncio) -> Anuncio:
         self.session.add(anuncio)

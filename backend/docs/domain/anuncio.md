@@ -21,3 +21,6 @@
 - `ENCERRADO` representa encerramento deliberado pelo vendedor e não é reativado
   automaticamente pela reposição de estoque.
 - A exclusão é lógica por meio de `deletado_em`.
+- Um anúncio pode ter até cinco imagens JPEG, PNG ou WebP; a imagem de ordem zero é a capa.
+- O banco armazena apenas a chave e os metadados da imagem. O arquivo fica no serviço de
+  armazenamento configurado pela aplicação.

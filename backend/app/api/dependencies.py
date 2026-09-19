@@ -20,10 +20,16 @@ async def get_current_user(
 ) -> Usuario:
     if credenciais is None or credenciais.scheme.lower() != "bearer":
         raise AuthenticationError("Token de acesso não informado.")
-    return await AutenticacaoService(session).obter_usuario_por_token(
+    usuario = await AutenticacaoService(session).obter_usuario_por_token(
         credenciais.credentials,
         tipo="access",
     )
+    # A consulta de autenticação inicia uma transação implícita do SQLAlchemy.
+    # O usuário é destacado antes do rollback para manter seus campos carregados e
+    # liberar a mesma sessão para a transação explícita aberta pelo serviço da rota.
+    session.expunge(usuario)
+    await session.rollback()
+    return usuario
 
 
 CurrentUser = Annotated[Usuario, Depends(get_current_user)]
