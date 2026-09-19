@@ -134,6 +134,11 @@ O arquivo `frontend/.env` aponta, por padrão, para a API local:
 VITE_API_URL=http://localhost:8000/api/v1
 ```
 
+As imagens enviadas durante o desenvolvimento ficam em `backend/storage/`, diretório
+local ignorado pelo Git. O caminho e os limites de upload podem ser alterados no
+`backend/.env` pelas variáveis `OBRA_CIRCULAR_STORAGE_PATH`,
+`OBRA_CIRCULAR_MAX_AD_IMAGES` e `OBRA_CIRCULAR_MAX_IMAGE_SIZE_BYTES`.
+
 Os arquivos `.env` contêm configurações locais, estão no `.gitignore` e não devem ser
 commitados.
 
