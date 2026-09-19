@@ -68,7 +68,9 @@ describe('LoginPage', () => {
       email: 'ana@example.com',
       senha: 'senha-forte-123',
     })
-    expect(fetchMock.mock.calls[1][1].headers.Authorization).toBe('Bearer access-token')
+    expect((fetchMock.mock.calls[1][1].headers as Headers).get('Authorization')).toBe(
+      'Bearer access-token',
+    )
     expect(sessionStorage.getItem('obra-circular:sessao')).toContain('access-token')
   })
 

@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { useAuth } from '../autenticacao/useAuth'
 
 export function HomePage() {
@@ -22,19 +23,19 @@ export function HomePage() {
       </section>
 
       <section className="home-actions" aria-label="Próximas funcionalidades">
-        <article>
+        <article className="home-action">
           <SearchIcon />
           <span>Explorar</span>
           <h2>Comprar materiais</h2>
           <p>Encontre materiais disponíveis para sua próxima obra.</p>
         </article>
-        <article>
+        <Link className="home-action home-action--link" to="/anuncios/novo">
           <PlusIcon />
           <span>Reaproveitar</span>
           <h2>Anunciar excedentes</h2>
           <p>Transforme materiais parados em novas oportunidades.</p>
-        </article>
-        <article>
+        </Link>
+        <article className="home-action">
           <BoxIcon />
           <span>Acompanhar</span>
           <h2>Meus pedidos</h2>

@@ -1,4 +1,5 @@
 from app.models.anuncio import Anuncio
+from app.models.anuncio_imagem import AnuncioImagem
 from app.models.base import Base
 from app.models.categoria import Categoria
 from app.models.conta_pagamento import ContaPagamento
@@ -14,6 +15,7 @@ from app.models.usuario import Usuario
 
 __all__ = [
     "Anuncio",
+    "AnuncioImagem",
     "Base",
     "Categoria",
     "ContaPagamento",

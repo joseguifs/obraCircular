@@ -1,18 +1,29 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { encerrarSessao as removerSessao, obterSessao } from './autenticacaoApi'
+import { renovarSessaoAtual } from '../../lib/api'
 import { AuthContext, type AuthContextValue } from './authContext'
+import {
+  obterSessaoArmazenada,
+  observarSessao,
+  removerSessaoArmazenada,
+  salvarSessaoArmazenada,
+} from './sessaoStorage'
 import type { Sessao } from './types'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [sessao, setSessao] = useState<Sessao | null>(() => obterSessao())
+  const [sessao, setSessao] = useState<Sessao | null>(() => obterSessaoArmazenada())
+
+  useEffect(() => observarSessao(setSessao), [])
 
   useEffect(() => {
     if (!sessao) return
 
-    const tempoRestante = Math.max(0, sessao.expiraEm - Date.now())
-    const temporizador = window.setTimeout(() => {
-      removerSessao()
-      setSessao(null)
+    const tempoRestante = Math.max(0, sessao.expiraEm - Date.now() - 30_000)
+    const temporizador = window.setTimeout(async () => {
+      try {
+        await renovarSessaoAtual()
+      } catch {
+        removerSessaoArmazenada()
+      }
     }, tempoRestante)
     return () => window.clearTimeout(temporizador)
   }, [sessao])
@@ -20,11 +31,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const valor = useMemo<AuthContextValue>(
     () => ({
       sessao,
-      iniciarSessao: setSessao,
-      encerrarSessao: () => {
-        removerSessao()
-        setSessao(null)
-      },
+      iniciarSessao: salvarSessaoArmazenada,
+      encerrarSessao: removerSessaoArmazenada,
     }),
     [sessao],
   )

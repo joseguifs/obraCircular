@@ -68,6 +68,28 @@ async def test_criar_anuncio_sem_estoque_define_status_esgotado() -> None:
 
 
 @pytest.mark.asyncio
+async def test_criar_anuncio_rejeita_endereco_excluido() -> None:
+    service, repository, _ = criar_servico()
+    vendedor_id = uuid4()
+    repository.buscar_usuario.return_value = SimpleNamespace(status=UsuarioStatus.ATIVO)
+    repository.buscar_categoria.return_value = SimpleNamespace(status=CategoriaStatus.ATIVA)
+    repository.buscar_endereco.return_value = None
+    dados = AnuncioCreate(
+        titulo="Tijolos cerâmicos",
+        descricao="Lote de tijolos cerâmicos sem uso.",
+        categoria_id=uuid4(),
+        endereco_id=uuid4(),
+        preco="2.50",
+        quantidade=100,
+    )
+
+    with pytest.raises(AppError) as error:
+        await service.criar(dados, vendedor_id)
+
+    assert error.value.code == "ADDRESS_NOT_FOUND"
+
+
+@pytest.mark.asyncio
 async def test_atualizar_anuncio_de_outro_vendedor_retorna_proibido() -> None:
     service, repository, _ = criar_servico()
     repository.buscar_por_id.return_value = SimpleNamespace(vendedor_id=uuid4())

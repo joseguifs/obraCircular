@@ -125,6 +125,37 @@ async def test_criacao_normaliza_cep_e_estado_antes_do_servico(
     assert response.json()["cep"] == "01001000"
 
 
+async def test_criacao_com_autenticacao_real_nao_conflita_transacao(
+    client: AsyncClient,
+) -> None:
+    cadastro = await client.post(
+        "/api/v1/users",
+        json={
+            "nome": "Vendedor com Endereço",
+            "email": "vendedor-endereco@example.com",
+            "senha": "senha-segura-123",
+        },
+    )
+    assert cadastro.status_code == 201, cadastro.text
+    login = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "vendedor-endereco@example.com",
+            "senha": "senha-segura-123",
+        },
+    )
+    assert login.status_code == 200, login.text
+
+    response = await client.post(
+        "/api/v1/users/me/addresses",
+        headers={"Authorization": f"Bearer {login.json()['access_token']}"},
+        json=DADOS_VALIDOS,
+    )
+
+    assert response.status_code == 201, response.text
+    assert response.json()["cep"] == "01001000"
+
+
 async def test_cep_invalido_retorna_422(
     monkeypatch: Any,
     usuario_autenticado: Usuario,
