@@ -3,6 +3,7 @@
 @import url('./features/home/HomePage.css');
 @import url('./features/not-found/NotFoundPage.css');
 @import url('./features/anuncios/PublicarAnuncioPage.css');
+@import url('./features/usuarios/PerfilPage.css');
 
 :root {
   font-family: 'Manrope', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;

@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from 'react-router'
+import { Link, Outlet, useNavigate } from 'react-router'
 import { Logo } from '../features/autenticacao/AuthLayout'
 import { useAuth } from '../features/autenticacao/useAuth'
 
@@ -17,6 +17,7 @@ export function MarketplaceLayout() {
         <Logo />
         <div className="home-user">
           <span>{sessao?.usuario.nome}</span>
+          <Link className="home-profile-link" to="/perfil">Meu perfil</Link>
           <button type="button" onClick={sair}>
             Sair
           </button>

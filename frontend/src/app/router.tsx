@@ -5,9 +5,11 @@ import { AnuncioPublicadoPage } from '../features/anuncios/AnuncioPublicadoPage'
 import { PublicarAnuncioPage } from '../features/anuncios/PublicarAnuncioPage'
 import type { Sessao } from '../features/autenticacao/types'
 import { useAuth } from '../features/autenticacao/useAuth'
+import { EnderecosPage } from '../features/enderecos/EnderecosPage'
 import { HomePage } from '../features/home/HomePage'
 import { NotFoundPage } from '../features/not-found/NotFoundPage'
 import { CadastroUsuarioPage } from '../features/usuarios/CadastroUsuarioPage'
+import { PerfilPage } from '../features/usuarios/PerfilPage'
 import { MarketplaceLayout } from '../layouts/MarketplaceLayout'
 import { ProtectedRoute } from '../routes/ProtectedRoute'
 import { PublicOnlyRoute } from '../routes/PublicOnlyRoute'
@@ -26,6 +28,8 @@ export function AppRouter() {
           <Route element={<MarketplaceLayout />}>
             <Route index element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<HomePage />} />
+            <Route path="/perfil" element={<PerfilPage />} />
+            <Route path="/perfil/enderecos" element={<EnderecosPage />} />
             <Route path="/anuncios/novo" element={<PublicarAnuncioPage />} />
             <Route path="/anuncios/:anuncioId/publicado" element={<AnuncioPublicadoPage />} />
           </Route>
@@ -68,6 +72,8 @@ function AtualizarTitulo() {
     if (pathname === '/login') document.title = 'Entrar | Obra Circular'
     else if (pathname === '/cadastro') document.title = 'Crie sua conta | Obra Circular'
     else if (pathname === '/home' || pathname === '/') document.title = 'Início | Obra Circular'
+    else if (pathname === '/perfil') document.title = 'Meu perfil | Obra Circular'
+    else if (pathname === '/perfil/enderecos') document.title = 'Meus endereços | Obra Circular'
     else if (pathname === '/anuncios/novo') document.title = 'Publicar anúncio | Obra Circular'
     else if (/^\/anuncios\/[^/]+\/publicado$/.test(pathname)) document.title = 'Anúncio publicado | Obra Circular'
     else document.title = 'Página não encontrada | Obra Circular'
