@@ -16,10 +16,7 @@ def cliente() -> AsyncClient:
     return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
 
-async def test_criacao_normaliza_nome_antes_do_servico(
-    monkeypatch: Any,
-    usuario_autenticado: Usuario,
-) -> None:
+async def test_criacao_normaliza_nome_antes_do_servico(monkeypatch: Any) -> None:
     recebidos: list[Any] = []
 
     class FakeService:
@@ -51,7 +48,7 @@ async def test_criacao_normaliza_nome_antes_do_servico(
     assert response.json()["nome"] == "Ferramentas"
 
 
-async def test_nome_vazio_retorna_422(usuario_autenticado: Usuario) -> None:
+async def test_nome_vazio_retorna_422() -> None:
     async with cliente() as client:
         response = await client.post("/api/v1/categories", json={"nome": "   "})
 
@@ -139,16 +136,71 @@ async def test_exclusao_retorna_204(
     assert response.status_code == 204
 
 
-async def test_atualizacao_sem_campos_retorna_422(usuario_autenticado: Usuario) -> None:
+async def test_atualizacao_sem_campos_retorna_422() -> None:
     async with cliente() as client:
         response = await client.patch(f"/api/v1/categories/{uuid4()}", json={})
 
     assert response.status_code == 422
 
 
-async def test_escrita_exige_autenticacao() -> None:
+async def test_criacao_nao_exige_autenticacao(monkeypatch: Any) -> None:
+    class FakeService:
+        def __init__(self, _: object) -> None:
+            pass
+
+        async def criar(self, dados: Any) -> Any:
+            return type(
+                "CategoriaFalsa",
+                (),
+                {
+                    "id": uuid4(),
+                    "status": "ATIVA",
+                    "criado_em": "2026-09-13T00:00:00Z",
+                    "atualizado_em": "2026-09-13T00:00:00Z",
+                    **dados.model_dump(),
+                },
+            )()
+
+    monkeypatch.setattr(categorias_routes, "CategoriaService", FakeService)
     async with cliente() as client:
         response = await client.post("/api/v1/categories", json=DADOS_VALIDOS)
+
+    assert response.status_code == 201
+
+
+async def test_atualizacao_nao_exige_autenticacao(monkeypatch: Any) -> None:
+    class FakeService:
+        def __init__(self, _: object) -> None:
+            pass
+
+        async def atualizar(self, categoria_id: Any, dados: Any) -> Any:
+            return type(
+                "CategoriaFalsa",
+                (),
+                {
+                    "id": categoria_id,
+                    "nome": "Ferramentas",
+                    "descricao": None,
+                    "status": "ATIVA",
+                    "criado_em": "2026-09-13T00:00:00Z",
+                    "atualizado_em": "2026-09-13T00:00:00Z",
+                    **dados.model_dump(exclude_unset=True),
+                },
+            )()
+
+    monkeypatch.setattr(categorias_routes, "CategoriaService", FakeService)
+    async with cliente() as client:
+        response = await client.patch(
+            f"/api/v1/categories/{uuid4()}", json={"descricao": "Nova descrição"}
+        )
+
+    assert response.status_code == 200
+    assert response.json()["descricao"] == "Nova descrição"
+
+
+async def test_exclusao_exige_autenticacao() -> None:
+    async with cliente() as client:
+        response = await client.delete(f"/api/v1/categories/{uuid4()}")
 
     assert response.status_code == 401
     assert response.json()["code"] == "AUTHENTICATION_REQUIRED"
