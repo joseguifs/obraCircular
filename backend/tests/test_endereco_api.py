@@ -187,3 +187,35 @@ async def test_exclusao_retorna_204(
         )
 
     assert response.status_code == 204
+
+
+async def test_edicao_autenticada_preserva_id_e_propriedade(client: AsyncClient) -> None:
+    from tests.test_usuarios import _criar_usuario, _headers_autenticacao
+
+    usuario = await _criar_usuario(client)
+    headers = await _headers_autenticacao(client)
+    criado = await client.post("/api/v1/users/me/addresses", json=DADOS_VALIDOS, headers=headers)
+    assert criado.status_code == 201, criado.text
+    endereco_id = criado.json()["id"]
+    resposta = await client.patch(
+        f"/api/v1/users/me/addresses/{endereco_id}",
+        json={"numero": "200", "complemento": None},
+        headers=headers,
+    )
+    assert resposta.status_code == 200, resposta.text
+    assert resposta.json()["id"] == endereco_id
+    assert resposta.json()["usuario_id"] == usuario["id"]
+    assert resposta.json()["numero"] == "200"
+    lista = await client.get("/api/v1/users/me/addresses", headers=headers)
+    assert lista.json()["total"] == 1
+
+    await _criar_usuario(client, email="outro-endereco@example.com")
+    outro_headers = await _headers_autenticacao(client, email="outro-endereco@example.com")
+    negado = await client.patch(
+        f"/api/v1/users/me/addresses/{endereco_id}",
+        json={"numero": "300"},
+        headers=outro_headers,
+    )
+    assert negado.status_code == 404
+    consulta = await client.get(f"/api/v1/users/me/addresses/{endereco_id}", headers=headers)
+    assert consulta.json()["numero"] == "200"
