@@ -15,12 +15,14 @@ export function MarketplaceLayout() {
     <div className="home-shell">
       <header className="home-header">
         <Logo />
-        <div className="home-user">
-          <span>{sessao?.usuario.nome}</span>
-          <button type="button" onClick={sair}>
-            Sair
-          </button>
-        </div>
+        {sessao && (
+          <div className="home-user">
+            <span>{sessao.usuario.nome}</span>
+            <button type="button" onClick={sair}>
+              Sair
+            </button>
+          </div>
+        )}
       </header>
       <Outlet />
     </div>
