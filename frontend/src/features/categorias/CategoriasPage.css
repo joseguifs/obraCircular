@@ -1,0 +1,153 @@
+.cat-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.cat-filter {
+  min-width: 200px;
+  margin-bottom: 0;
+}
+
+.cat-panel {
+  margin-bottom: 22px;
+}
+
+.cat-form-title {
+  margin: 0 0 22px;
+  font-family: Arial, sans-serif;
+  font-size: 27px;
+}
+
+.cat-field {
+  margin-bottom: 12px;
+}
+
+.cat-field .publish-field {
+  margin-bottom: 6px;
+}
+
+.cat-field .publish-field-error {
+  display: block;
+}
+
+.cat-hint {
+  margin: -6px 0 22px;
+}
+
+.cat-success {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--azul-suave-borda);
+  border-radius: 12px;
+  color: var(--azul-escuro);
+  background: var(--azul-suave-bg);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cat-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--cinza-linha);
+}
+
+.cat-item:first-child {
+  padding-top: 0;
+}
+
+.cat-item:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.cat-item-main {
+  min-width: 0;
+}
+
+.cat-item-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.cat-item-title h2 {
+  margin: 0;
+  color: var(--azul-marinho);
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+}
+
+.cat-item-main p {
+  margin: 6px 0;
+  color: var(--cinza-texto);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.cat-item-main small {
+  color: var(--cinza-icone);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cat-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.cat-badge--ativa {
+  color: var(--azul-escuro);
+  background: var(--azul-suave-bg);
+}
+
+.cat-badge--inativa {
+  color: var(--cinza-texto-forte);
+  background: var(--cinza-linha);
+}
+
+.cat-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--cinza-linha);
+  color: var(--cinza-texto);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cat-pagination div {
+  display: flex;
+  gap: 10px;
+}
+
+@media (max-width: 760px) {
+  .cat-toolbar,
+  .cat-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cat-filter {
+    min-width: 0;
+  }
+}

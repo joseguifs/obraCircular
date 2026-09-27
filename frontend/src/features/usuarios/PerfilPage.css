@@ -9,6 +9,7 @@
   grid-template-columns: minmax(0, 720px) minmax(220px, 1fr);
   gap: 24px;
   align-items: start;
+  grid-template-columns: minmax(0, 640px);
 }
 
 .profile-card {

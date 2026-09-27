@@ -1,9 +1,4 @@
-export interface Categoria {
-  id: string
-  nome: string
-  descricao: string | null
-  status: 'ATIVA' | 'INATIVA'
-}
+export type { Categoria } from '../categorias/types'
 
 export interface Endereco {
   id: string
@@ -43,8 +38,12 @@ export interface Anuncio {
   vendedor_id: string
   endereco_id: string
   preco: string
+  imagem_url: string | null
   quantidade: number
   status: 'ATIVO' | 'ESGOTADO' | 'ENCERRADO'
+  postado_em: string
+  atualizado_em: string
+  encerrado_em: string | null
 }
 
 export interface ListResponse<T> {
@@ -52,6 +51,16 @@ export interface ListResponse<T> {
   total: number
   offset: number
   limit: number
+}
+
+export interface AnuncioFiltros {
+  category_id?: string
+  status?: 'ATIVO' | 'ESGOTADO' | 'ENCERRADO'
+  search?: string
+  min_price?: string
+  max_price?: string
+  offset?: number
+  limit?: number
 }
 
 export type ErrosAnuncio = Partial<

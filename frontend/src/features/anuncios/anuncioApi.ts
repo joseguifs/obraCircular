@@ -1,6 +1,7 @@
 import { apiRequest } from '../../lib/api'
 import type {
   Anuncio,
+  AnuncioFiltros,
   AnuncioPayload,
   Categoria,
   Endereco,
@@ -13,6 +14,35 @@ export async function listarCategoriasAtivas(): Promise<Categoria[]> {
     '/categories?status=ATIVA&limit=100',
   )
   return resposta.items
+}
+
+export function buscarCategoria(categoriaId: string): Promise<Categoria> {
+  return apiRequest<Categoria>(`/categories/${categoriaId}`)
+}
+
+export function listarAnuncios(filtros: AnuncioFiltros = {}): Promise<ListResponse<Anuncio>> {
+  return apiRequest<ListResponse<Anuncio>>(`/ads${queryString(filtros)}`)
+}
+
+export function buscarAnuncio(anuncioId: string): Promise<Anuncio> {
+  return apiRequest<Anuncio>(`/ads/${anuncioId}`)
+}
+
+export function listarAnunciosDoVendedor(
+  vendedorId: string,
+  filtros: AnuncioFiltros = {},
+): Promise<ListResponse<Anuncio>> {
+  return apiRequest<ListResponse<Anuncio>>(`/users/${vendedorId}/ads${queryString(filtros)}`)
+}
+
+function queryString(filtros: AnuncioFiltros): string {
+  const parametros = new URLSearchParams()
+  for (const [chave, valor] of Object.entries(filtros)) {
+    if (valor === undefined || valor === '') continue
+    parametros.set(chave, String(valor))
+  }
+  const texto = parametros.toString()
+  return texto ? `?${texto}` : ''
 }
 
 export async function listarEnderecos(): Promise<Endereco[]> {

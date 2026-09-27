@@ -36,6 +36,9 @@ política de execução do PowerShell não permite scripts. Em Linux e macOS, us
 - `/home`: rota protegida, disponível apenas enquanto a sessão estiver válida.
 - `/perfil`: consulta e edição de nome, e-mail e telefone do usuário autenticado.
 - `/perfil/enderecos`: consulta paginada e edição dos próprios endereços.
+- `/anuncios/novo` e `/anuncios/:anuncioId/publicado`: publicação de anúncios (rotas protegidas).
+- `/categorias`: cadastro, listagem e edição de categorias. Pública temporariamente, sem
+  autenticação; deve voltar para a área protegida quando houver perfil administrativo.
 - Qualquer endereço desconhecido exibe a página de erro 404.
 
 Em hospedagem estática, o servidor deve redirecionar as URLs do frontend para
