@@ -83,7 +83,6 @@ function AtualizarTitulo() {
     else if (pathname === '/perfil') document.title = 'Meu perfil | Obra Circular'
     else if (pathname === '/perfil/enderecos') document.title = 'Meus endereços | Obra Circular'
     else if (pathname === '/categorias') document.title = 'Categorias | Obra Circular'
-    else if (pathname === '/perfil') document.title = 'Meu perfil | Obra Circular'
     else if (pathname === '/anuncios/novo') document.title = 'Publicar anúncio | Obra Circular'
     else if (/^\/anuncios\/[^/]+\/publicado$/.test(pathname)) document.title = 'Anúncio publicado | Obra Circular'
     else if (/^\/anuncios\/[^/]+$/.test(pathname)) document.title = 'Anúncio | Obra Circular'

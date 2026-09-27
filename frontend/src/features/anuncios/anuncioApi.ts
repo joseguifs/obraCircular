@@ -1,24 +1,5 @@
-import { apiRequest } from '../../lib/api'
-import type {
-  Anuncio,
-  AnuncioFiltros,
-  AnuncioPayload,
-  Categoria,
-  Endereco,
-  EnderecoPayload,
-  ListResponse,
-} from './types'
-
-export async function listarCategoriasAtivas(): Promise<Categoria[]> {
-  const resposta = await apiRequest<ListResponse<Categoria>>(
-    '/categories?status=ATIVA&limit=100',
-  )
-  return resposta.items
-}
-
-export function buscarCategoria(categoriaId: string): Promise<Categoria> {
-  return apiRequest<Categoria>(`/categories/${categoriaId}`)
-}
+import { apiRequest, type ListResponse } from '../../lib/api'
+import type { Anuncio, AnuncioFiltros, AnuncioPayload } from './types'
 
 export function listarAnuncios(filtros: AnuncioFiltros = {}): Promise<ListResponse<Anuncio>> {
   return apiRequest<ListResponse<Anuncio>>(`/ads${queryString(filtros)}`)
@@ -43,18 +24,6 @@ function queryString(filtros: AnuncioFiltros): string {
   }
   const texto = parametros.toString()
   return texto ? `?${texto}` : ''
-}
-
-export async function listarEnderecos(): Promise<Endereco[]> {
-  const resposta = await apiRequest<ListResponse<Endereco>>('/users/me/addresses?limit=100')
-  return resposta.items
-}
-
-export function cadastrarEndereco(dados: EnderecoPayload): Promise<Endereco> {
-  return apiRequest<Endereco>('/users/me/addresses', {
-    method: 'POST',
-    body: JSON.stringify(dados),
-  })
 }
 
 export function criarAnuncio(dados: AnuncioPayload): Promise<Anuncio> {

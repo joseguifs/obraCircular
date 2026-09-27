@@ -34,6 +34,17 @@ export class ApiError extends Error {
   }
 }
 
+export interface ListResponse<T> {
+  items: T[]
+  total: number
+  offset: number
+  limit: number
+}
+
+export function mensagemApiErro(erro: unknown, padrao: string): string {
+  return erro instanceof ApiError ? erro.message : padrao
+}
+
 let renovacaoEmAndamento: Promise<string> | null = null
 
 export async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {

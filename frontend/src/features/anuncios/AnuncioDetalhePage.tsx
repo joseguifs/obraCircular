@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ApiError } from '../../lib/api'
 import { formatarMoeda, formatarTempoRelativo } from '../../lib/formatarTempo'
-import { buscarAnuncio, buscarCategoria } from './anuncioApi'
-import type { Anuncio, Categoria } from './types'
+import { buscarCategoria } from '../categorias/categoriaApi'
+import type { Categoria } from '../categorias/types'
+import { buscarAnuncio } from './anuncioApi'
+import type { Anuncio } from './types'
 
 const STATUS_LABEL: Record<Anuncio['status'], string> = {
   ATIVO: 'Disponível',

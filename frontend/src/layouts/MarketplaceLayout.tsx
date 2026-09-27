@@ -1,4 +1,3 @@
-import { Link, Outlet, useNavigate } from 'react-router'
 import { useState, type FormEvent } from 'react'
 import { Link, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router'
 import { Logo } from '../features/autenticacao/AuthLayout'
@@ -33,15 +32,6 @@ export function MarketplaceLayout() {
   }
 
   return (
-    <div className="home-shell">
-      <header className="home-header">
-        <Logo />
-        <div className="home-user">
-          <span>{sessao?.usuario.nome}</span>
-          <Link className="home-profile-link" to="/perfil">Meu perfil</Link>
-          <button type="button" onClick={sair}>
-            Sair
-          </button>
     <div className="app-shell">
       <header className="app-header">
         <div className="app-header-bar">
@@ -78,18 +68,20 @@ export function MarketplaceLayout() {
               <span>Anunciar</span>
             </Link>
 
-            <Link
-              to="/perfil"
-              className={
-                location.pathname === '/perfil'
-                  ? 'app-profile-button app-profile-button--ativo'
-                  : 'app-profile-button'
-              }
-              aria-label="Ver meu perfil"
-            >
-              <span className="app-avatar">{obterIniciais(sessao!.usuario.nome)}</span>
-              <span>Meu perfil</span>
-            </Link>
+            {sessao && (
+              <Link
+                to="/perfil"
+                className={
+                  location.pathname.startsWith('/perfil')
+                    ? 'app-profile-button app-profile-button--ativo'
+                    : 'app-profile-button'
+                }
+                aria-label="Ver meu perfil"
+              >
+                <span className="app-avatar">{obterIniciais(sessao.usuario.nome)}</span>
+                <span>{sessao.usuario.nome}</span>
+              </Link>
+            )}
           </div>
         </div>
       </header>

@@ -1,3 +1,5 @@
+import type { ListResponse } from '../../lib/api'
+
 export type CategoriaStatus = 'ATIVA' | 'INATIVA'
 
 export interface Categoria {
@@ -20,12 +22,7 @@ export interface CategoriaAtualizacao {
   status?: CategoriaStatus
 }
 
-export interface ListaCategorias {
-  items: Categoria[]
-  total: number
-  offset: number
-  limit: number
-}
+export type ListaCategorias = ListResponse<Categoria>
 
 export type FiltroStatus = '' | CategoriaStatus
 
