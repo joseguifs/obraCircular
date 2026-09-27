@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { LoginPage } from '../features/autenticacao/LoginPage'
+import { AnuncioDetalhePage } from '../features/anuncios/AnuncioDetalhePage'
 import { AnuncioPublicadoPage } from '../features/anuncios/AnuncioPublicadoPage'
 import { PublicarAnuncioPage } from '../features/anuncios/PublicarAnuncioPage'
 import { CategoriasPage } from '../features/categorias/CategoriasPage'
@@ -9,6 +10,7 @@ import { useAuth } from '../features/autenticacao/useAuth'
 import { HomePage } from '../features/home/HomePage'
 import { NotFoundPage } from '../features/not-found/NotFoundPage'
 import { CadastroUsuarioPage } from '../features/usuarios/CadastroUsuarioPage'
+import { PerfilPage } from '../features/usuarios/PerfilPage'
 import { MarketplaceLayout } from '../layouts/MarketplaceLayout'
 import { ProtectedRoute } from '../routes/ProtectedRoute'
 import { PublicOnlyRoute } from '../routes/PublicOnlyRoute'
@@ -27,8 +29,10 @@ export function AppRouter() {
           <Route element={<MarketplaceLayout />}>
             <Route index element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<HomePage />} />
+            <Route path="/perfil" element={<PerfilPage />} />
             <Route path="/anuncios/novo" element={<PublicarAnuncioPage />} />
             <Route path="/anuncios/:anuncioId/publicado" element={<AnuncioPublicadoPage />} />
+            <Route path="/anuncios/:anuncioId" element={<AnuncioDetalhePage />} />
           </Route>
         </Route>
 
@@ -75,8 +79,10 @@ function AtualizarTitulo() {
     else if (pathname === '/cadastro') document.title = 'Crie sua conta | Obra Circular'
     else if (pathname === '/home' || pathname === '/') document.title = 'Início | Obra Circular'
     else if (pathname === '/categorias') document.title = 'Categorias | Obra Circular'
+    else if (pathname === '/perfil') document.title = 'Meu perfil | Obra Circular'
     else if (pathname === '/anuncios/novo') document.title = 'Publicar anúncio | Obra Circular'
     else if (/^\/anuncios\/[^/]+\/publicado$/.test(pathname)) document.title = 'Anúncio publicado | Obra Circular'
+    else if (/^\/anuncios\/[^/]+$/.test(pathname)) document.title = 'Anúncio | Obra Circular'
     else document.title = 'Página não encontrada | Obra Circular'
   }, [pathname])
 
