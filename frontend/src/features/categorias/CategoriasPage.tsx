@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { ApiError } from '../../lib/api'
+import { ApiError, mensagemApiErro } from '../../lib/api'
 import { atualizarCategoria, criarCategoria, listarCategorias } from './categoriaApi'
 import type {
   Categoria,
@@ -48,7 +48,7 @@ export function CategoriasPage() {
         if (!ativo) return
         setConcluida({
           chave,
-          erro: mensagemErro(erro, 'Não foi possível carregar as categorias.'),
+          erro: mensagemApiErro(erro, 'Não foi possível carregar as categorias.'),
         })
       })
     return () => {
@@ -245,7 +245,7 @@ function CategoriaForm({ categoria, aoConcluir, aoCancelar }: CategoriaFormProps
       if (erro instanceof ApiError && erro.status === 409) {
         setErros({ nome: erro.message })
       } else {
-        setErros({ geral: mensagemErro(erro, 'Não foi possível salvar a categoria.') })
+        setErros({ geral: mensagemApiErro(erro, 'Não foi possível salvar a categoria.') })
       }
     } finally {
       setEnviando(false)
@@ -340,8 +340,4 @@ function CategoriaForm({ categoria, aoConcluir, aoCancelar }: CategoriaFormProps
 function formatarData(iso: string): string {
   const data = new Date(iso)
   return Number.isNaN(data.getTime()) ? '—' : data.toLocaleDateString('pt-BR')
-}
-
-function mensagemErro(erro: unknown, padrao: string): string {
-  return erro instanceof ApiError ? erro.message : padrao
 }

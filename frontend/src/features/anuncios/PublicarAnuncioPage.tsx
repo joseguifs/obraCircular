@@ -6,16 +6,16 @@ import {
   type FormEvent,
 } from 'react'
 import { useNavigate } from 'react-router'
-import { ApiError } from '../../lib/api'
+import { mensagemApiErro } from '../../lib/api'
+import { listarCategoriasAtivas } from '../categorias/categoriaApi'
+import { cadastrarEndereco, listarEnderecos } from '../enderecos/enderecoApi'
+import type { EnderecoPayload } from '../enderecos/types'
 import {
-  cadastrarEndereco,
   criarAnuncio,
   enviarImagens,
   excluirAnuncio,
-  listarCategoriasAtivas,
-  listarEnderecos,
 } from './anuncioApi'
-import type { EnderecoPayload, ErrosAnuncio } from './types'
+import type { ErrosAnuncio } from './types'
 import { validarAnuncio, validarImagens } from './validacaoAnuncio'
 
 const enderecoInicial: EnderecoPayload = {
@@ -65,7 +65,7 @@ export function PublicarAnuncioPage() {
         if (enderecosRecebidos.length === 0) setMostrarEndereco(true)
       })
       .catch((erro) => {
-        if (ativo) setErroGeral(mensagemErro(erro, 'Não foi possível preparar o formulário.'))
+        if (ativo) setErroGeral(mensagemApiErro(erro, 'Não foi possível preparar o formulário.'))
       })
       .finally(() => {
         if (ativo) setCarregando(false)
@@ -110,7 +110,7 @@ export function PublicarAnuncioPage() {
           // A mensagem original é mais útil; a API mantém a exclusão idempotente no fluxo normal.
         }
       }
-      setErroGeral(mensagemErro(erro, 'Não foi possível publicar o anúncio.'))
+      setErroGeral(mensagemApiErro(erro, 'Não foi possível publicar o anúncio.'))
     } finally {
       setEnviando(false)
     }
@@ -139,7 +139,7 @@ export function PublicarAnuncioPage() {
       setMostrarEndereco(false)
       setErros((atuais) => ({ ...atuais, endereco: undefined }))
     } catch (erro) {
-      setErroEndereco(mensagemErro(erro, 'Não foi possível cadastrar o endereço.'))
+      setErroEndereco(mensagemApiErro(erro, 'Não foi possível cadastrar o endereço.'))
     } finally {
       setSalvandoEndereco(false)
     }
@@ -302,5 +302,3 @@ function enderecoValido(endereco: EnderecoPayload) {
 }
 
 function formatarCep(cep: string) { return cep.replace(/(\d{5})(\d{3})/, '$1-$2') }
-
-function mensagemErro(erro: unknown, padrao: string) { return erro instanceof ApiError ? erro.message : padrao }

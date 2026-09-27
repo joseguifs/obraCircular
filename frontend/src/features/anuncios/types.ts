@@ -1,26 +1,3 @@
-export type { Categoria } from '../categorias/types'
-
-export interface Endereco {
-  id: string
-  cep: string
-  logradouro: string
-  numero: string
-  complemento: string | null
-  bairro: string
-  cidade: string
-  estado: string
-}
-
-export interface EnderecoPayload {
-  cep: string
-  logradouro: string
-  numero: string
-  complemento?: string
-  bairro: string
-  cidade: string
-  estado: string
-}
-
 export interface AnuncioPayload {
   titulo: string
   descricao: string
@@ -44,13 +21,6 @@ export interface Anuncio {
   postado_em: string
   atualizado_em: string
   encerrado_em: string | null
-}
-
-export interface ListResponse<T> {
-  items: T[]
-  total: number
-  offset: number
-  limit: number
 }
 
 export interface AnuncioFiltros {

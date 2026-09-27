@@ -27,6 +27,11 @@ export function buscarCategoria(categoriaId: string): Promise<Categoria> {
   return apiRequest<Categoria>(`/categories/${categoriaId}`)
 }
 
+export async function listarCategoriasAtivas(): Promise<Categoria[]> {
+  const resposta = await listarCategorias({ status: 'ATIVA', offset: 0, limit: 100 })
+  return resposta.items
+}
+
 export function criarCategoria(dados: CategoriaCriacao): Promise<Categoria> {
   return apiRequest<Categoria>('/categories', {
     method: 'POST',
