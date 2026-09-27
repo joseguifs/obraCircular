@@ -193,3 +193,46 @@ async def test_usuario_nao_pode_alterar_o_proprio_status(client: AsyncClient) ->
     )
 
     assert resposta.status_code == 422
+
+
+async def test_atualizacao_preserva_proprio_email_e_remove_telefone(client: AsyncClient) -> None:
+    criado = await _criar_usuario(client)
+    headers = await _headers_autenticacao(client)
+    resposta = await client.patch(
+        f"/api/v1/users/{criado['id']}",
+        json={"email": criado["email"].upper(), "telefone": None},
+        headers=headers,
+    )
+    assert resposta.status_code == 200, resposta.text
+    assert resposta.json()["email"] == criado["email"]
+    assert resposta.json()["telefone"] is None
+
+
+async def test_atualizacao_rejeita_campos_obrigatorios_nulos_e_patch_vazio(
+    client: AsyncClient,
+) -> None:
+    criado = await _criar_usuario(client)
+    headers = await _headers_autenticacao(client)
+    for dados in ({}, {"nome": None}, {"email": None}, {"senha": None}):
+        resposta = await client.patch(f"/api/v1/users/{criado['id']}", json=dados, headers=headers)
+        assert resposta.status_code == 422, resposta.text
+
+
+async def test_email_duplicado_no_commit_retorna_conflito(
+    client: AsyncClient,
+) -> None:
+    from unittest.mock import AsyncMock, patch
+
+    from app.repositories.usuario import UsuarioRepository
+
+    await _criar_usuario(client, email="reservado@example.com")
+    criado = await _criar_usuario(client)
+    headers = await _headers_autenticacao(client)
+    # Simula a consulta anterior ao commit sem enxergar um cadastro concorrente.
+    with patch.object(UsuarioRepository, "obter_por_email", AsyncMock(return_value=None)):
+        resposta = await client.patch(
+            f"/api/v1/users/{criado['id']}",
+            json={"email": "reservado@example.com"},
+            headers=headers,
+        )
+    assert resposta.status_code == 409, resposta.text

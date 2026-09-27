@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import ConflictError, NotFoundError
@@ -28,8 +29,7 @@ class UsuarioService:
             status=UsuarioStatus.ATIVO,
         )
         self._repositorio.adicionar(usuario)
-        await self._session.commit()
-        await self._session.refresh(usuario)
+        await self._salvar(usuario)
         return usuario
 
     async def listar(
@@ -62,11 +62,22 @@ class UsuarioService:
         for campo, valor in alteracoes.items():
             setattr(usuario, campo, valor)
 
-        await self._session.commit()
-        await self._session.refresh(usuario)
+        await self._salvar(usuario)
         return usuario
 
     async def excluir(self, usuario_id: UUID) -> None:
         usuario = await self.obter(usuario_id)
         usuario.deletado_em = datetime.now(UTC)
         await self._session.commit()
+
+    async def _salvar(self, usuario: Usuario) -> None:
+        try:
+            await self._session.commit()
+        except IntegrityError as erro:
+            await self._session.rollback()
+            # O índice também protege contra dois pedidos simultâneos com o mesmo e-mail.
+            causa = erro.orig.__cause__ if erro.orig is not None else None
+            if getattr(causa, "constraint_name", None) == "uq_usuarios_email_normalizado":
+                raise ConflictError("Já existe um usuário cadastrado com este e-mail.") from erro
+            raise
+        await self._session.refresh(usuario)

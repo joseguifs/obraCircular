@@ -1,3 +1,4 @@
+import type { Usuario } from '../usuarios/types'
 import type { Sessao } from './types'
 
 const CHAVE_SESSAO = 'obra-circular:sessao'
@@ -48,4 +49,12 @@ export function observarSessao(callback: (sessao: Sessao | null) => void) {
   }
   window.addEventListener(EVENTO_SESSAO, atualizar)
   return () => window.removeEventListener(EVENTO_SESSAO, atualizar)
+}
+
+/** Preserva os tokens mais recentes, inclusive se renovados durante o PATCH. */
+export function atualizarUsuarioDaSessao(usuario: Usuario) {
+  const sessao = obterSessaoArmazenada()
+  if (sessao?.usuario.id === usuario.id) {
+    salvarSessaoArmazenada({ ...sessao, usuario })
+  }
 }

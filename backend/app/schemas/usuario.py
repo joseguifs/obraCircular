@@ -1,7 +1,8 @@
 from datetime import datetime
+from typing import Self
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
 from app.core.validators import normalizar_telefone
 from app.models.enums import UsuarioStatus
@@ -55,6 +56,14 @@ class UsuarioUpdate(BaseModel):
     @classmethod
     def _validar_telefone(cls, valor: str | None) -> str | None:
         return normalizar_telefone(valor) if valor is not None else None
+
+    @model_validator(mode="after")
+    def validar_campos_informados(self) -> Self:
+        if not self.model_fields_set:
+            raise ValueError("Informe ao menos um campo para atualizar.")
+        if any(getattr(self, campo) is None for campo in self.model_fields_set - {"telefone"}):
+            raise ValueError("Campos obrigatórios não podem receber null.")
+        return self
 
 
 class UsuarioRead(BaseModel):
