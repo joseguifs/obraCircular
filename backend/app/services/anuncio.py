@@ -3,11 +3,20 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.core.exceptions import AppError
 from app.models.anuncio import Anuncio
 from app.models.enums import AnuncioStatus, CategoriaStatus, UsuarioStatus
 from app.repositories.anuncio import AnuncioRepository
-from app.schemas.anuncio import AnuncioCreate, AnuncioFilters, AnuncioListResponse, AnuncioUpdate
+from app.repositories.anuncio_imagem import AnuncioImagemRepository
+from app.schemas.anuncio import (
+    AnuncioCreate,
+    AnuncioFilters,
+    AnuncioListResponse,
+    AnuncioResponse,
+    AnuncioUpdate,
+)
+from app.services.armazenamento import ArmazenamentoLocal
 
 
 class AnuncioService:
@@ -15,9 +24,13 @@ class AnuncioService:
         self,
         session: AsyncSession,
         repository: AnuncioRepository | None = None,
+        imagem_repository: AnuncioImagemRepository | None = None,
+        armazenamento: ArmazenamentoLocal | None = None,
     ) -> None:
         self.session = session
         self.repository = repository or AnuncioRepository(session)
+        self.imagem_repository = imagem_repository or AnuncioImagemRepository(session)
+        self.armazenamento = armazenamento or ArmazenamentoLocal(get_settings().storage_path)
 
     async def criar(self, dados: AnuncioCreate, vendedor_id: UUID) -> Anuncio:
         async with self.session.begin():
@@ -55,8 +68,22 @@ class AnuncioService:
         vendedor_id: UUID | None = None,
     ) -> AnuncioListResponse:
         anuncios, total = await self.repository.listar(filtros, vendedor_id=vendedor_id)
+        capas = await self.imagem_repository.listar_capas([anuncio.id for anuncio in anuncios])
+        itens = []
+        for anuncio in anuncios:
+            chave_capa = capas.get(anuncio.id)
+            imagem_capa_url = (
+                self.armazenamento.url_publica(chave_capa)
+                if chave_capa is not None
+                else anuncio.imagem_url
+            )
+            itens.append(
+                AnuncioResponse.model_validate(anuncio).model_copy(
+                    update={"imagem_capa_url": imagem_capa_url}
+                )
+            )
         return AnuncioListResponse(
-            items=anuncios,
+            items=itens,
             total=total,
             offset=filtros.offset,
             limit=filtros.limit,

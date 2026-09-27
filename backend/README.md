@@ -311,6 +311,7 @@ Principais códigos de erro do upload:
 |---|---|---|---|
 | `GET` | `/api/v1/ads` | Não | Lista e filtra anúncios |
 | `GET` | `/api/v1/ads/{id}` | Não | Consulta um anúncio |
+| `GET` | `/api/v1/ads/{id}/images` | Não | Lista as imagens de um anúncio |
 | `POST` | `/api/v1/ads` | Sim | Cria um anúncio |
 | `POST` | `/api/v1/ads/{id}/images` | Sim | Adiciona imagens |
 | `PATCH` | `/api/v1/ads/{id}` | Sim | Atualiza um anúncio do vendedor |
@@ -387,5 +388,6 @@ As URLs assinadas não devem ser persistidas no banco, pois expiram. A
 - ainda não há endpoint para remover ou reordenar imagens individualmente;
 - a coluna legada `imagem_url` ainda existe;
 - o armazenamento local não é compartilhado entre múltiplas instâncias;
-- listagem e detalhe de anúncios ainda podem ser expandidos para retornar as imagens;
+- a listagem de anúncios retorna a capa em `imagem_capa_url`; a galeria completa está
+  disponível no endpoint específico de imagens;
 - jobs futuros podem remover uploads órfãos e aplicar políticas de retenção.
