@@ -4,6 +4,7 @@ import { LoginPage } from '../features/autenticacao/LoginPage'
 import { AnuncioDetalhePage } from '../features/anuncios/AnuncioDetalhePage'
 import { AnuncioPublicadoPage } from '../features/anuncios/AnuncioPublicadoPage'
 import { PublicarAnuncioPage } from '../features/anuncios/PublicarAnuncioPage'
+import { CategoriasPage } from '../features/categorias/CategoriasPage'
 import type { Sessao } from '../features/autenticacao/types'
 import { useAuth } from '../features/autenticacao/useAuth'
 import { HomePage } from '../features/home/HomePage'
@@ -33,6 +34,11 @@ export function AppRouter() {
             <Route path="/anuncios/:anuncioId/publicado" element={<AnuncioPublicadoPage />} />
             <Route path="/anuncios/:anuncioId" element={<AnuncioDetalhePage />} />
           </Route>
+        </Route>
+
+        <Route element={<MarketplaceLayout />}>
+          {/* TODO(autenticação): rota pública por enquanto; mover para o ProtectedRoute depois. */}
+          <Route path="/categorias" element={<CategoriasPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />
@@ -72,6 +78,7 @@ function AtualizarTitulo() {
     if (pathname === '/login') document.title = 'Entrar | Obra Circular'
     else if (pathname === '/cadastro') document.title = 'Crie sua conta | Obra Circular'
     else if (pathname === '/home' || pathname === '/') document.title = 'Início | Obra Circular'
+    else if (pathname === '/categorias') document.title = 'Categorias | Obra Circular'
     else if (pathname === '/perfil') document.title = 'Meu perfil | Obra Circular'
     else if (pathname === '/anuncios/novo') document.title = 'Publicar anúncio | Obra Circular'
     else if (/^\/anuncios\/[^/]+\/publicado$/.test(pathname)) document.title = 'Anúncio publicado | Obra Circular'

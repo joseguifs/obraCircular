@@ -1,9 +1,4 @@
-export interface Categoria {
-  id: string
-  nome: string
-  descricao: string | null
-  status: 'ATIVA' | 'INATIVA'
-}
+export type { Categoria } from '../categorias/types'
 
 export interface Endereco {
   id: string

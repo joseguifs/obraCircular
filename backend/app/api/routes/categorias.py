@@ -25,8 +25,9 @@ router = APIRouter(prefix="/categories", tags=["categorias"])
 async def criar_categoria(
     dados: CategoriaCreate,
     session: DatabaseSession,
-    _usuario: CurrentUser,
 ) -> CategoriaResponse:
+    # TODO(autenticação): exigir usuário autenticado (CurrentUser) novamente quando
+    # houver perfil administrativo. Liberado temporariamente para a tela de categorias.
     categoria = await CategoriaService(session).criar(dados)
     return CategoriaResponse.model_validate(categoria)
 
@@ -62,8 +63,9 @@ async def atualizar_categoria(
     categoria_id: UUID,
     dados: CategoriaUpdate,
     session: DatabaseSession,
-    _usuario: CurrentUser,
 ) -> CategoriaResponse:
+    # TODO(autenticação): exigir usuário autenticado (CurrentUser) novamente quando
+    # houver perfil administrativo. Liberado temporariamente para a tela de categorias.
     categoria = await CategoriaService(session).atualizar(categoria_id, dados)
     return CategoriaResponse.model_validate(categoria)
 
