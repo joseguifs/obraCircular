@@ -1,0 +1,209 @@
+.app-shell {
+  min-height: 100vh;
+  background: var(--fundo-pagina);
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--azul-marinho);
+}
+
+.app-header-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 24px;
+  max-width: 1280px;
+  min-height: 72px;
+  margin: 0 auto;
+  padding: 12px clamp(20px, 4vw, 40px);
+}
+
+.app-logo {
+  flex: none;
+  text-decoration: none;
+}
+
+.app-logo .brand-logo,
+.app-logo .logo-type {
+  color: #fff;
+}
+
+.app-nav {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.app-nav-link,
+.app-nav-item {
+  padding: 8px 14px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--cinza-acinzentado-2);
+  text-decoration: none;
+}
+
+.app-nav-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.app-nav-link--ativo {
+  color: #fff;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.app-nav-item--futuro {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.app-search {
+  display: flex;
+  flex: 1 1 220px;
+  align-items: center;
+  gap: 10px;
+  max-width: 380px;
+  min-width: 190px;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.app-search svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  fill: none;
+  stroke: var(--cinza-acinzentado-2);
+  stroke-linecap: round;
+  stroke-width: 1.9;
+}
+
+.app-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  color: #fff;
+  background: transparent;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.app-search input::placeholder {
+  color: var(--cinza-acinzentado-2);
+}
+
+.app-header-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.app-icon-button {
+  display: flex;
+  width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.app-icon-button svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: #dce6f2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.app-button-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 11px;
+  color: #fff;
+  background: var(--azul);
+  font-size: 13.5px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.app-button-primary:hover {
+  background: var(--azul-escuro);
+}
+
+.app-button-primary svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: #fff;
+  stroke-linecap: round;
+  stroke-width: 2.2;
+}
+
+.app-profile-button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 42px;
+  padding: 0 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.06);
+  text-decoration: none;
+}
+
+.app-profile-button:hover,
+.app-profile-button--ativo {
+  border-color: rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.app-profile-button span:last-child {
+  padding-right: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.app-avatar {
+  display: flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--azul);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+@media (max-width: 560px) {
+  .app-nav {
+    order: 3;
+    width: 100%;
+  }
+}

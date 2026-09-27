@@ -26,23 +26,27 @@ function renderAplicacao() {
   )
 }
 
+function respostaJson(body: unknown, status = 200) {
+  return { ok: status >= 200 && status < 300, status, json: async () => body }
+}
+
+function respostaListaVazia() {
+  return respostaJson({ items: [], total: 0, offset: 0, limit: 100 })
+}
+
 it('redireciona para a home após o login e permite encerrar a sessão', async () => {
   const fetchMock = vi
     .fn()
-    .mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
+    .mockResolvedValueOnce(
+      respostaJson({
         access_token: 'access-token',
         refresh_token: 'refresh-token',
         token_type: 'bearer',
         expires_in: 900,
       }),
-    })
-    .mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
+    )
+    .mockResolvedValueOnce(
+      respostaJson({
         id: 'd68c0c92-ab56-4f8e-862e-bbc91e31eb70',
         nome: 'Ana Silva',
         email: 'ana@example.com',
@@ -51,7 +55,14 @@ it('redireciona para a home após o login e permite encerrar a sessão', async (
         criado_em: '2026-09-13T01:00:00Z',
         atualizado_em: '2026-09-13T01:00:00Z',
       }),
-    })
+    )
+    // HomePage: categorias, total de anúncios do vendedor, listagem de anúncios
+    .mockResolvedValueOnce(respostaListaVazia())
+    .mockResolvedValueOnce(respostaListaVazia())
+    .mockResolvedValueOnce(respostaListaVazia())
+    // PerfilPage: endereços do usuário, total de anúncios do vendedor
+    .mockResolvedValueOnce(respostaListaVazia())
+    .mockResolvedValueOnce(respostaListaVazia())
   vi.stubGlobal('fetch', fetchMock)
   const user = userEvent.setup()
 
@@ -60,10 +71,11 @@ it('redireciona para a home após o login e permite encerrar a sessão', async (
   await user.type(screen.getByLabelText('Senha'), 'senha-forte-123')
   await user.click(screen.getByRole('button', { name: 'Entrar na plataforma' }))
 
-  expect(await screen.findByText('Bem-vindo à home, Ana!')).toBeInTheDocument()
+  expect(await screen.findByText('Olá, Ana')).toBeInTheDocument()
   expect(window.location.pathname).toBe('/home')
 
-  await user.click(screen.getByRole('button', { name: 'Sair' }))
+  await user.click(screen.getByRole('link', { name: 'Ver meu perfil' }))
+  await user.click(await screen.findByRole('button', { name: 'Sair da conta' }))
 
   expect(await screen.findByText('Bem-vindo de volta')).toBeInTheDocument()
   expect(window.location.pathname).toBe('/login')
@@ -105,10 +117,11 @@ it('redireciona usuário autenticado para fora das rotas públicas', async () =>
       },
     }),
   )
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(respostaListaVazia()))
 
   renderAplicacao()
 
-  expect(await screen.findByText('Bem-vindo à home, Ana!')).toBeInTheDocument()
+  expect(await screen.findByText('Olá, Ana')).toBeInTheDocument()
   expect(window.location.pathname).toBe('/home')
 })
 
