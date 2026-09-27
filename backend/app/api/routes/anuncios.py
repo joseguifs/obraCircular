@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Query, Response, status
+from fastapi import APIRouter, File, Query, Response, UploadFile, status
 
 from app.api.dependencies import CurrentUser, DatabaseSession
 from app.schemas.anuncio import (
@@ -11,7 +11,9 @@ from app.schemas.anuncio import (
     AnuncioResponse,
     AnuncioUpdate,
 )
+from app.schemas.anuncio_imagem import AnuncioImagemListResponse
 from app.services.anuncio import AnuncioService
+from app.services.anuncio_imagem import AnuncioImagemService
 
 router = APIRouter(prefix="/ads", tags=["anúncios"])
 user_router = APIRouter(prefix="/users", tags=["anúncios"])
@@ -30,6 +32,33 @@ async def criar_anuncio(
 ) -> AnuncioResponse:
     anuncio = await AnuncioService(session).criar(dados, vendedor.id)
     return AnuncioResponse.model_validate(anuncio)
+
+
+@router.post(
+    "/{anuncio_id}/images",
+    response_model=AnuncioImagemListResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Adiciona imagens a um anúncio do vendedor",
+)
+async def adicionar_imagens(
+    anuncio_id: UUID,
+    session: DatabaseSession,
+    vendedor: CurrentUser,
+    files: Annotated[list[UploadFile], File(description="Imagens JPEG, PNG ou WebP")],
+) -> AnuncioImagemListResponse:
+    return await AnuncioImagemService(session).adicionar(anuncio_id, vendedor.id, files)
+
+
+@router.get(
+    "/{anuncio_id}/images",
+    response_model=AnuncioImagemListResponse,
+    summary="Lista as imagens de um anúncio",
+)
+async def listar_imagens(
+    anuncio_id: UUID,
+    session: DatabaseSession,
+) -> AnuncioImagemListResponse:
+    return await AnuncioImagemService(session).listar(anuncio_id)
 
 
 @router.get(

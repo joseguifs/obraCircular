@@ -79,6 +79,7 @@ class AnuncioResponse(BaseModel):
     endereco_id: UUID
     preco: Decimal
     imagem_url: str | None
+    imagem_capa_url: str | None = None
     quantidade: int
     status: AnuncioStatus
     postado_em: datetime

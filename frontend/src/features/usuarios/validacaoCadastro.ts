@@ -62,7 +62,7 @@ export function forcaDaSenha(senha: string): ForcaSenha {
   return Math.max(1, pontos) as ForcaSenha
 }
 
-function validarTelefone(valor: string): string | undefined {
+export function validarTelefone(valor: string): string | undefined {
   if (!valor.trim()) {
     return undefined
   }

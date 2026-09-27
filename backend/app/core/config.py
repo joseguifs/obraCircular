@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, SecretStr, model_validator
@@ -20,6 +21,9 @@ class Settings(BaseSettings):
     jwt_audience: str = "obra-circular-web"
     jwt_access_token_expire_minutes: int = Field(default=15, ge=1)
     jwt_refresh_token_expire_days: int = Field(default=7, ge=1)
+    storage_path: Path = Path("storage")
+    max_ad_images: int = Field(default=5, ge=1, le=10)
+    max_image_size_bytes: int = Field(default=5 * 1024 * 1024, ge=1024)
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -17,7 +17,11 @@ async def db_session() -> AsyncIterator[AsyncSession]:
     """Sessão isolada em uma transação por teste, desfeita ao final (rollback)."""
     async with engine.connect() as connection:
         await connection.begin()
-        session = AsyncSession(bind=connection, join_transaction_mode="create_savepoint")
+        session = AsyncSession(
+            bind=connection,
+            join_transaction_mode="create_savepoint",
+            expire_on_commit=False,
+        )
         try:
             yield session
         finally:
