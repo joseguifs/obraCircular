@@ -1,6 +1,8 @@
+from datetime import UTC, datetime
+from decimal import Decimal
 from types import SimpleNamespace
 from typing import cast
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
@@ -10,8 +12,10 @@ from app.core.exceptions import AppError
 from app.models.anuncio import Anuncio
 from app.models.enums import AnuncioStatus, CategoriaStatus, UsuarioStatus
 from app.repositories.anuncio import AnuncioRepository
-from app.schemas.anuncio import AnuncioCreate, AnuncioUpdate
+from app.repositories.anuncio_imagem import AnuncioImagemRepository
+from app.schemas.anuncio import AnuncioCreate, AnuncioFilters, AnuncioUpdate
 from app.services.anuncio import AnuncioService
+from app.services.armazenamento import ArmazenamentoLocal
 
 
 class FakeTransaction:
@@ -123,6 +127,47 @@ async def test_excluir_anuncio_faz_exclusao_logica() -> None:
     assert anuncio.encerrado_em is not None
     assert anuncio.status == AnuncioStatus.ENCERRADO
     session.flush.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_listagem_inclui_capa_das_imagens_armazenadas() -> None:
+    session = FakeSession()
+    repository = AsyncMock(spec=AnuncioRepository)
+    imagem_repository = AsyncMock(spec=AnuncioImagemRepository)
+    armazenamento = Mock(spec=ArmazenamentoLocal)
+    armazenamento.url_publica.return_value = "/uploads/anuncios/anuncio/capa.webp"
+    service = AnuncioService(
+        cast(AsyncSession, session),
+        cast(AnuncioRepository, repository),
+        cast(AnuncioImagemRepository, imagem_repository),
+        cast(ArmazenamentoLocal, armazenamento),
+    )
+    anuncio_id = uuid4()
+    anuncio = SimpleNamespace(
+        id=anuncio_id,
+        titulo="Perfis metálicos",
+        descricao="Perfis metálicos sem uso e em bom estado.",
+        categoria_id=uuid4(),
+        vendedor_id=uuid4(),
+        endereco_id=uuid4(),
+        preco=Decimal("420.00"),
+        imagem_url=None,
+        quantidade=40,
+        status=AnuncioStatus.ATIVO,
+        postado_em=datetime.now(UTC),
+        atualizado_em=datetime.now(UTC),
+        encerrado_em=None,
+    )
+    repository.listar.return_value = ([anuncio], 1)
+    imagem_repository.listar_capas.return_value = {
+        anuncio_id: "anuncios/anuncio/capa.webp"
+    }
+
+    resposta = await service.listar(AnuncioFilters())
+
+    assert resposta.items[0].imagem_capa_url == "/uploads/anuncios/anuncio/capa.webp"
+    imagem_repository.listar_capas.assert_awaited_once_with([anuncio_id])
+    armazenamento.url_publica.assert_called_once_with("anuncios/anuncio/capa.webp")
 
 
 def test_status_precisa_corresponder_ao_estoque() -> None:

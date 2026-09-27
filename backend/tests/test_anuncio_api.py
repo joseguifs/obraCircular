@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
@@ -7,6 +8,7 @@ import app.api.routes.anuncios as anuncios_routes
 from app.core.exceptions import AppError
 from app.main import app
 from app.schemas.anuncio import AnuncioFilters, AnuncioListResponse
+from app.schemas.anuncio_imagem import AnuncioImagemListResponse, AnuncioImagemResponse
 
 
 async def test_listagem_expoe_filtros_e_paginacao(monkeypatch: Any) -> None:
@@ -85,3 +87,38 @@ async def test_criacao_exige_usuario_atual() -> None:
 
     assert response.status_code == 401
     assert response.json()["code"] == "AUTHENTICATION_REQUIRED"
+
+
+async def test_lista_imagens_do_anuncio(monkeypatch: Any) -> None:
+    anuncio_id = uuid4()
+    imagem_id = uuid4()
+
+    class FakeService:
+        def __init__(self, _: object) -> None:
+            pass
+
+        async def listar(self, id_recebido: object) -> AnuncioImagemListResponse:
+            assert id_recebido == anuncio_id
+            return AnuncioImagemListResponse(
+                items=[
+                    AnuncioImagemResponse(
+                        id=imagem_id,
+                        anuncio_id=anuncio_id,
+                        url=f"/uploads/anuncios/{anuncio_id}/foto.png",
+                        nome_original="foto.png",
+                        mime_type="image/png",
+                        tamanho_bytes=120,
+                        ordem=0,
+                        criado_em=datetime.now(UTC),
+                    )
+                ]
+            )
+
+    monkeypatch.setattr(anuncios_routes, "AnuncioImagemService", FakeService)
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get(f"/api/v1/ads/{anuncio_id}/images")
+
+    assert response.status_code == 200
+    assert response.json()["items"][0]["id"] == str(imagem_id)
+    assert response.json()["items"][0]["ordem"] == 0

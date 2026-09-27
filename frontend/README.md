@@ -37,6 +37,7 @@ política de execução do PowerShell não permite scripts. Em Linux e macOS, us
 - `/perfil`: consulta e edição de nome, e-mail e telefone do usuário autenticado.
 - `/perfil/enderecos`: consulta paginada e edição dos próprios endereços.
 - `/anuncios/novo` e `/anuncios/:anuncioId/publicado`: publicação de anúncios (rotas protegidas).
+- `/anuncios/:anuncioId`: detalhes, categoria, disponibilidade, preço e galeria do anúncio.
 - `/categorias`: cadastro, listagem e edição de categorias. Pública temporariamente, sem
   autenticação; deve voltar para a área protegida quando houver perfil administrativo.
 - Qualquer endereço desconhecido exibe a página de erro 404.

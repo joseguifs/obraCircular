@@ -115,6 +115,20 @@ class AnuncioImagemService:
             for arquivo in arquivos:
                 await arquivo.close()
 
+    async def listar(self, anuncio_id: UUID) -> AnuncioImagemListResponse:
+        anuncio = await self.anuncio_repository.buscar_por_id(anuncio_id)
+        if anuncio is None:
+            raise AppError(
+                status_code=404,
+                detail="Anúncio não encontrado.",
+                code="AD_NOT_FOUND",
+            )
+
+        imagens = await self.repository.listar(anuncio_id)
+        return AnuncioImagemListResponse(
+            items=[self._resposta(imagem) for imagem in imagens]
+        )
+
     def _resposta(self, imagem: AnuncioImagem) -> AnuncioImagemResponse:
         return AnuncioImagemResponse(
             id=imagem.id,

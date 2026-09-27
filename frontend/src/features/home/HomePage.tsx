@@ -4,7 +4,7 @@ import { listarAnuncios, listarAnunciosDoVendedor } from '../anuncios/anuncioApi
 import type { Anuncio } from '../anuncios/types'
 import { listarCategoriasAtivas } from '../categorias/categoriaApi'
 import type { Categoria } from '../categorias/types'
-import { ApiError } from '../../lib/api'
+import { ApiError, resolverUrlDaApi } from '../../lib/api'
 import { formatarMoeda, formatarTempoRelativo } from '../../lib/formatarTempo'
 import { primeiroNome } from '../../lib/texto'
 import { useAuth } from '../autenticacao/useAuth'
@@ -21,6 +21,11 @@ const GRADIENTES_PLACEHOLDER = [
 function corPlaceholder(id: string): string {
   const soma = Array.from(id).reduce((acumulado, caractere) => acumulado + caractere.charCodeAt(0), 0)
   return GRADIENTES_PLACEHOLDER[soma % GRADIENTES_PLACEHOLDER.length]
+}
+
+function imagemCapa(anuncio: Anuncio): string | null {
+  const url = anuncio.imagem_capa_url ?? anuncio.imagem_url
+  return url ? resolverUrlDaApi(url) : null
 }
 
 export function HomePage() {
@@ -156,10 +161,14 @@ export function HomePage() {
                 <span className="home-card-categoria">{categoriasPorId.get(anuncio.categoria_id)}</span>
               )}
               <span className="home-card-foto-legenda">
-                {anuncio.imagem_url ? 'Foto do anúncio' : 'Sem foto ainda'}
+                {imagemCapa(anuncio) ? 'Foto do anúncio' : 'Sem foto ainda'}
               </span>
-              {anuncio.imagem_url && (
-                <img src={anuncio.imagem_url} alt="" className="home-card-imagem" />
+              {imagemCapa(anuncio) && (
+                <img
+                  src={imagemCapa(anuncio)!}
+                  alt={`Foto de ${anuncio.titulo}`}
+                  className="home-card-imagem"
+                />
               )}
             </div>
             <div className="home-card-corpo">
