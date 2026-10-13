@@ -68,6 +68,18 @@ def senha_precisa_atualizacao(senha_hash: str) -> bool:
     return partes[0] != _ALGORITMO or int(partes[1]) < _ITERACOES
 
 
+def gerar_token_recuperacao_senha() -> tuple[str, str]:
+    """Gera um token aleatório para o link de e-mail e o hash que vai para o banco."""
+    token = secrets.token_urlsafe(32)
+    return token, hash_token_recuperacao_senha(token)
+
+
+def hash_token_recuperacao_senha(token: str) -> str:
+    # O token já tem 256 bits de entropia; um SHA-256 simples basta para não guardá-lo
+    # em texto puro, sem o custo do PBKDF2 usado nas senhas.
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
 def criar_par_tokens(usuario_id: UUID, settings: Settings) -> ParTokens:
     minutos_acesso = settings.jwt_access_token_expire_minutes
     return ParTokens(

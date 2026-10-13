@@ -24,6 +24,19 @@ class Settings(BaseSettings):
     storage_path: Path = Path("storage")
     max_ad_images: int = Field(default=5, ge=1, le=10)
     max_image_size_bytes: int = Field(default=5 * 1024 * 1024, ge=1024)
+    # Endereço do frontend usado para montar links enviados por e-mail.
+    frontend_url: str = "http://localhost:5173"
+    password_reset_token_expire_minutes: int = Field(default=30, ge=5, le=1440)
+    # Sem `smtp_host` os e-mails não são enviados: o conteúdo vai para o log do servidor.
+    smtp_host: str | None = None
+    smtp_port: int = Field(default=587, ge=1, le=65535)
+    smtp_username: str | None = None
+    smtp_password: SecretStr | None = None
+    smtp_from_email: str | None = None
+    smtp_from_name: str = "Obra Circular"
+    # STARTTLS na porta 587 (Gmail) ou SSL direto na porta 465.
+    smtp_security: Literal["starttls", "ssl", "none"] = "starttls"
+    smtp_timeout_seconds: int = Field(default=10, ge=1)
 
     model_config = SettingsConfigDict(
         env_file=".env",
