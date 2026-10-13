@@ -32,3 +32,24 @@ export function obterSessao(): Sessao | null {
 export function encerrarSessao() {
   removerSessaoArmazenada()
 }
+
+export async function solicitarRecuperacaoSenha(email: string): Promise<void> {
+  await apiRequest<unknown>('/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+}
+
+export async function validarTokenRecuperacao(token: string): Promise<void> {
+  await apiRequest<void>('/auth/reset-password/validate', {
+    method: 'POST',
+    body: JSON.stringify({ token }),
+  })
+}
+
+export async function redefinirSenha(token: string, novaSenha: string): Promise<void> {
+  await apiRequest<void>('/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, nova_senha: novaSenha }),
+  })
+}
