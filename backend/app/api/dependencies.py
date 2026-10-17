@@ -5,8 +5,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.core.errors import AuthenticationError
+from app.core.errors import AuthenticationError, AuthorizationError
 from app.models.usuario import Usuario
+from app.repositories.administrador import AdministradorRepository
 from app.services.autenticacao import AutenticacaoService
 
 DatabaseSession = Annotated[AsyncSession, Depends(get_db_session)]
@@ -33,3 +34,15 @@ async def get_current_user(
 
 
 CurrentUser = Annotated[Usuario, Depends(get_current_user)]
+
+
+async def get_current_admin(session: DatabaseSession, usuario: CurrentUser) -> Usuario:
+    eh_administrador = await AdministradorRepository(session).eh_administrador(usuario.id)
+    # Mesmo motivo de `get_current_user`: libera a sessão para a transação do serviço.
+    await session.rollback()
+    if not eh_administrador:
+        raise AuthorizationError("Acesso restrito a administradores.")
+    return usuario
+
+
+CurrentAdmin = Annotated[Usuario, Depends(get_current_admin)]

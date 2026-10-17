@@ -122,10 +122,41 @@ Restrições importantes:
 A coluna legada `anuncios.imagem_url` foi mantida temporariamente para preservar a
 compatibilidade da API existente. Os novos uploads utilizam `anuncio_imagens`.
 
+## Administração
+
+O painel administrativo (`/admin` no frontend) gerencia anúncios, usuários e categorias.
+O perfil de administrador fica na tabela `administradores` (migration
+`20261017_0005`), com uma linha por usuário administrador. As regras estão em
+`docs/domain/administrador.md`.
+
+Para criar o primeiro administrador, cadastre o usuário normalmente e execute:
+
+```powershell
+python -m app.cli.promover_administrador usuario@example.com
+```
+
+Depois disso, novos administradores podem ser definidos pela tela de usuários. Saia e
+entre novamente caso a sessão tenha sido aberta antes da promoção.
+
+| Método | Rota | Descrição |
+| --- | --- | --- |
+| `GET` | `/api/v1/admin/summary` | Totais de usuários, anúncios e categorias por status |
+| `GET` | `/api/v1/admin/users` | Lista usuários (`status`, `search`, `incluir_excluidos`) |
+| `PATCH` | `/api/v1/admin/users/{id}/status` | Altera o status de outro usuário |
+| `PUT` | `/api/v1/admin/users/{id}/admin` | Concede o perfil de administrador |
+| `DELETE` | `/api/v1/admin/users/{id}/admin` | Remove o perfil de administrador |
+| `GET` | `/api/v1/admin/ads` | Lista anúncios de todos os vendedores |
+| `POST` | `/api/v1/admin/ads/{id}/close` | Encerra um anúncio |
+| `DELETE` | `/api/v1/admin/ads/{id}` | Exclui logicamente um anúncio |
+
+`POST`, `PATCH` e `DELETE` de `/api/v1/categories` e a listagem `GET /api/v1/users`
+também passaram a exigir um administrador. A consulta de categorias continua pública. `GET /api/v1/auth/me` agora
+informa o campo `administrador`.
+
 ## Categorias para desenvolvimento
 
-A feature não cria categorias automaticamente e não inclui uma tela administrativa.
-Antes de testar a publicação, insira categorias ativas manualmente:
+As categorias podem ser cadastradas pela tela de administração. Para popular o banco
+rapidamente, também é possível inseri-las manualmente:
 
 ```sql
 INSERT INTO categorias (id, nome, descricao, status)
@@ -384,7 +415,6 @@ As URLs assinadas não devem ser persistidas no banco, pois expiram. A
 
 ## Limitações atuais e próximos passos
 
-- as categorias são inseridas manualmente; uma futura feature deve administrar o catálogo;
 - ainda não há endpoint para remover ou reordenar imagens individualmente;
 - a coluna legada `imagem_url` ainda existe;
 - o armazenamento local não é compartilhado entre múltiplas instâncias;

@@ -1,5 +1,9 @@
 import { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
+import { AdminAnunciosPage } from '../features/admin/AdminAnunciosPage'
+import { AdminLayout } from '../features/admin/AdminLayout'
+import { AdminResumoPage } from '../features/admin/AdminResumoPage'
+import { AdminUsuariosPage } from '../features/admin/AdminUsuariosPage'
 import { LoginPage } from '../features/autenticacao/LoginPage'
 import { AnuncioDetalhePage } from '../features/anuncios/AnuncioDetalhePage'
 import { AnuncioPublicadoPage } from '../features/anuncios/AnuncioPublicadoPage'
@@ -13,6 +17,7 @@ import { NotFoundPage } from '../features/not-found/NotFoundPage'
 import { CadastroUsuarioPage } from '../features/usuarios/CadastroUsuarioPage'
 import { PerfilPage } from '../features/usuarios/PerfilPage'
 import { MarketplaceLayout } from '../layouts/MarketplaceLayout'
+import { AdminRoute } from '../routes/AdminRoute'
 import { ProtectedRoute } from '../routes/ProtectedRoute'
 import { PublicOnlyRoute } from '../routes/PublicOnlyRoute'
 
@@ -35,12 +40,17 @@ export function AppRouter() {
             <Route path="/anuncios/novo" element={<PublicarAnuncioPage />} />
             <Route path="/anuncios/:anuncioId/publicado" element={<AnuncioPublicadoPage />} />
             <Route path="/anuncios/:anuncioId" element={<AnuncioDetalhePage />} />
-          </Route>
-        </Route>
+            <Route path="/categorias" element={<Navigate to="/admin/categorias" replace />} />
 
-        <Route element={<MarketplaceLayout />}>
-          {/* TODO(autenticação): rota pública por enquanto; mover para o ProtectedRoute depois. */}
-          <Route path="/categorias" element={<CategoriasPage />} />
+            <Route element={<AdminRoute />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminResumoPage />} />
+                <Route path="anuncios" element={<AdminAnunciosPage />} />
+                <Route path="usuarios" element={<AdminUsuariosPage />} />
+                <Route path="categorias" element={<CategoriasPage />} />
+              </Route>
+            </Route>
+          </Route>
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />
@@ -82,7 +92,11 @@ function AtualizarTitulo() {
     else if (pathname === '/home' || pathname === '/') document.title = 'Início | Obra Circular'
     else if (pathname === '/perfil') document.title = 'Meu perfil | Obra Circular'
     else if (pathname === '/perfil/enderecos') document.title = 'Meus endereços | Obra Circular'
-    else if (pathname === '/categorias') document.title = 'Categorias | Obra Circular'
+    else if (pathname === '/admin') document.title = 'Administração | Obra Circular'
+    else if (pathname === '/admin/anuncios') document.title = 'Anúncios · Administração | Obra Circular'
+    else if (pathname === '/admin/usuarios') document.title = 'Usuários · Administração | Obra Circular'
+    else if (pathname === '/admin/categorias' || pathname === '/categorias')
+      document.title = 'Categorias · Administração | Obra Circular'
     else if (pathname === '/anuncios/novo') document.title = 'Publicar anúncio | Obra Circular'
     else if (/^\/anuncios\/[^/]+\/publicado$/.test(pathname)) document.title = 'Anúncio publicado | Obra Circular'
     else if (/^\/anuncios\/[^/]+$/.test(pathname)) document.title = 'Anúncio | Obra Circular'

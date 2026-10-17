@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from app.api.routes.admin import router as admin_router
 from app.api.routes.anuncios import router as anuncios_router
 from app.api.routes.anuncios import user_router as usuario_anuncios_router
 from app.api.routes.autenticacao import router as autenticacao_router
@@ -16,3 +17,4 @@ api_router.include_router(usuario_anuncios_router)
 api_router.include_router(categorias_router)
 api_router.include_router(enderecos_router)
 api_router.include_router(usuarios_router)
+api_router.include_router(admin_router)

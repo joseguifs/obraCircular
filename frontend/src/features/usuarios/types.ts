@@ -19,6 +19,7 @@ export interface Usuario {
   email: string
   telefone: string | null
   status: 'ATIVO' | 'INATIVO' | 'BLOQUEADO'
+  administrador?: boolean
   criado_em: string
   atualizado_em: string
 }

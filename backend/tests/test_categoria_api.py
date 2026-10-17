@@ -16,7 +16,10 @@ def cliente() -> AsyncClient:
     return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
 
-async def test_criacao_normaliza_nome_antes_do_servico(monkeypatch: Any) -> None:
+async def test_criacao_normaliza_nome_antes_do_servico(
+    monkeypatch: Any,
+    administrador_autenticado: Usuario,
+) -> None:
     recebidos: list[Any] = []
 
     class FakeService:
@@ -48,7 +51,7 @@ async def test_criacao_normaliza_nome_antes_do_servico(monkeypatch: Any) -> None
     assert response.json()["nome"] == "Ferramentas"
 
 
-async def test_nome_vazio_retorna_422() -> None:
+async def test_nome_vazio_retorna_422(administrador_autenticado: Usuario) -> None:
     async with cliente() as client:
         response = await client.post("/api/v1/categories", json={"nome": "   "})
 
@@ -120,7 +123,7 @@ async def test_erro_de_dominio_possui_formato_padronizado(monkeypatch: Any) -> N
 
 async def test_exclusao_retorna_204(
     monkeypatch: Any,
-    usuario_autenticado: Usuario,
+    administrador_autenticado: Usuario,
 ) -> None:
     class FakeService:
         def __init__(self, _: object) -> None:
@@ -136,14 +139,17 @@ async def test_exclusao_retorna_204(
     assert response.status_code == 204
 
 
-async def test_atualizacao_sem_campos_retorna_422() -> None:
+async def test_atualizacao_sem_campos_retorna_422(administrador_autenticado: Usuario) -> None:
     async with cliente() as client:
         response = await client.patch(f"/api/v1/categories/{uuid4()}", json={})
 
     assert response.status_code == 422
 
 
-async def test_criacao_nao_exige_autenticacao(monkeypatch: Any) -> None:
+async def test_criacao_por_administrador_retorna_201(
+    monkeypatch: Any,
+    administrador_autenticado: Usuario,
+) -> None:
     class FakeService:
         def __init__(self, _: object) -> None:
             pass
@@ -168,7 +174,10 @@ async def test_criacao_nao_exige_autenticacao(monkeypatch: Any) -> None:
     assert response.status_code == 201
 
 
-async def test_atualizacao_nao_exige_autenticacao(monkeypatch: Any) -> None:
+async def test_atualizacao_por_administrador_retorna_200(
+    monkeypatch: Any,
+    administrador_autenticado: Usuario,
+) -> None:
     class FakeService:
         def __init__(self, _: object) -> None:
             pass
@@ -204,3 +213,24 @@ async def test_exclusao_exige_autenticacao() -> None:
 
     assert response.status_code == 401
     assert response.json()["code"] == "AUTHENTICATION_REQUIRED"
+
+
+async def test_criacao_exige_autenticacao() -> None:
+    async with cliente() as client:
+        response = await client.post("/api/v1/categories", json=DADOS_VALIDOS)
+
+    assert response.status_code == 401
+
+
+async def test_alteracoes_exigem_perfil_administrador(
+    client: AsyncClient,
+    usuario_autenticado: Usuario,
+) -> None:
+    criacao = await client.post("/api/v1/categories", json=DADOS_VALIDOS)
+    atualizacao = await client.patch(
+        f"/api/v1/categories/{uuid4()}", json={"descricao": "Nova descrição"}
+    )
+    exclusao = await client.delete(f"/api/v1/categories/{uuid4()}")
+
+    assert [criacao.status_code, atualizacao.status_code, exclusao.status_code] == [403] * 3
+    assert criacao.json()["code"] == "FORBIDDEN"

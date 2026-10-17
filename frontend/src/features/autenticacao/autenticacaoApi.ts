@@ -32,3 +32,7 @@ export function obterSessao(): Sessao | null {
 export function encerrarSessao() {
   removerSessaoArmazenada()
 }
+
+export function obterUsuarioAtual(): Promise<Usuario> {
+  return apiRequest<Usuario>('/auth/me')
+}

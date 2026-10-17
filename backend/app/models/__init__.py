@@ -1,3 +1,4 @@
+from app.models.administrador import Administrador
 from app.models.anuncio import Anuncio
 from app.models.anuncio_imagem import AnuncioImagem
 from app.models.base import Base
@@ -14,6 +15,7 @@ from app.models.repasse import Repasse
 from app.models.usuario import Usuario
 
 __all__ = [
+    "Administrador",
     "Anuncio",
     "AnuncioImagem",
     "Base",
