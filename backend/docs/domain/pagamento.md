@@ -32,11 +32,15 @@ não é produzido pelo fluxo de negócio do MVP, que aceita somente reembolso to
 - Depois de receber o webhook, o backend consulta o pagamento no provedor.
 - Somente a confirmação do provedor permite alterar pagamento e pedido para
   `APROVADO` e `PAGAMENTO_APROVADO`.
-- A aprovação bloqueia o anúncio com `SELECT ... FOR UPDATE`, valida e reduz o
-  estoque na mesma transação. Se o estoque for insuficiente, a operação não deve
-  avançar e exige tratamento administrativo do pagamento.
+- O checkout reserva estoque antes de redirecionar o comprador. A aprovação confirma
+  a reserva sem uma segunda redução. Uma aprovação recebida após a liberação da reserva
+  não pode consumir estoque novamente e exige reembolso/tratamento administrativo.
 - Um pagamento `RECUSADO` mantém o pedido em `AGUARDANDO_PAGAMENTO`, não altera o
   estoque e permite nova tentativa.
 
-A atualização feita por webhook deve ser idempotente: receber novamente o mesmo
-evento ou o mesmo estado não pode repetir a redução de estoque.
+A atualização feita por webhook deve ser idempotente: receber novamente o mesmo evento
+ou o mesmo estado não pode repetir a confirmação, o repasse ou a devolução de estoque.
+
+No Checkout Pro, o método pode permanecer desconhecido (`NULL`) enquanto a tentativa
+está em `CRIADO` ou `PENDENTE`, porque o comprador escolhe o meio no Mercado Pago. O
+webhook confirmado preenche o método efetivamente utilizado.

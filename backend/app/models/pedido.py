@@ -57,6 +57,13 @@ class Pedido(UUIDPrimaryKeyMixin, Base):
         Index("ix_pedidos_anuncio_id", "anuncio_id"),
         Index("ix_pedidos_status", "status"),
         Index("ix_pedidos_criado_em", text("criado_em DESC")),
+        Index(
+            "ix_pedidos_reservas_expiradas",
+            "reserva_expira_em",
+            postgresql_where=text(
+                "status = 'AGUARDANDO_PAGAMENTO' AND estoque_liberado_em IS NULL"
+            ),
+        ),
     )
 
     comprador_id: Mapped[UUID] = mapped_column(
@@ -85,3 +92,6 @@ class Pedido(UUIDPrimaryKeyMixin, Base):
     )
     concluido_em: Mapped[datetime | None]
     cancelado_em: Mapped[datetime | None]
+    estoque_reservado_em: Mapped[datetime | None]
+    reserva_expira_em: Mapped[datetime | None]
+    estoque_liberado_em: Mapped[datetime | None]

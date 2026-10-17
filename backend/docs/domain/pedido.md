@@ -47,8 +47,8 @@ PREPARANDO_ENTREGA -> EM_ENTREGA -> ENTREGUE -> CONCLUIDO
 
 ## Cancelamento
 
-- Enquanto estiver `AGUARDANDO_PAGAMENTO`, o comprador pode cancelar o pedido.
-  Não há reposição de estoque porque ele ainda não foi reduzido.
+- Enquanto estiver `AGUARDANDO_PAGAMENTO`, o comprador pode cancelar o pedido e a
+  reserva de estoque é devolvida exatamente uma vez.
 - Depois da aprovação do pagamento e antes da confirmação do PIN, o comprador
   pode solicitar cancelamento. O pedido passa para `CANCELADO`, o estoque é
   devolvido uma única vez e inicia-se o reembolso integral.
@@ -62,3 +62,13 @@ PREPARANDO_ENTREGA -> EM_ENTREGA -> ENTREGUE -> CONCLUIDO
 O status do pedido representa apenas seu estado geral. Pagamento, entrega,
 contestação, reembolso e repasse possuem estados próprios e continuam sendo suas
 respectivas fontes de verdade.
+
+## Reserva de estoque
+
+- A criação do checkout bloqueia o anúncio e reduz sua quantidade disponível.
+- `estoque_reservado_em` e `reserva_expira_em` delimitam a reserva.
+- `estoque_liberado_em` impede devolução duplicada por jobs, cancelamentos ou webhooks.
+- A reserva inicial expira em 30 minutos, configurável por ambiente.
+- Boleto fica desabilitado no MVP porque seu prazo assíncrono é incompatível com essa
+  reserva curta. Pix e cartões permanecem disponíveis.
+- Um job deve executar `python -m app.jobs.liberar_reservas` periodicamente.

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -24,6 +25,23 @@ class Settings(BaseSettings):
     storage_path: Path = Path("storage")
     max_ad_images: int = Field(default=5, ge=1, le=10)
     max_image_size_bytes: int = Field(default=5 * 1024 * 1024, ge=1024)
+    mp_client_id: str | None = None
+    mp_client_secret: SecretStr | None = None
+    mp_webhook_secret: SecretStr | None = None
+    mp_token_encryption_key: SecretStr | None = None
+    mp_oauth_redirect_uri: str | None = None
+    mp_webhook_url: str | None = None
+    mp_public_base_url: str | None = None
+    mp_oauth_success_url: str = (
+        "http://localhost:5173/perfil/mercado-pago?mercado_pago=conectado"
+    )
+    mp_checkout_success_url: str = "http://localhost:5173/pagamento/retorno?status=success"
+    mp_checkout_pending_url: str = "http://localhost:5173/pagamento/retorno?status=pending"
+    mp_checkout_failure_url: str = "http://localhost:5173/pagamento/retorno?status=failure"
+    marketplace_fee_percent: Decimal = Field(default=Decimal("25.00"), ge=0, le=100)
+    stock_reservation_minutes: int = Field(default=30, ge=5, le=1440)
+    mercado_pago_api_url: str = "https://api.mercadopago.com"
+    mercado_pago_auth_url: str = "https://auth.mercadopago.com.br/authorization"
 
     model_config = SettingsConfigDict(
         env_file=".env",
