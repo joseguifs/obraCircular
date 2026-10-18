@@ -114,6 +114,7 @@ export function PerfilPage() {
         </Link>
         <Link to="/perfil/enderecos">Meus endereços</Link>
         <Link to="/perfil/mercado-pago">Mercado Pago</Link>
+        <Link to="/pedidos">Meus pedidos</Link>
       </nav>
       {carregando ? (
         <p role="status">Carregando seu perfil...</p>

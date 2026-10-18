@@ -1,7 +1,9 @@
+import asyncio
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import httpx
+import mercadopago  # type: ignore[import-untyped]
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,6 +33,7 @@ class MercadoPagoGateway:
         code: str,
         redirect_uri: str,
         code_verifier: str,
+        test_token: bool = False,
     ) -> MercadoPagoResponse:
         return await self._request(
             "POST",
@@ -42,6 +45,7 @@ class MercadoPagoGateway:
                 "code": code,
                 "redirect_uri": redirect_uri,
                 "code_verifier": code_verifier,
+                "test_token": "true" if test_token else "false",
             },
         )
 
@@ -62,9 +66,57 @@ class MercadoPagoGateway:
     async def criar_preferencia(
         self, *, access_token: str, payload: dict[str, Any]
     ) -> MercadoPagoResponse:
-        return await self._request(
-            "POST", "/checkout/preferences", access_token=access_token, json=payload
-        )
+        def executar() -> dict[str, Any]:
+            sdk = mercadopago.SDK(access_token)
+            return cast(dict[str, Any], sdk.preference().create(payload))
+
+        try:
+            resultado = await asyncio.to_thread(executar)
+        except Exception as exc:
+            raise MercadoPagoIntegrationError("Falha de comunicação com o Mercado Pago.") from exc
+        return self._resposta_sdk(resultado)
+
+    async def obter_preferencia(
+        self, *, access_token: str, preferencia_id: str
+    ) -> MercadoPagoResponse:
+        def executar() -> dict[str, Any]:
+            sdk = mercadopago.SDK(access_token)
+            return cast(dict[str, Any], sdk.preference().get(preferencia_id))
+
+        try:
+            resultado = await asyncio.to_thread(executar)
+        except Exception as exc:
+            raise MercadoPagoIntegrationError("Falha de comunicação com o Mercado Pago.") from exc
+        return self._resposta_sdk(resultado)
+
+    async def criar_order(
+        self,
+        *,
+        access_token: str,
+        payload: dict[str, Any],
+        idempotency_key: str,
+    ) -> MercadoPagoResponse:
+        def executar() -> dict[str, Any]:
+            sdk = mercadopago.SDK(access_token)
+            opcoes = mercadopago.config.RequestOptions()
+            opcoes.custom_headers = {"x-idempotency-key": idempotency_key}
+            return cast(dict[str, Any], sdk.order().create(payload, opcoes))
+
+        try:
+            resultado = await asyncio.to_thread(executar)
+        except Exception as exc:
+            raise MercadoPagoIntegrationError("Falha de comunicação com o Mercado Pago.") from exc
+        return self._resposta_sdk(resultado)
+
+    async def obter_order(self, *, access_token: str, order_id: str) -> MercadoPagoResponse:
+        def executar() -> dict[str, Any]:
+            return cast(dict[str, Any], mercadopago.SDK(access_token).order().get(order_id))
+
+        try:
+            resultado = await asyncio.to_thread(executar)
+        except Exception as exc:
+            raise MercadoPagoIntegrationError("Falha de comunicação com o Mercado Pago.") from exc
+        return self._resposta_sdk(resultado)
 
     async def obter_pagamento(
         self, *, access_token: str, pagamento_externo_id: str
@@ -123,4 +175,20 @@ class MercadoPagoGateway:
             )
         if not isinstance(payload, dict):
             raise MercadoPagoIntegrationError("Resposta inválida do Mercado Pago.")
+        return MercadoPagoResponse(data=payload)
+
+    @staticmethod
+    def _resposta_sdk(resultado: object) -> MercadoPagoResponse:
+        if not isinstance(resultado, dict):
+            raise MercadoPagoIntegrationError("Resposta inválida do Mercado Pago.")
+        status = resultado.get("status")
+        payload = resultado.get("response")
+        if not isinstance(payload, dict):
+            raise MercadoPagoIntegrationError("Resposta inválida do Mercado Pago.")
+        if isinstance(status, int) and status >= 400:
+            raise MercadoPagoIntegrationError(
+                "O Mercado Pago recusou a operação.",
+                status_code=status,
+                payload=payload,
+            )
         return MercadoPagoResponse(data=payload)

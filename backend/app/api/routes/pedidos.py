@@ -21,7 +21,11 @@ async def criar_checkout(
     dados: CheckoutCreate, session: DatabaseSession, comprador: CurrentUser
 ) -> CheckoutResponse:
     return await PedidoService(session).criar_checkout(
-        dados, comprador_id=comprador.id, comprador_email=comprador.email
+        dados,
+        comprador_id=comprador.id,
+        comprador_email=comprador.email,
+        comprador_nome=comprador.nome,
+        comprador_criado_em=comprador.criado_em,
     )
 
 

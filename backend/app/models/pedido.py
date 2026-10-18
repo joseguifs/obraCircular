@@ -71,7 +71,9 @@ class Pedido(UUIDPrimaryKeyMixin, Base):
     )
     anuncio_id: Mapped[UUID] = mapped_column(ForeignKey("anuncios.id", name="fk_pedidos_anuncio"))
     endereco_entrega_id: Mapped[UUID | None]
-    endereco_entrega_snapshot: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    endereco_entrega_snapshot: Mapped[dict[str, Any] | None] = mapped_column(
+        JSONB(none_as_null=True)
+    )
     modalidade_entrega: Mapped[ModalidadeEntrega] = mapped_column(
         String(20),
         default=ModalidadeEntrega.ENTREGA,

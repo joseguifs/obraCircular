@@ -1,18 +1,26 @@
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { mensagemApiErro } from '../../lib/api'
 import {
   conectarContaMercadoPago,
+  consumirRetornoMercadoPago,
   consultarContaMercadoPago,
 } from './pagamentoApi'
 import type { ContaMercadoPago } from './types'
 
 export function ContaMercadoPagoPage() {
   const [parametros] = useSearchParams()
+  const navegar = useNavigate()
   const [conta, setConta] = useState<ContaMercadoPago | null>(null)
   const [carregando, setCarregando] = useState(true)
   const [conectando, setConectando] = useState(false)
   const [erro, setErro] = useState('')
+
+  useEffect(() => {
+    if (parametros.get('mercado_pago') !== 'conectado') return
+    const returnTo = consumirRetornoMercadoPago()
+    if (returnTo) navegar(returnTo, { replace: true })
+  }, [navegar, parametros])
 
   useEffect(() => {
     consultarContaMercadoPago()
@@ -33,7 +41,7 @@ export function ContaMercadoPagoPage() {
   }
 
   return (
-    <main className="payment-page">
+    <main className="payment-page" data-mp-marketplace-page="checkout-pro">
       <Link to="/perfil" className="back-button">
         ← Voltar ao perfil
       </Link>
@@ -60,13 +68,14 @@ export function ContaMercadoPagoPage() {
             <button
               type="button"
               className="submit-button"
-              disabled={conectando || conta?.status === 'ATIVA'}
+              data-mp-marketplace-connect="oauth"
+              disabled={conectando}
               onClick={conectar}
             >
-              {conta?.status === 'ATIVA'
-                ? 'Conta conectada'
-                : conectando
-                  ? 'Redirecionando...'
+              {conectando
+                ? 'Redirecionando...'
+                : conta?.status === 'ATIVA'
+                  ? 'Reconectar Mercado Pago'
                   : 'Conectar Mercado Pago'}
             </button>
           </>

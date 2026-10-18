@@ -19,6 +19,7 @@ from app.models.enums import (
     ModalidadeEntrega,
     UsuarioStatus,
 )
+from app.models.pagamento import Pagamento
 from app.models.pedido import Pedido
 from app.models.usuario import Usuario
 from app.schemas.pedido import CheckoutCreate
@@ -27,15 +28,47 @@ from app.services.reserva_estoque import ReservaEstoqueService
 
 
 class FakeGateway:
+    def __init__(self) -> None:
+        self.preferencias_criadas = 0
+        self.preferencias_consultadas = 0
+
     async def criar_preferencia(
-        self, *, access_token: str, payload: dict[str, Any]
+        self,
+        *,
+        access_token: str,
+        payload: dict[str, Any],
     ) -> MercadoPagoResponse:
+        self.preferencias_criadas += 1
+        assert self.preferencias_criadas == 1
         assert access_token == "token-vendedor"
         assert payload["marketplace_fee"] == 25.0
+        assert payload["statement_descriptor"] == "OBRACIRCULAR"
+        assert payload["notification_url"] == "https://example.test/webhook"
+        assert payload["items"][0]["category_id"] == "home"
+        assert payload["items"][0]["currency_id"] == "BRL"
+        assert "email" not in payload["payer"]
+        assert payload["payer"]["name"] == "Comprador"
+        assert payload["payer"]["surname"] == "Checkout"
+        assert payload["metadata"]["pagamento_id"]
+        assert payload["external_reference"] == payload["metadata"]["pedido_id"]
+        assert payload["auto_return"] == "approved"
         return MercadoPagoResponse(
             data={
-                "id": "pref-teste-1",
-                "sandbox_init_point": "https://sandbox.mercadopago.test/checkout",
+                "id": "PREF-1",
+                "init_point": "https://www.mercadopago.test/checkout",
+            }
+        )
+
+    async def obter_preferencia(
+        self, *, access_token: str, preferencia_id: str
+    ) -> MercadoPagoResponse:
+        assert access_token == "token-vendedor"
+        assert preferencia_id == "PREF-1"
+        self.preferencias_consultadas += 1
+        return MercadoPagoResponse(
+            data={
+                "id": preferencia_id,
+                "init_point": "https://www.mercadopago.test/checkout",
             }
         )
 
@@ -124,24 +157,48 @@ async def test_checkout_reserva_e_job_devolve_estoque_expirado(
         mp_oauth_redirect_uri="https://example.test/oauth/callback",
         mp_webhook_url="https://example.test/webhook",
         mp_public_base_url="https://example.test",
+        mp_oauth_test_token=True,
         stock_reservation_minutes=30,
     )
-    resposta = await PedidoService(
+    gateway = FakeGateway()
+    servico = PedidoService(
         db_session,
         settings=settings,
-        gateway=cast(MercadoPagoGateway, FakeGateway()),
-    ).criar_checkout(
-        CheckoutCreate(
-            anuncio_id=anuncio.id,
-            quantidade=1,
-            modalidade_entrega=ModalidadeEntrega.ENTREGA,
-            endereco_entrega_id=endereco_comprador.id,
-        ),
-        comprador_id=comprador.id,
-        comprador_email=comprador.email,
+        gateway=cast(MercadoPagoGateway, gateway),
+    )
+    dados_checkout = CheckoutCreate(
+        anuncio_id=anuncio.id,
+        quantidade=1,
+        modalidade_entrega=ModalidadeEntrega.RETIRADA,
+        endereco_entrega_id=None,
+    )
+    comprador_id = comprador.id
+    comprador_email = comprador.email
+    comprador_nome = comprador.nome
+    comprador_criado_em = comprador.criado_em
+    resposta = await servico.criar_checkout(
+        dados_checkout,
+        comprador_id=comprador_id,
+        comprador_email=comprador_email,
+        comprador_nome=comprador_nome,
+        comprador_criado_em=comprador_criado_em,
     )
 
     assert resposta.taxa_marketplace == Decimal("25.00")
+
+    retomada = await servico.criar_checkout(
+        dados_checkout,
+        comprador_id=comprador_id,
+        comprador_email=comprador_email,
+        comprador_nome=comprador_nome,
+        comprador_criado_em=comprador_criado_em,
+    )
+    assert retomada.pedido_id == resposta.pedido_id
+    assert retomada.pagamento_id == resposta.pagamento_id
+    assert retomada.preferencia_externa_id == resposta.preferencia_externa_id
+    assert retomada.init_point == resposta.init_point
+    assert gateway.preferencias_criadas == 1
+    assert gateway.preferencias_consultadas == 1
 
     async with db_session.begin():
         await db_session.refresh(anuncio)
@@ -149,6 +206,11 @@ async def test_checkout_reserva_e_job_devolve_estoque_expirado(
         assert anuncio.status == AnuncioStatus.ESGOTADO
         pedido = await db_session.get(Pedido, resposta.pedido_id)
         assert pedido is not None
+        assert pedido.endereco_entrega_snapshot is None
+        pagamento = await db_session.get(Pagamento, resposta.pagamento_id)
+        assert pagamento is not None
+        assert pagamento.preferencia_externa_id == "PREF-1"
+        assert pagamento.ordem_externa_id is None
         pedido.reserva_expira_em = datetime.now(UTC) - timedelta(seconds=1)
 
     assert await ReservaEstoqueService(db_session).liberar_expiradas() == 1

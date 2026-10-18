@@ -58,6 +58,7 @@ class Pagamento(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     )
     pagamento_externo_id: Mapped[str | None] = mapped_column(String(255))
     preferencia_externa_id: Mapped[str | None] = mapped_column(String(255), unique=True)
+    ordem_externa_id: Mapped[str | None] = mapped_column(String(255), unique=True)
     idempotency_key: Mapped[str] = mapped_column(String(255))
     metodo: Mapped[MetodoPagamento | None] = mapped_column(String(30))
     valor: Mapped[Decimal] = mapped_column(Numeric(12, 2))

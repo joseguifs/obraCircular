@@ -42,11 +42,20 @@ def validar_assinatura_webhook(
     if not timestamp or not assinatura or not x_request_id or not data_id:
         return False
 
-    manifesto = f"id:{data_id.lower()};request-id:{x_request_id};ts:{timestamp};"
-    esperada = hmac.new(
-        secret.encode("utf-8"), manifesto.encode("utf-8"), hashlib.sha256
-    ).hexdigest()
-    return hmac.compare_digest(esperada, assinatura)
+    # Orders atualmente assina o identificador preservando a capitalizacao
+    # recebida na query string. Outros produtos/documentos do Mercado Pago
+    # normalizam identificadores alfanumericos para minusculas, portanto
+    # mantemos compatibilidade com ambos os manifestos. Em qualquer caso a
+    # assinatura ainda precisa ser um HMAC valido gerado com o segredo.
+    identificadores = (data_id, data_id.lower())
+    for identificador in dict.fromkeys(identificadores):
+        manifesto = f"id:{identificador};request-id:{x_request_id};ts:{timestamp};"
+        esperada = hmac.new(
+            secret.encode("utf-8"), manifesto.encode("utf-8"), hashlib.sha256
+        ).hexdigest()
+        if hmac.compare_digest(esperada, assinatura):
+            return True
+    return False
 
 
 def gerar_pkce() -> tuple[str, str]:

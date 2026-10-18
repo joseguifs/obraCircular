@@ -21,6 +21,11 @@ O MVP permite no máximo um reembolso por pagamento, sempre integral.
 - Em caso de falha técnica, o mesmo registro passa de `FALHOU` novamente para
   `PROCESSANDO`; não se cria outro reembolso.
 - A mesma `idempotency_key` deve ser reutilizada nas tentativas da mesma operação.
+- Repetir uma solicitação concluída retorna o mesmo reembolso. Um reembolso já
+  confirmado como em processamento no provedor não gera outra chamada de devolução.
+- A confirmação consultada pelo webhook atualiza também o registro do reembolso.
+- Falhas na obtenção do token do vendedor deixam o reembolso em `FALHOU`, mantendo
+  visível a necessidade de reconectar a conta ou procurar o atendimento.
 
 ## Efeitos do reembolso concluído
 

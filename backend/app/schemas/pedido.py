@@ -26,7 +26,8 @@ class CheckoutCreate(BaseModel):
 class CheckoutResponse(BaseModel):
     pedido_id: UUID
     pagamento_id: UUID
-    checkout_url: str
+    preferencia_externa_id: str
+    init_point: str
     reserva_expira_em: datetime
     valor_total: Decimal
     taxa_marketplace: Decimal
@@ -41,6 +42,16 @@ class PagamentoResumo(BaseModel):
     status_detalhe: str | None
 
 
+class ReembolsoResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    pedido_id: UUID
+    status: ReembolsoStatus
+    valor: Decimal
+    reembolso_externo_id: str | None
+
+
 class PedidoResponse(BaseModel):
     id: UUID
     anuncio_id: UUID
@@ -53,16 +64,9 @@ class PedidoResponse(BaseModel):
     criado_em: datetime
     reserva_expira_em: datetime | None
     pagamento: PagamentoResumo | None = None
+    reembolso: ReembolsoResponse | None = None
 
 
 class PedidoListResponse(BaseModel):
     items: list[PedidoResponse]
     total: int
-
-
-class ReembolsoResponse(BaseModel):
-    id: UUID
-    pedido_id: UUID
-    status: ReembolsoStatus
-    valor: Decimal
-    reembolso_externo_id: str | None

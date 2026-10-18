@@ -1,3 +1,4 @@
+import logging
 import secrets
 from datetime import UTC, datetime, timedelta
 from urllib.parse import urlencode
@@ -16,6 +17,7 @@ from app.models.enums import ContaPagamentoStatus, ProvedorPagamento
 from app.schemas.conta_pagamento import ConexaoMercadoPagoResponse, ContaPagamentoResponse
 
 _OAUTH_TTL_MINUTES = 10
+logger = logging.getLogger(__name__)
 
 
 class ContaPagamentoService:
@@ -92,8 +94,16 @@ class ContaPagamentoService:
                 code=code,
                 redirect_uri=redirect_uri,
                 code_verifier=verifier,
+                test_token=self.settings.mp_oauth_test_token,
             )
         except MercadoPagoIntegrationError as exc:
+            payload = exc.payload if isinstance(exc.payload, dict) else {}
+            logger.warning(
+                "Falha na troca do codigo OAuth do Mercado Pago: status=%s code=%s message=%s",
+                exc.status_code,
+                payload.get("error") or payload.get("code"),
+                payload.get("message") or payload.get("error_description"),
+            )
             raise AppError(
                 status_code=502,
                 detail="Não foi possível concluir a conexão com o Mercado Pago.",

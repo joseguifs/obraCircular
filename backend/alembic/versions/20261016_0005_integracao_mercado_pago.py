@@ -22,7 +22,12 @@ TIMESTAMPTZ = sa.DateTime(timezone=True)
 
 
 def upgrade() -> None:
-    op.alter_column("contas_pagamento", "conta_externa_id", existing_type=sa.String(255), nullable=True)
+    op.alter_column(
+        "contas_pagamento",
+        "conta_externa_id",
+        existing_type=sa.String(255),
+        nullable=True,
+    )
 
     op.drop_constraint("ck_pagamentos_metodo", "pagamentos", type_="check")
     op.drop_constraint("ck_pagamentos_parcelas", "pagamentos", type_="check")
@@ -106,4 +111,9 @@ def downgrade() -> None:
         "(metodo <> 'CARTAO_CREDITO' AND parcelas IS NULL))",
     )
     op.execute("DELETE FROM contas_pagamento WHERE conta_externa_id IS NULL")
-    op.alter_column("contas_pagamento", "conta_externa_id", existing_type=sa.String(255), nullable=False)
+    op.alter_column(
+        "contas_pagamento",
+        "conta_externa_id",
+        existing_type=sa.String(255),
+        nullable=False,
+    )

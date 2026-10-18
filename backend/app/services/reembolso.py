@@ -36,15 +36,15 @@ class ReembolsoService:
         if isinstance(preparado, ReembolsoResponse):
             return preparado
         vendedor_id, pagamento_id, pagamento_externo_id, reembolso_id = preparado
-        _, access_token = await ContaPagamentoService(
-            self.session, settings=self.settings, gateway=self.gateway
-        ).obter_access_token(vendedor_id)
-        reembolso = await self.session.get(Reembolso, reembolso_id)
-        if reembolso is None:
-            raise self._erro(500, "Reembolso não encontrado.", "REFUND_NOT_FOUND")
-        idempotency_key = reembolso.idempotency_key
-        await self.session.rollback()
         try:
+            _, access_token = await ContaPagamentoService(
+                self.session, settings=self.settings, gateway=self.gateway
+            ).obter_access_token(vendedor_id)
+            reembolso = await self.session.get(Reembolso, reembolso_id)
+            if reembolso is None:
+                raise self._erro(500, "Reembolso não encontrado.", "REFUND_NOT_FOUND")
+            idempotency_key = reembolso.idempotency_key
+            await self.session.rollback()
             resposta = await self.gateway.reembolsar_pagamento(
                 access_token=access_token,
                 pagamento_externo_id=pagamento_externo_id,
@@ -57,24 +57,38 @@ class ReembolsoService:
                 "O Mercado Pago não concluiu o reembolso. Verifique o saldo do vendedor.",
                 "MP_REFUND_FAILED",
             ) from exc
+        except AppError:
+            await self._marcar_falha(reembolso_id)
+            raise
 
         status_mp = str(resposta.data.get("status") or "")
         externo_id = str(resposta.data.get("id") or "") or None
         async with self.session.begin():
-            reembolso = await self.session.scalar(
-                select(Reembolso).where(Reembolso.id == reembolso_id).with_for_update()
+            pedido = await self.session.scalar(
+                select(Pedido)
+                .where(Pedido.id == pedido_id)
+                .with_for_update()
+                .execution_options(populate_existing=True)
             )
             pagamento = await self.session.scalar(
                 select(Pagamento).where(Pagamento.id == pagamento_id).with_for_update()
             )
-            pedido = await self.session.scalar(
-                select(Pedido).where(Pedido.id == pedido_id).with_for_update()
+            reembolso = await self.session.scalar(
+                select(Reembolso)
+                .where(Reembolso.id == reembolso_id)
+                .with_for_update()
+                .execution_options(populate_existing=True)
             )
             if reembolso is None or pagamento is None or pedido is None:
                 raise self._erro(500, "Dados do reembolso não encontrados.", "REFUND_DATA_MISSING")
+            if reembolso.status == ReembolsoStatus.CONCLUIDO:
+                return self._resposta(reembolso)
             reembolso.reembolso_externo_id = externo_id
             if status_mp in {"approved", "refunded"}:
                 await self._concluir(reembolso, pagamento, pedido)
+            elif status_mp in {"rejected", "cancelled", "failed"}:
+                reembolso.status = ReembolsoStatus.FALHOU
+                reembolso.falhou_em = datetime.now(UTC)
             else:
                 reembolso.status = ReembolsoStatus.PROCESSANDO
             await self.session.flush()
@@ -93,6 +107,17 @@ class ReembolsoService:
             )
             if pedido is None:
                 raise self._erro(404, "Pedido não encontrado.", "ORDER_NOT_FOUND")
+            existente = await self.session.scalar(
+                select(Reembolso).where(Reembolso.pedido_id == pedido.id)
+            )
+            if existente is not None and (
+                existente.status == ReembolsoStatus.CONCLUIDO
+                or (
+                    existente.status == ReembolsoStatus.PROCESSANDO
+                    and existente.reembolso_externo_id is not None
+                )
+            ):
+                return self._resposta(existente)
             if pedido.status not in {
                 PedidoStatus.PAGAMENTO_APROVADO,
                 PedidoStatus.PREPARANDO_ENTREGA,
@@ -156,9 +181,7 @@ class ReembolsoService:
                 reembolso.id,
             )
 
-    async def _concluir(
-        self, reembolso: Reembolso, pagamento: Pagamento, pedido: Pedido
-    ) -> None:
+    async def _concluir(self, reembolso: Reembolso, pagamento: Pagamento, pedido: Pedido) -> None:
         agora = datetime.now(UTC)
         anuncio = await self.session.scalar(
             select(Anuncio).where(Anuncio.id == pedido.anuncio_id).with_for_update()
@@ -180,8 +203,13 @@ class ReembolsoService:
         if self.session.in_transaction():
             await self.session.rollback()
         async with self.session.begin():
-            reembolso = await self.session.get(Reembolso, reembolso_id)
-            if reembolso:
+            reembolso = await self.session.scalar(
+                select(Reembolso)
+                .where(Reembolso.id == reembolso_id)
+                .with_for_update()
+                .execution_options(populate_existing=True)
+            )
+            if reembolso and reembolso.status != ReembolsoStatus.CONCLUIDO:
                 reembolso.status = ReembolsoStatus.FALHOU
                 reembolso.falhou_em = datetime.now(UTC)
 

@@ -10,9 +10,15 @@ from app.services.pedido import PedidoService
 
 
 def test_comissao_marketplace_e_25_por_cento_com_arredondamento() -> None:
-    assert PedidoService.calcular_taxa_marketplace(
-        Decimal("99.99"), Decimal("25.00")
-    ) == Decimal("25.00")
+    assert PedidoService.calcular_taxa_marketplace(Decimal("99.99"), Decimal("25.00")) == Decimal(
+        "25.00"
+    )
+
+
+def test_auto_return_exige_url_https_publica() -> None:
+    assert PedidoService._url_publica_https("https://obra-circular.example")
+    assert not PedidoService._url_publica_https("http://localhost:8000")
+    assert not PedidoService._url_publica_https("https://127.0.0.1:8000")
 
 
 def test_entrega_exige_endereco() -> None:

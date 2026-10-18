@@ -5,7 +5,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AppError
 from app.models.anuncio import Anuncio
-from app.models.enums import AnuncioStatus, CategoriaStatus, UsuarioStatus
+from app.models.enums import (
+    AnuncioStatus,
+    CategoriaStatus,
+    ContaPagamentoStatus,
+    UsuarioStatus,
+)
 from app.repositories.anuncio import AnuncioRepository
 from app.schemas.anuncio import AnuncioCreate, AnuncioFilters, AnuncioListResponse, AnuncioUpdate
 
@@ -22,6 +27,7 @@ class AnuncioService:
     async def criar(self, dados: AnuncioCreate, vendedor_id: UUID) -> Anuncio:
         async with self.session.begin():
             await self._validar_vendedor(vendedor_id)
+            await self._validar_conta_pagamento(vendedor_id)
             await self._validar_categoria(dados.categoria_id)
             await self._validar_endereco(dados.endereco_id, vendedor_id)
 
@@ -160,6 +166,15 @@ class AnuncioService:
                 status_code=400,
                 detail="A categoria precisa estar ativa.",
                 code="CATEGORY_NOT_ACTIVE",
+            )
+
+    async def _validar_conta_pagamento(self, vendedor_id: UUID) -> None:
+        conta = await self.repository.buscar_conta_pagamento(vendedor_id)
+        if conta is None or conta.status != ContaPagamentoStatus.ATIVA:
+            raise AppError(
+                status_code=409,
+                detail=("Conecte uma conta Mercado Pago antes de publicar um anúncio."),
+                code="MP_SELLER_NOT_CONNECTED",
             )
 
     async def _validar_endereco(self, endereco_id: UUID, vendedor_id: UUID) -> None:

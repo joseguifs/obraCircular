@@ -56,6 +56,10 @@ PREPARANDO_ENTREGA -> EM_ENTREGA -> ENTREGUE -> CONCLUIDO
   uma contestação dentro do prazo.
 - Após a confirmação do reembolso de um pedido cancelado, o estado final do pedido
   passa de `CANCELADO` para `REEMBOLSADO`.
+- Se a aprovação chegar depois do cancelamento ou da liberação da reserva, registrar
+  a cobrança e encaminhar seu reembolso integral sem consumir estoque novamente.
+- A consulta/listagem do comprador inclui o estado próprio do reembolso. Um pedido
+  cancelado com pagamento aprovado não significa, por si só, devolução em andamento.
 
 ## Independência dos processos
 

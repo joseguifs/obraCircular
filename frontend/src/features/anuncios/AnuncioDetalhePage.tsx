@@ -7,7 +7,7 @@ import type { Categoria } from '../categorias/types'
 import { listarEnderecos } from '../enderecos/enderecoApi'
 import type { Endereco } from '../enderecos/types'
 import { useAuth } from '../autenticacao/useAuth'
-import { iniciarCheckout } from '../pagamentos/pagamentoApi'
+import { createPreferenceCheckout } from '../pagamentos/pagamentoApi'
 import { buscarAnuncio } from './anuncioApi'
 import type { Anuncio } from './types'
 
@@ -84,12 +84,16 @@ export function AnuncioDetalhePage() {
     setEnviando(true)
     setCompraErro('')
     try {
-      await iniciarCheckout({
-        anuncio_id: anuncio.id,
-        quantidade,
-        modalidade_entrega: modalidade,
-        endereco_entrega_id: modalidade === 'ENTREGA' ? enderecoId : null,
-      })
+      const preference = await createPreferenceCheckout(
+        {
+          anuncio_id: anuncio.id,
+          quantidade,
+          modalidade_entrega: modalidade,
+          endereco_entrega_id: modalidade === 'ENTREGA' ? enderecoId : null,
+        },
+        '/orders/checkout',
+      )
+      window.location.assign(preference.init_point)
     } catch (falha) {
       setCompraErro(
         falha instanceof ApiError
@@ -194,6 +198,9 @@ export function AnuncioDetalhePage() {
                   <button
                     type="button"
                     className="submit-button"
+                    aria-label="Comprar com Mercado Pago"
+                    data-mp-checkout-cta="checkout-pro"
+                    data-mp-marketplace-checkout="checkout-pro"
                     disabled={enviando}
                     onClick={comprar}
                   >

@@ -16,7 +16,8 @@ export interface CheckoutPayload {
 export interface CheckoutResponse {
   pedido_id: string
   pagamento_id: string
-  checkout_url: string
+  preferencia_externa_id: string
+  init_point: string
   reserva_expira_em: string
   valor_total: string
   taxa_marketplace: string
@@ -46,4 +47,13 @@ export interface Pedido {
     pagamento_externo_id: string | null
     status_detalhe: string | null
   } | null
+  reembolso?: Reembolso | null
+}
+
+export interface Reembolso {
+  id: string
+  pedido_id: string
+  status: 'SOLICITADO' | 'PROCESSANDO' | 'CONCLUIDO' | 'RECUSADO' | 'FALHOU' | 'CANCELADO'
+  valor: string
+  reembolso_externo_id: string | null
 }
