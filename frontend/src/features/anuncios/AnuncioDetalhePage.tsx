@@ -9,6 +9,7 @@ import type { Endereco } from '../enderecos/types'
 import { useAuth } from '../autenticacao/useAuth'
 import { createPreferenceCheckout } from '../pagamentos/pagamentoApi'
 import { buscarAnuncio, buscarImagensAnuncio } from './anuncioApi'
+import { PerguntasAnuncio } from './PerguntasAnuncio'
 import type { Anuncio, AnuncioImagem } from './types'
 
 const STATUS_LABEL: Record<Anuncio['status'], string> = {
@@ -197,6 +198,8 @@ export function AnuncioDetalhePage() {
 
               <h2>Descrição</h2>
               <p className="ad-detail-descricao">{anuncio.descricao}</p>
+
+              <PerguntasAnuncio anuncio={anuncio} />
             </div>
           </div>
 
@@ -205,6 +208,7 @@ export function AnuncioDetalhePage() {
               <p className="ad-detail-preco-label">Preço por unidade</p>
               <p className="ad-detail-preco">{formatarMoeda(anuncio.preco)}</p>
               <p className="ad-detail-preco-nota">
+                Ficou com alguma dúvida? Pergunte ao vendedor na seção de perguntas do anúncio.
                 O pagamento é processado em ambiente seguro pelo Mercado Pago.
               </p>
               {anuncio.vendedor_id === sessao?.usuario.id ? (
