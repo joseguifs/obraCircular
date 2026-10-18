@@ -9,6 +9,9 @@ import type { Sessao } from '../features/autenticacao/types'
 import { useAuth } from '../features/autenticacao/useAuth'
 import { EnderecosPage } from '../features/enderecos/EnderecosPage'
 import { HomePage } from '../features/home/HomePage'
+import { ContaMercadoPagoPage } from '../features/pagamentos/ContaMercadoPagoPage'
+import { PagamentoRetornoPage } from '../features/pagamentos/PagamentoRetornoPage'
+import { PedidosPage } from '../features/pagamentos/PedidosPage'
 import { NotFoundPage } from '../features/not-found/NotFoundPage'
 import { CadastroUsuarioPage } from '../features/usuarios/CadastroUsuarioPage'
 import { PerfilPage } from '../features/usuarios/PerfilPage'
@@ -32,6 +35,10 @@ export function AppRouter() {
             <Route path="/home" element={<HomePage />} />
             <Route path="/perfil" element={<PerfilPage />} />
             <Route path="/perfil/enderecos" element={<EnderecosPage />} />
+            <Route path="/perfil/mercado-pago" element={<ContaMercadoPagoPage />} />
+            <Route path="/pagamento/retorno" element={<PagamentoRetornoPage />} />
+            <Route path="/pedidos" element={<PedidosPage />} />
+            <Route path="/pedidos/:pedidoId" element={<PagamentoRetornoPage />} />
             <Route path="/anuncios/novo" element={<PublicarAnuncioPage />} />
             <Route path="/anuncios/:anuncioId/publicado" element={<AnuncioPublicadoPage />} />
             <Route path="/anuncios/:anuncioId" element={<AnuncioDetalhePage />} />
@@ -82,6 +89,10 @@ function AtualizarTitulo() {
     else if (pathname === '/home' || pathname === '/') document.title = 'Início | Obra Circular'
     else if (pathname === '/perfil') document.title = 'Meu perfil | Obra Circular'
     else if (pathname === '/perfil/enderecos') document.title = 'Meus endereços | Obra Circular'
+    else if (pathname === '/perfil/mercado-pago') document.title = 'Mercado Pago | Obra Circular'
+    else if (pathname === '/pagamento/retorno') document.title = 'Pagamento | Obra Circular'
+    else if (pathname === '/pedidos') document.title = 'Meus pedidos | Obra Circular'
+    else if (pathname.startsWith('/pedidos/')) document.title = 'Pedido | Obra Circular'
     else if (pathname === '/categorias') document.title = 'Categorias | Obra Circular'
     else if (pathname === '/anuncios/novo') document.title = 'Publicar anúncio | Obra Circular'
     else if (/^\/anuncios\/[^/]+\/publicado$/.test(pathname)) document.title = 'Anúncio publicado | Obra Circular'

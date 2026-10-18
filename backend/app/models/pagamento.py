@@ -25,13 +25,14 @@ class Pagamento(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         UniqueConstraint("provedor", "pagamento_externo_id", name="uq_pagamentos_provedor_externo"),
         CheckConstraint("provedor IN ('MERCADO_PAGO')", name="ck_pagamentos_provedor"),
         CheckConstraint(
-            "metodo IN ('PIX', 'CARTAO_CREDITO', 'CARTAO_DEBITO', 'BOLETO')",
+            "metodo IS NULL OR metodo IN ('PIX', 'CARTAO_CREDITO', 'CARTAO_DEBITO', 'BOLETO')",
             name="ck_pagamentos_metodo",
         ),
         CheckConstraint("valor > 0", name="ck_pagamentos_valor"),
         CheckConstraint(
-            "((metodo = 'CARTAO_CREDITO' AND parcelas IS NOT NULL AND parcelas > 0) "
-            "OR (metodo <> 'CARTAO_CREDITO' AND parcelas IS NULL))",
+            "((metodo IS NULL AND parcelas IS NULL) OR "
+            "(metodo = 'CARTAO_CREDITO' AND parcelas IS NOT NULL AND parcelas > 0) "
+            "OR (metodo IS NOT NULL AND metodo <> 'CARTAO_CREDITO' AND parcelas IS NULL))",
             name="ck_pagamentos_parcelas",
         ),
         CheckConstraint(
@@ -56,8 +57,10 @@ class Pagamento(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         server_default=ProvedorPagamento.MERCADO_PAGO.value,
     )
     pagamento_externo_id: Mapped[str | None] = mapped_column(String(255))
+    preferencia_externa_id: Mapped[str | None] = mapped_column(String(255), unique=True)
+    ordem_externa_id: Mapped[str | None] = mapped_column(String(255), unique=True)
     idempotency_key: Mapped[str] = mapped_column(String(255))
-    metodo: Mapped[MetodoPagamento] = mapped_column(String(30))
+    metodo: Mapped[MetodoPagamento | None] = mapped_column(String(30))
     valor: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     parcelas: Mapped[int | None] = mapped_column(Integer)
     status: Mapped[PagamentoStatus] = mapped_column(
@@ -66,5 +69,6 @@ class Pagamento(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         server_default=PagamentoStatus.CRIADO.value,
     )
     motivo_recusa: Mapped[str | None] = mapped_column(String(255))
+    status_detalhe: Mapped[str | None] = mapped_column(String(100))
     aprovado_em: Mapped[datetime | None]
     cancelado_em: Mapped[datetime | None]
