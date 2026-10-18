@@ -45,6 +45,12 @@ export function mensagemApiErro(erro: unknown, padrao: string): string {
   return erro instanceof ApiError ? erro.message : padrao
 }
 
+export function resolverUrlDaApi(url: string): string {
+  if (/^https?:\/\//i.test(url)) return url
+  const origemApi = new URL(apiUrl, window.location.origin).origin
+  return new URL(url, origemApi).toString()
+}
+
 let renovacaoEmAndamento: Promise<string> | null = null
 
 export async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {

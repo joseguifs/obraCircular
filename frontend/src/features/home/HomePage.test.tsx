@@ -23,6 +23,7 @@ const anuncio = {
   endereco_id: '6e2d754a-71fc-490f-b98c-66140c9a32ac',
   preco: '420.00',
   imagem_url: null,
+  imagem_capa_url: `/uploads/anuncios/9b9dbe1c-c0df-414d-b82f-b5fe97b284b2/capa.webp`,
   quantidade: 40,
   status: 'ATIVO',
   postado_em: new Date(Date.now() - 2 * 86_400_000).toISOString(),
@@ -79,8 +80,15 @@ describe('HomePage', () => {
     expect(await screen.findByText('Olá, Ana')).toBeInTheDocument()
     expect(await screen.findByText('Perfis metálicos para drywall')).toBeInTheDocument()
     expect(screen.getByText(/R\$\s*420,00/)).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: `Foto de ${anuncio.titulo}` })).toHaveAttribute(
+      'src',
+      expect.stringContaining('/uploads/anuncios/'),
+    )
     expect(screen.getByText('3')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Estrutura' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: `Ver anúncio ${anuncio.titulo}` }),
+    ).toHaveAttribute('href', `/anuncios/${anuncio.id}`)
   })
 
   it('refaz a busca ao selecionar uma categoria', async () => {

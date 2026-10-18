@@ -1,5 +1,5 @@
 import { apiRequest, type ListResponse } from '../../lib/api'
-import type { Anuncio, AnuncioFiltros, AnuncioPayload } from './types'
+import type { Anuncio, AnuncioFiltros, AnuncioImagem, AnuncioPayload } from './types'
 
 export function listarAnuncios(filtros: AnuncioFiltros = {}): Promise<ListResponse<Anuncio>> {
   return apiRequest<ListResponse<Anuncio>>(`/ads${queryString(filtros)}`)
@@ -7,6 +7,13 @@ export function listarAnuncios(filtros: AnuncioFiltros = {}): Promise<ListRespon
 
 export function buscarAnuncio(anuncioId: string): Promise<Anuncio> {
   return apiRequest<Anuncio>(`/ads/${anuncioId}`)
+}
+
+export async function buscarImagensAnuncio(anuncioId: string): Promise<AnuncioImagem[]> {
+  const resposta = await apiRequest<{ items: AnuncioImagem[] }>(
+    `/ads/${anuncioId}/images`,
+  )
+  return resposta.items
 }
 
 export function listarAnunciosDoVendedor(

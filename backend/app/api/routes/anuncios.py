@@ -50,6 +50,18 @@ async def adicionar_imagens(
 
 
 @router.get(
+    "/{anuncio_id}/images",
+    response_model=AnuncioImagemListResponse,
+    summary="Lista as imagens de um anúncio",
+)
+async def listar_imagens(
+    anuncio_id: UUID,
+    session: DatabaseSession,
+) -> AnuncioImagemListResponse:
+    return await AnuncioImagemService(session).listar(anuncio_id)
+
+
+@router.get(
     "",
     response_model=AnuncioListResponse,
     summary="Lista e filtra anúncios",

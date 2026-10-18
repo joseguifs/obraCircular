@@ -116,3 +116,50 @@ async def test_rejeita_upload_de_outro_vendedor() -> None:
 
     assert error.value.code == "AD_FORBIDDEN"
     armazenamento.salvar_imagem.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_lista_imagens_na_ordem_com_urls_publicas() -> None:
+    service, repository, anuncio_repository, _ = criar_servico()
+    anuncio_id = uuid4()
+    anuncio_repository.buscar_por_id.return_value = SimpleNamespace(id=anuncio_id)
+    repository.listar.return_value = [
+        SimpleNamespace(
+            id=uuid4(),
+            anuncio_id=anuncio_id,
+            chave_objeto=f"anuncios/{anuncio_id}/foto-1.png",
+            nome_original="foto-1.png",
+            mime_type="image/png",
+            tamanho_bytes=12,
+            ordem=0,
+            criado_em=datetime.now(UTC),
+        ),
+        SimpleNamespace(
+            id=uuid4(),
+            anuncio_id=anuncio_id,
+            chave_objeto=f"anuncios/{anuncio_id}/foto-2.webp",
+            nome_original="foto-2.webp",
+            mime_type="image/webp",
+            tamanho_bytes=24,
+            ordem=1,
+            criado_em=datetime.now(UTC),
+        ),
+    ]
+
+    resposta = await service.listar(anuncio_id)
+
+    assert [imagem.ordem for imagem in resposta.items] == [0, 1]
+    assert resposta.items[0].url.endswith("/foto-1.png")
+    repository.listar.assert_awaited_once_with(anuncio_id)
+
+
+@pytest.mark.asyncio
+async def test_listagem_de_imagens_rejeita_anuncio_inexistente() -> None:
+    service, repository, anuncio_repository, _ = criar_servico()
+    anuncio_repository.buscar_por_id.return_value = None
+
+    with pytest.raises(AppError) as error:
+        await service.listar(uuid4())
+
+    assert error.value.code == "AD_NOT_FOUND"
+    repository.listar.assert_not_awaited()

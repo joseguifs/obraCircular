@@ -16,11 +16,23 @@ export interface Anuncio {
   endereco_id: string
   preco: string
   imagem_url: string | null
+  imagem_capa_url: string | null
   quantidade: number
   status: 'ATIVO' | 'ESGOTADO' | 'ENCERRADO'
   postado_em: string
   atualizado_em: string
   encerrado_em: string | null
+}
+
+export interface AnuncioImagem {
+  id: string
+  anuncio_id: string
+  url: string
+  nome_original: string
+  mime_type: string
+  tamanho_bytes: number
+  ordem: number
+  criado_em: string
 }
 
 export interface AnuncioFiltros {
