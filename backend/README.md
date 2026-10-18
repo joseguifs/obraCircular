@@ -42,6 +42,26 @@ Serviços locais:
 - Health check: `http://localhost:8000/api/v1/health`
 - Arquivos enviados: `http://localhost:8000/uploads/...`
 
+## Pagamentos com Mercado Pago
+
+O backend possui integração inicial com Checkout Pro Marketplace, OAuth de vendedores,
+comissão de 25%, webhooks assinados, reembolso e reserva concorrente de estoque.
+
+Consulte [docs/integracao-mercado-pago.md](docs/integracao-mercado-pago.md) para:
+
+- configurar a aplicação já criada no Mercado Pago;
+- expor OAuth, webhook e retorno local com um único túnel ngrok;
+- preencher as variáveis de ambiente;
+- executar a migration e o job de expiração de reservas;
+- homologar pagamentos e reembolsos.
+
+Após atualizar o projeto:
+
+```powershell
+python -m pip install -r requirements.txt
+python -m alembic upgrade head
+```
+
 ## Configuração das imagens
 
 O arquivo `.env.example` contém as configurações do armazenamento local:

@@ -4,6 +4,10 @@ import { ApiError, resolverUrlDaApi } from '../../lib/api'
 import { formatarMoeda, formatarTempoRelativo } from '../../lib/formatarTempo'
 import { buscarCategoria } from '../categorias/categoriaApi'
 import type { Categoria } from '../categorias/types'
+import { listarEnderecos } from '../enderecos/enderecoApi'
+import type { Endereco } from '../enderecos/types'
+import { useAuth } from '../autenticacao/useAuth'
+import { createPreferenceCheckout } from '../pagamentos/pagamentoApi'
 import { buscarAnuncio, buscarImagensAnuncio } from './anuncioApi'
 import type { Anuncio, AnuncioImagem } from './types'
 
@@ -14,6 +18,7 @@ const STATUS_LABEL: Record<Anuncio['status'], string> = {
 }
 
 export function AnuncioDetalhePage() {
+  const { sessao } = useAuth()
   const { anuncioId } = useParams()
   const [anuncio, setAnuncio] = useState<Anuncio | null>(null)
   const [categoria, setCategoria] = useState<Categoria | null>(null)
@@ -21,6 +26,12 @@ export function AnuncioDetalhePage() {
   const [imagemAtiva, setImagemAtiva] = useState('')
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
+  const [compraErro, setCompraErro] = useState('')
+  const [enderecos, setEnderecos] = useState<Endereco[]>([])
+  const [quantidade, setQuantidade] = useState(1)
+  const [modalidade, setModalidade] = useState<'ENTREGA' | 'RETIRADA'>('ENTREGA')
+  const [enderecoId, setEnderecoId] = useState('')
+  const [enviando, setEnviando] = useState(false)
   const [tentativa, setTentativa] = useState(0)
 
   useEffect(() => {
@@ -76,6 +87,47 @@ export function AnuncioDetalhePage() {
       ativo = false
     }
   }, [anuncioId, tentativa])
+
+  useEffect(() => {
+    if (!anuncio || anuncio.vendedor_id === sessao?.usuario.id) return
+    listarEnderecos()
+      .then((items) => {
+        setEnderecos(items)
+        setEnderecoId((atual) => atual || items[0]?.id || '')
+      })
+      .catch(() => {
+        // Retirada continua disponível mesmo quando não há endereço cadastrado.
+      })
+  }, [anuncio, sessao?.usuario.id])
+
+  async function comprar() {
+    if (!anuncio || enviando) return
+    if (modalidade === 'ENTREGA' && !enderecoId) {
+      setCompraErro('Cadastre e selecione um endereço ou escolha retirada.')
+      return
+    }
+    setEnviando(true)
+    setCompraErro('')
+    try {
+      const preference = await createPreferenceCheckout(
+        {
+          anuncio_id: anuncio.id,
+          quantidade,
+          modalidade_entrega: modalidade,
+          endereco_entrega_id: modalidade === 'ENTREGA' ? enderecoId : null,
+        },
+        '/orders/checkout',
+      )
+      window.location.assign(preference.init_point)
+    } catch (falha) {
+      setCompraErro(
+        falha instanceof ApiError
+          ? falha.message
+          : 'Não foi possível iniciar o pagamento.',
+      )
+      setEnviando(false)
+    }
+  }
 
   return (
     <main className="ad-detail-page">
@@ -153,8 +205,68 @@ export function AnuncioDetalhePage() {
               <p className="ad-detail-preco-label">Preço por unidade</p>
               <p className="ad-detail-preco">{formatarMoeda(anuncio.preco)}</p>
               <p className="ad-detail-preco-nota">
-                As mensagens diretas com o vendedor ainda não estão disponíveis nesta versão.
+                O pagamento é processado em ambiente seguro pelo Mercado Pago.
               </p>
+              {anuncio.vendedor_id === sessao?.usuario.id ? (
+                <p className="payment-status">Este anúncio pertence a você.</p>
+              ) : anuncio.status === 'ATIVO' ? (
+                <div className="checkout-form">
+                  <label>
+                    Quantidade
+                    <input
+                      type="number"
+                      min={1}
+                      max={anuncio.quantidade}
+                      value={quantidade}
+                      onChange={(evento) =>
+                        setQuantidade(
+                          Math.max(1, Math.min(anuncio.quantidade, Number(evento.target.value))),
+                        )
+                      }
+                    />
+                  </label>
+                  <label>
+                    Recebimento
+                    <select
+                      value={modalidade}
+                      onChange={(evento) =>
+                        setModalidade(evento.target.value as 'ENTREGA' | 'RETIRADA')
+                      }
+                    >
+                      <option value="ENTREGA">Entrega</option>
+                      <option value="RETIRADA">Retirada com o vendedor</option>
+                    </select>
+                  </label>
+                  {modalidade === 'ENTREGA' && (
+                    <label>
+                      Endereço de entrega
+                      <select value={enderecoId} onChange={(evento) => setEnderecoId(evento.target.value)}>
+                        <option value="">Selecione</option>
+                        {enderecos.map((endereco) => (
+                          <option key={endereco.id} value={endereco.id}>
+                            {endereco.logradouro}, {endereco.numero} — {endereco.cidade}/{endereco.estado}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+                  <p className="ad-detail-preco-nota">
+                    Total: {formatarMoeda(String(Number(anuncio.preco) * quantidade))}
+                  </p>
+                  {compraErro && <p className="form-alert" role="alert">{compraErro}</p>}
+                  <button
+                    type="button"
+                    className="submit-button"
+                    aria-label="Comprar com Mercado Pago"
+                    data-mp-checkout-cta="checkout-pro"
+                    data-mp-marketplace-checkout="checkout-pro"
+                    disabled={enviando}
+                    onClick={comprar}
+                  >
+                    {enviando ? 'Abrindo Mercado Pago...' : 'Comprar com Mercado Pago'}
+                  </button>
+                </div>
+              ) : null}
             </div>
 
             <div className="ad-detail-card ad-detail-destaque">

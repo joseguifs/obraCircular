@@ -1,5 +1,6 @@
+import asyncio
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,14 +17,26 @@ from app.core.errors import (
     NotFoundError,
 )
 from app.core.exceptions import AppError, app_error_handler
+from app.jobs.webhook_worker import executar_worker_webhooks
 
 settings = get_settings()
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    yield
-    await engine.dispose()
+    worker = (
+        asyncio.create_task(executar_worker_webhooks(), name="webhook-worker")
+        if settings.webhook_worker_enabled
+        else None
+    )
+    try:
+        yield
+    finally:
+        if worker is not None:
+            worker.cancel()
+            with suppress(asyncio.CancelledError):
+                await worker
+        await engine.dispose()
 
 
 app = FastAPI(

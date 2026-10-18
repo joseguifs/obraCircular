@@ -33,7 +33,7 @@ class ContaPagamento(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         default=ProvedorPagamento.MERCADO_PAGO,
         server_default=ProvedorPagamento.MERCADO_PAGO.value,
     )
-    conta_externa_id: Mapped[str] = mapped_column(String(255))
+    conta_externa_id: Mapped[str | None] = mapped_column(String(255))
     access_token_criptografado: Mapped[str | None] = mapped_column(Text)
     refresh_token_criptografado: Mapped[str | None] = mapped_column(Text)
     status: Mapped[ContaPagamentoStatus] = mapped_column(

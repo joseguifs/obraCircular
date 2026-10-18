@@ -7,7 +7,9 @@ from sqlalchemy.sql.elements import ColumnElement
 
 from app.models.anuncio import Anuncio
 from app.models.categoria import Categoria
+from app.models.conta_pagamento import ContaPagamento
 from app.models.endereco import Endereco
+from app.models.enums import ProvedorPagamento
 from app.models.usuario import Usuario
 from app.schemas.anuncio import AnuncioFilters
 
@@ -33,6 +35,17 @@ class AnuncioRepository:
 
     async def buscar_categoria(self, categoria_id: UUID) -> Categoria | None:
         return await self.session.get(Categoria, categoria_id)
+
+    async def buscar_conta_pagamento(self, usuario_id: UUID) -> ContaPagamento | None:
+        return cast(
+            ContaPagamento | None,
+            await self.session.scalar(
+                select(ContaPagamento).where(
+                    ContaPagamento.usuario_id == usuario_id,
+                    ContaPagamento.provedor == ProvedorPagamento.MERCADO_PAGO,
+                )
+            ),
+        )
 
     async def buscar_endereco(self, endereco_id: UUID) -> Endereco | None:
         return cast(

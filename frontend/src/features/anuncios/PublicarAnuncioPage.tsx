@@ -5,11 +5,16 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { mensagemApiErro } from '../../lib/api'
 import { listarCategoriasAtivas } from '../categorias/categoriaApi'
 import { cadastrarEndereco, listarEnderecos } from '../enderecos/enderecoApi'
 import type { EnderecoPayload } from '../enderecos/types'
+import {
+  conectarContaMercadoPago,
+  consultarContaMercadoPago,
+} from '../pagamentos/pagamentoApi'
+import type { ContaMercadoPago } from '../pagamentos/types'
 import {
   criarAnuncio,
   enviarImagens,
@@ -30,6 +35,7 @@ const enderecoInicial: EnderecoPayload = {
 
 export function PublicarAnuncioPage() {
   const navegar = useNavigate()
+  const [parametros] = useSearchParams()
   const [categorias, setCategorias] = useState<Awaited<ReturnType<typeof listarCategoriasAtivas>>>([])
   const [enderecos, setEnderecos] = useState<Awaited<ReturnType<typeof listarEnderecos>>>([])
   const [carregando, setCarregando] = useState(true)
@@ -47,6 +53,8 @@ export function PublicarAnuncioPage() {
   const [novoEndereco, setNovoEndereco] = useState(enderecoInicial)
   const [salvandoEndereco, setSalvandoEndereco] = useState(false)
   const [erroEndereco, setErroEndereco] = useState('')
+  const [contaPagamento, setContaPagamento] = useState<ContaMercadoPago | null>(null)
+  const [conectandoConta, setConectandoConta] = useState(false)
 
   const previews = useMemo(
     () => imagens.map((arquivo) => ({ arquivo, url: URL.createObjectURL(arquivo) })),
@@ -57,11 +65,16 @@ export function PublicarAnuncioPage() {
 
   useEffect(() => {
     let ativo = true
-    Promise.all([listarCategoriasAtivas(), listarEnderecos()])
-      .then(([categoriasRecebidas, enderecosRecebidos]) => {
+    Promise.all([
+      listarCategoriasAtivas(),
+      listarEnderecos(),
+      consultarContaMercadoPago(),
+    ])
+      .then(([categoriasRecebidas, enderecosRecebidos, contaRecebida]) => {
         if (!ativo) return
         setCategorias(categoriasRecebidas)
         setEnderecos(enderecosRecebidos)
+        setContaPagamento(contaRecebida)
         if (enderecosRecebidos.length === 0) setMostrarEndereco(true)
       })
       .catch((erro) => {
@@ -74,6 +87,19 @@ export function PublicarAnuncioPage() {
       ativo = false
     }
   }, [])
+
+  async function cadastrarContaMercadoPago() {
+    setConectandoConta(true)
+    setErroGeral('')
+    try {
+      await conectarContaMercadoPago('/anuncios/novo?mercado_pago=conectado')
+    } catch (erro) {
+      setErroGeral(
+        mensagemApiErro(erro, 'Não foi possível iniciar o cadastro no Mercado Pago.'),
+      )
+      setConectandoConta(false)
+    }
+  }
 
   async function publicar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
@@ -172,6 +198,35 @@ export function PublicarAnuncioPage() {
       </header>
 
       {erroGeral && <div className="publish-alert" role="alert">{erroGeral}</div>}
+      {parametros.get('mercado_pago') === 'conectado' && contaPagamento?.status === 'ATIVA' && (
+        <div className="publish-account-success" role="status">
+          Conta Mercado Pago conectada. Agora você pode publicar seu anúncio.
+        </div>
+      )}
+      {contaPagamento?.status !== 'ATIVA' ? (
+        <section className="publish-payment-gate" aria-labelledby="mercado-pago-title">
+          <span className="step-label">Recebimentos</span>
+          <h2 id="mercado-pago-title">Cadastre onde você receberá suas vendas</h2>
+          <p>
+            Qualquer usuário pode anunciar. Antes da primeira publicação, conecte uma conta
+            Mercado Pago para receber com segurança quando o material for vendido.
+          </p>
+          <p className="payment-status">
+            Status: <strong>{contaPagamento?.status ?? 'PENDENTE'}</strong>
+          </p>
+          <button
+            type="button"
+            className="publish-button"
+            disabled={conectandoConta}
+            onClick={cadastrarContaMercadoPago}
+          >
+            {conectandoConta
+              ? 'Abrindo Mercado Pago…'
+              : 'Cadastrar conta do Mercado Pago'}
+          </button>
+        </section>
+      ) : (
+        <>
       {categorias.length === 0 && (
         <div className="publish-alert" role="alert">
           Nenhuma categoria ativa foi encontrada. Cadastre uma categoria no banco antes de publicar.
@@ -253,6 +308,8 @@ export function PublicarAnuncioPage() {
           </button>
         </div>
       </form>
+        </>
+      )}
     </main>
   )
 }
