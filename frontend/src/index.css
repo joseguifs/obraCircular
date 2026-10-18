@@ -6,6 +6,7 @@
 @import url('./features/anuncios/PublicarAnuncioPage.css');
 @import url('./features/categorias/CategoriasPage.css');
 @import url('./features/anuncios/AnuncioDetalhePage.css');
+@import url('./features/anuncios/PerguntasAnuncio.css');
 @import url('./features/usuarios/PerfilPage.css');
 
 :root {

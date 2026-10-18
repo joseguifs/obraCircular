@@ -5,6 +5,7 @@ import { formatarMoeda, formatarTempoRelativo } from '../../lib/formatarTempo'
 import { buscarCategoria } from '../categorias/categoriaApi'
 import type { Categoria } from '../categorias/types'
 import { buscarAnuncio, buscarImagensAnuncio } from './anuncioApi'
+import { PerguntasAnuncio } from './PerguntasAnuncio'
 import type { Anuncio, AnuncioImagem } from './types'
 
 const STATUS_LABEL: Record<Anuncio['status'], string> = {
@@ -145,6 +146,8 @@ export function AnuncioDetalhePage() {
 
               <h2>Descrição</h2>
               <p className="ad-detail-descricao">{anuncio.descricao}</p>
+
+              <PerguntasAnuncio anuncio={anuncio} />
             </div>
           </div>
 
@@ -153,7 +156,7 @@ export function AnuncioDetalhePage() {
               <p className="ad-detail-preco-label">Preço por unidade</p>
               <p className="ad-detail-preco">{formatarMoeda(anuncio.preco)}</p>
               <p className="ad-detail-preco-nota">
-                As mensagens diretas com o vendedor ainda não estão disponíveis nesta versão.
+                Ficou com alguma dúvida? Pergunte ao vendedor na seção de perguntas do anúncio.
               </p>
             </div>
 

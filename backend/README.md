@@ -87,7 +87,7 @@ python -m alembic current
 O resultado esperado do segundo comando é:
 
 ```text
-20260919_0004 (head)
+20261017_0005 (head)
 ```
 
 Para verificar se os models e o banco continuam sincronizados:
@@ -121,6 +121,30 @@ Restrições importantes:
 
 A coluna legada `anuncios.imagem_url` foi mantida temporariamente para preservar a
 compatibilidade da API existente. Os novos uploads utilizam `anuncio_imagens`.
+
+## Migration de perguntas e respostas
+
+A migration `20261017_0005_anuncio_perguntas.py` cria a tabela `anuncio_perguntas`,
+usada nas perguntas públicas feitas ao vendedor de um anúncio. As regras de negócio
+estão em [`docs/domain/anuncio_pergunta.md`](docs/domain/anuncio_pergunta.md).
+
+| Campo | Descrição |
+|---|---|
+| `id` | UUID da pergunta |
+| `anuncio_id` | Anúncio ao qual a pergunta pertence |
+| `autor_id` | Usuário que fez a pergunta |
+| `pergunta` | Texto da pergunta (3 a 500 caracteres) |
+| `resposta` | Resposta do vendedor; `NULL` enquanto não for respondida |
+| `respondido_em` | Data da resposta em UTC; `NULL` enquanto não for respondida |
+| `criado_em` | Data da pergunta em UTC |
+| `atualizado_em` | Data da última atualização em UTC |
+
+Restrições importantes:
+
+- `resposta` e `respondido_em` são preenchidos sempre juntos;
+- a chave estrangeira para `anuncios` usa `ON DELETE CASCADE`;
+- o índice `(anuncio_id, criado_em DESC)` atende a listagem do anúncio;
+- atualizações recebem `atualizado_em` pelo mesmo trigger das demais tabelas.
 
 ## Categorias para desenvolvimento
 
@@ -317,6 +341,9 @@ Principais códigos de erro do upload:
 | `PATCH` | `/api/v1/ads/{id}` | Sim | Atualiza um anúncio do vendedor |
 | `DELETE` | `/api/v1/ads/{id}` | Sim | Exclui logicamente um anúncio |
 | `GET` | `/api/v1/users/{vendedor_id}/ads` | Não | Lista anúncios de um vendedor |
+| `GET` | `/api/v1/ads/{id}/questions` | Não | Lista as perguntas e respostas do anúncio |
+| `POST` | `/api/v1/ads/{id}/questions` | Sim | Faz uma pergunta ao vendedor |
+| `POST` | `/api/v1/ads/{id}/questions/{pergunta_id}/answer` | Sim | Vendedor responde uma pergunta |
 
 Os filtros disponíveis para `GET /ads` são `category_id`, `status`, `search`,
 `min_price`, `max_price`, `offset` e `limit`.
