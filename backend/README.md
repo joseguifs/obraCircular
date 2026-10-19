@@ -107,7 +107,7 @@ python -m alembic current
 O resultado esperado do segundo comando é:
 
 ```text
-20261017_0005 (head)
+20261019_0008 (head)
 ```
 
 Para verificar se os models e o banco continuam sincronizados:
@@ -146,7 +146,7 @@ compatibilidade da API existente. Os novos uploads utilizam `anuncio_imagens`.
 
 O painel administrativo (`/admin` no frontend) gerencia anúncios, usuários e categorias.
 O perfil de administrador fica na tabela `administradores` (migration
-`20261017_0005`), com uma linha por usuário administrador. As regras estão em
+`20261017_0005_admin`), com uma linha por usuário administrador. As regras estão em
 `docs/domain/administrador.md`.
 
 Para criar o primeiro administrador, cadastre o usuário normalmente e execute:
