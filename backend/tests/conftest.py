@@ -5,7 +5,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.dependencies import get_current_user
+from app.api.dependencies import get_current_admin, get_current_user
 from app.core.database import engine, get_db_session
 from app.main import app
 from app.models.enums import UsuarioStatus
@@ -61,3 +61,25 @@ def usuario_autenticado() -> Iterator[Usuario]:
         yield usuario
     finally:
         app.dependency_overrides.pop(get_current_user, None)
+
+
+@pytest.fixture
+def administrador_autenticado() -> Iterator[Usuario]:
+    """Substitui a autorização administrativa em testes focados no contrato da rota."""
+    usuario = Usuario(
+        id=uuid4(),
+        nome="Administrador de Teste",
+        email="admin-rota@example.com",
+        senha_hash="hash-nao-utilizado",
+        telefone=None,
+        status=UsuarioStatus.ATIVO,
+    )
+
+    async def _override_get_current_admin() -> Usuario:
+        return usuario
+
+    app.dependency_overrides[get_current_admin] = _override_get_current_admin
+    try:
+        yield usuario
+    finally:
+        app.dependency_overrides.pop(get_current_admin, None)

@@ -1,5 +1,13 @@
 from fastapi import APIRouter, BackgroundTasks, status
 
+from app.api.dependencies import CurrentUser, DatabaseSession
+from app.repositories.administrador import AdministradorRepository
+from app.schemas.autenticacao import (
+    LoginRequest,
+    RefreshTokenRequest,
+    TokenResponse,
+    UsuarioAtualResponse,
+)
 from app.api.dependencies import CurrentUser, DatabaseSession, EmailSender
 from app.models.usuario import Usuario
 from app.schemas.autenticacao import (
@@ -39,6 +47,15 @@ async def refresh(dados: RefreshTokenRequest, session: DatabaseSession) -> Token
     )
 
 
+@router.get("/me", response_model=UsuarioAtualResponse)
+async def obter_usuario_atual(
+    usuario_atual: CurrentUser,
+    session: DatabaseSession,
+) -> UsuarioAtualResponse:
+    administrador = await AdministradorRepository(session).eh_administrador(usuario_atual.id)
+    return UsuarioAtualResponse.model_validate(usuario_atual).model_copy(
+        update={"administrador": administrador}
+    )
 @router.get("/me", response_model=UsuarioRead)
 async def obter_usuario_atual(usuario_atual: CurrentUser) -> Usuario:
     return usuario_atual

@@ -1,3 +1,4 @@
+from app.models.administrador import Administrador
 from app.models.anuncio import Anuncio
 from app.models.anuncio_imagem import AnuncioImagem
 from app.models.anuncio_pergunta import AnuncioPergunta
@@ -17,6 +18,7 @@ from app.models.token_recuperacao_senha import TokenRecuperacaoSenha
 from app.models.usuario import Usuario
 
 __all__ = [
+    "Administrador",
     "Anuncio",
     "AnuncioImagem",
     "AnuncioPergunta",

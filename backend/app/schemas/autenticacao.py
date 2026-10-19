@@ -1,5 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
+from app.schemas.usuario import UsuarioRead
+
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -22,6 +24,8 @@ class TokenResponse(BaseModel):
     expires_in: int
 
 
+class UsuarioAtualResponse(UsuarioRead):
+    administrador: bool = False
 class EsqueciSenhaRequest(BaseModel):
     email: EmailStr
 
