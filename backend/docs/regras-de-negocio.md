@@ -5,9 +5,11 @@ de serviços, dentro de transações quando necessário:
 
 1. A unicidade do e-mail não diferencia maiúsculas de minúsculas.
 2. Um comprador não pode adquirir o próprio anúncio.
-3. Ao confirmar pagamento, bloquear o anúncio com `SELECT ... FOR UPDATE`, validar
-   a quantidade e reduzir o estoque na mesma transação.
-4. Quando o estoque chegar a zero, alterar o anúncio para `ESGOTADO`.
+3. Ao iniciar o checkout, bloquear o anúncio com `SELECT ... FOR UPDATE`, validar a
+   quantidade e reservá-la na mesma transação, reduzindo o estoque disponível.
+   Aprovação converte a reserva em venda sem nova redução. Expiração, cancelamento ou
+   reembolso devolvem a quantidade exatamente uma vez.
+4. Quando o estoque disponível chegar a zero, alterar o anúncio para `ESGOTADO`.
 5. Confirmar pagamentos e reembolsos consultando o Mercado Pago; não confiar apenas
    no frontend ou no corpo de um webhook.
 6. Gerar o PIN de entrega com um gerador criptograficamente seguro e guardar somente
@@ -20,14 +22,14 @@ de serviços, dentro de transações quando necessário:
 10. Criptografar tokens do provedor fora do banco com chave mantida em secret manager
     ou variável de ambiente.
 11. Preservar no pedido o snapshot do endereço usado na compra.
-12. Manter o repasse como controle contábil e de estado mesmo quando o split 1:1 do
-    Mercado Pago ocorrer automaticamente.
+12. Manter o repasse como razão contábil do split 1:1 automático. Seus estados internos
+    não significam retenção ou liberação de dinheiro pelo Mercado Pago.
 13. Ao validar o PIN, confirmar que `confirmado_por` é o vendedor do anúncio ligado
     ao pedido.
 14. Não permitir contestação depois do prazo interno ou depois que o repasse começar
     a ser processado.
-15. Cancelamentos posteriores à redução do estoque e reembolsos devem devolver a
-    quantidade ao anúncio exatamente uma vez.
+15. Expirações, cancelamentos e reembolsos devem devolver a quantidade reservada ao
+    anúncio exatamente uma vez.
 16. Atualizações originadas por webhooks e jobs devem ser idempotentes.
 
 ## Responsabilidades

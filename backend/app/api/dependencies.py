@@ -4,11 +4,13 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.core.database import get_db_session
 from app.core.errors import AuthenticationError, AuthorizationError
 from app.models.usuario import Usuario
 from app.repositories.administrador import AdministradorRepository
 from app.services.autenticacao import AutenticacaoService
+from app.services.email import EnviadorEmail, criar_enviador_email
 
 DatabaseSession = Annotated[AsyncSession, Depends(get_db_session)]
 
@@ -46,3 +48,8 @@ async def get_current_admin(session: DatabaseSession, usuario: CurrentUser) -> U
 
 
 CurrentAdmin = Annotated[Usuario, Depends(get_current_admin)]
+def get_enviador_email() -> EnviadorEmail:
+    return criar_enviador_email(get_settings())
+
+
+EmailSender = Annotated[EnviadorEmail, Depends(get_enviador_email)]

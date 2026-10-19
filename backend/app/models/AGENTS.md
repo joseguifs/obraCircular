@@ -6,6 +6,7 @@ geral e os documentos dos domínios envolvidos:
 `docs/regras-de-negocio.md`
 `docs/domain/administrador.md`
 `docs/domain/anuncio.md`
+`docs/domain/anuncio_pergunta.md`
 `docs/domain/categoria.md`
 `docs/domain/conta_pagamento.md`
 `docs/domain/contestacao.md`

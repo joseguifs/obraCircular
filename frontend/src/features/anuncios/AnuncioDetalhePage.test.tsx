@@ -2,6 +2,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { AuthProvider } from '../autenticacao/AuthProvider'
 import { AnuncioDetalhePage } from './AnuncioDetalhePage'
 
 const anuncio = {
@@ -29,6 +30,8 @@ const categoria = {
   atualizado_em: new Date().toISOString(),
 }
 
+const semPerguntas = { items: [], total: 0, offset: 0, limit: 10 }
+
 function resposta(body: unknown, status = 200) {
   return { ok: status >= 200 && status < 300, status, json: async () => body }
 }
@@ -36,9 +39,11 @@ function resposta(body: unknown, status = 200) {
 function renderPagina() {
   return render(
     <MemoryRouter initialEntries={[`/anuncios/${anuncio.id}`]}>
-      <Routes>
-        <Route path="/anuncios/:anuncioId" element={<AnuncioDetalhePage />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/anuncios/:anuncioId" element={<AnuncioDetalhePage />} />
+        </Routes>
+      </AuthProvider>
     </MemoryRouter>,
   )
 }
@@ -77,6 +82,7 @@ describe('AnuncioDetalhePage', () => {
       .mockResolvedValueOnce(resposta(anuncio))
       .mockResolvedValueOnce(resposta(categoria))
       .mockResolvedValueOnce(resposta({ items: imagens }))
+      .mockResolvedValueOnce(resposta(semPerguntas))
     vi.stubGlobal('fetch', fetchMock)
     const user = userEvent.setup()
 
@@ -99,6 +105,7 @@ describe('AnuncioDetalhePage', () => {
       expect.stringContaining(`/ads/${anuncio.id}`),
       expect.stringContaining(`/categories/${anuncio.categoria_id}`),
       expect.stringContaining(`/ads/${anuncio.id}/images`),
+      expect.stringContaining(`/ads/${anuncio.id}/questions`),
     ])
   })
 
@@ -109,6 +116,7 @@ describe('AnuncioDetalhePage', () => {
       .mockResolvedValueOnce(resposta(anuncio))
       .mockResolvedValueOnce(resposta({ detail: 'Categoria indisponível.' }, 503))
       .mockResolvedValueOnce(resposta({ items: [] }))
+      .mockResolvedValueOnce(resposta(semPerguntas))
     vi.stubGlobal('fetch', fetchMock)
     const user = userEvent.setup()
 

@@ -42,6 +42,26 @@ Serviços locais:
 - Health check: `http://localhost:8000/api/v1/health`
 - Arquivos enviados: `http://localhost:8000/uploads/...`
 
+## Pagamentos com Mercado Pago
+
+O backend possui integração inicial com Checkout Pro Marketplace, OAuth de vendedores,
+comissão de 25%, webhooks assinados, reembolso e reserva concorrente de estoque.
+
+Consulte [docs/integracao-mercado-pago.md](docs/integracao-mercado-pago.md) para:
+
+- configurar a aplicação já criada no Mercado Pago;
+- expor OAuth, webhook e retorno local com um único túnel ngrok;
+- preencher as variáveis de ambiente;
+- executar a migration e o job de expiração de reservas;
+- homologar pagamentos e reembolsos.
+
+Após atualizar o projeto:
+
+```powershell
+python -m pip install -r requirements.txt
+python -m alembic upgrade head
+```
+
 ## Configuração das imagens
 
 O arquivo `.env.example` contém as configurações do armazenamento local:
@@ -87,7 +107,7 @@ python -m alembic current
 O resultado esperado do segundo comando é:
 
 ```text
-20260919_0004 (head)
+20261017_0005 (head)
 ```
 
 Para verificar se os models e o banco continuam sincronizados:
@@ -152,6 +172,29 @@ entre novamente caso a sessão tenha sido aberta antes da promoção.
 `POST`, `PATCH` e `DELETE` de `/api/v1/categories` e a listagem `GET /api/v1/users`
 também passaram a exigir um administrador. A consulta de categorias continua pública. `GET /api/v1/auth/me` agora
 informa o campo `administrador`.
+## Migration de perguntas e respostas
+
+A migration `20261017_0005_anuncio_perguntas.py` cria a tabela `anuncio_perguntas`,
+usada nas perguntas públicas feitas ao vendedor de um anúncio. As regras de negócio
+estão em [`docs/domain/anuncio_pergunta.md`](docs/domain/anuncio_pergunta.md).
+
+| Campo | Descrição |
+|---|---|
+| `id` | UUID da pergunta |
+| `anuncio_id` | Anúncio ao qual a pergunta pertence |
+| `autor_id` | Usuário que fez a pergunta |
+| `pergunta` | Texto da pergunta (3 a 500 caracteres) |
+| `resposta` | Resposta do vendedor; `NULL` enquanto não for respondida |
+| `respondido_em` | Data da resposta em UTC; `NULL` enquanto não for respondida |
+| `criado_em` | Data da pergunta em UTC |
+| `atualizado_em` | Data da última atualização em UTC |
+
+Restrições importantes:
+
+- `resposta` e `respondido_em` são preenchidos sempre juntos;
+- a chave estrangeira para `anuncios` usa `ON DELETE CASCADE`;
+- o índice `(anuncio_id, criado_em DESC)` atende a listagem do anúncio;
+- atualizações recebem `atualizado_em` pelo mesmo trigger das demais tabelas.
 
 ## Categorias para desenvolvimento
 
@@ -348,6 +391,9 @@ Principais códigos de erro do upload:
 | `PATCH` | `/api/v1/ads/{id}` | Sim | Atualiza um anúncio do vendedor |
 | `DELETE` | `/api/v1/ads/{id}` | Sim | Exclui logicamente um anúncio |
 | `GET` | `/api/v1/users/{vendedor_id}/ads` | Não | Lista anúncios de um vendedor |
+| `GET` | `/api/v1/ads/{id}/questions` | Não | Lista as perguntas e respostas do anúncio |
+| `POST` | `/api/v1/ads/{id}/questions` | Sim | Faz uma pergunta ao vendedor |
+| `POST` | `/api/v1/ads/{id}/questions/{pergunta_id}/answer` | Sim | Vendedor responde uma pergunta |
 
 Os filtros disponíveis para `GET /ads` são `category_id`, `status`, `search`,
 `min_price`, `max_price`, `offset` e `limit`.

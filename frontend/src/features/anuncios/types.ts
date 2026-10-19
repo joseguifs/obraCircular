@@ -48,3 +48,13 @@ export interface AnuncioFiltros {
 export type ErrosAnuncio = Partial<
   Record<'titulo' | 'descricao' | 'categoria' | 'endereco' | 'preco' | 'quantidade' | 'imagens', string>
 >
+
+export interface AnuncioPergunta {
+  id: string
+  anuncio_id: string
+  autor_id: string
+  pergunta: string
+  resposta: string | null
+  criado_em: string
+  respondido_em: string | null
+}

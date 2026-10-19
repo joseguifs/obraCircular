@@ -26,3 +26,23 @@ class TokenResponse(BaseModel):
 
 class UsuarioAtualResponse(UsuarioRead):
     administrador: bool = False
+class EsqueciSenhaRequest(BaseModel):
+    email: EmailStr
+
+    @field_validator("email")
+    @classmethod
+    def normalizar_email(cls, valor: EmailStr) -> str:
+        return str(valor).lower()
+
+
+class EsqueciSenhaResponse(BaseModel):
+    detail: str
+
+
+class ValidarTokenRecuperacaoRequest(BaseModel):
+    token: str = Field(min_length=1, max_length=128)
+
+
+class RedefinirSenhaRequest(BaseModel):
+    token: str = Field(min_length=1, max_length=128)
+    nova_senha: str = Field(min_length=8, max_length=72)
