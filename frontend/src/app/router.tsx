@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
-import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
+import { Navigate, Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router'
+import { EsqueciSenhaPage } from '../features/autenticacao/EsqueciSenhaPage'
 import { LoginPage } from '../features/autenticacao/LoginPage'
+import { RedefinirSenhaPage } from '../features/autenticacao/RedefinirSenhaPage'
 import { AnuncioDetalhePage } from '../features/anuncios/AnuncioDetalhePage'
 import { AnuncioPublicadoPage } from '../features/anuncios/AnuncioPublicadoPage'
 import { PublicarAnuncioPage } from '../features/anuncios/PublicarAnuncioPage'
@@ -27,7 +29,11 @@ export function AppRouter() {
         <Route element={<PublicOnlyRoute />}>
           <Route path="/login" element={<LoginRoute />} />
           <Route path="/cadastro" element={<CadastroRoute />} />
+          <Route path="/esqueci-senha" element={<EsqueciSenhaRoute />} />
         </Route>
+
+        {/* Fora do PublicOnlyRoute: o link do e-mail deve abrir mesmo com uma sessão ativa. */}
+        <Route path="/redefinir-senha" element={<RedefinirSenhaRoute />} />
 
         <Route element={<ProtectedRoute />}>
           <Route element={<MarketplaceLayout />}>
@@ -71,6 +77,7 @@ function LoginRoute() {
     <LoginPage
       aoAutenticar={concluirLogin}
       aoCadastrar={() => navegar('/cadastro')}
+      aoRecuperarSenha={() => navegar('/esqueci-senha')}
     />
   )
 }
@@ -80,12 +87,31 @@ function CadastroRoute() {
   return <CadastroUsuarioPage aoEntrar={() => navegar('/login')} />
 }
 
+function EsqueciSenhaRoute() {
+  const navegar = useNavigate()
+  return <EsqueciSenhaPage aoVoltarParaLogin={() => navegar('/login')} />
+}
+
+function RedefinirSenhaRoute() {
+  const navegar = useNavigate()
+  const [parametros] = useSearchParams()
+  return (
+    <RedefinirSenhaPage
+      token={parametros.get('token')}
+      aoIrParaLogin={() => navegar('/login', { replace: true })}
+      aoSolicitarNovoLink={() => navegar('/esqueci-senha', { replace: true })}
+    />
+  )
+}
+
 function AtualizarTitulo() {
   const { pathname } = useLocation()
 
   useEffect(() => {
     if (pathname === '/login') document.title = 'Entrar | Obra Circular'
     else if (pathname === '/cadastro') document.title = 'Crie sua conta | Obra Circular'
+    else if (pathname === '/esqueci-senha') document.title = 'Recuperar senha | Obra Circular'
+    else if (pathname === '/redefinir-senha') document.title = 'Redefinir senha | Obra Circular'
     else if (pathname === '/home' || pathname === '/') document.title = 'Início | Obra Circular'
     else if (pathname === '/perfil') document.title = 'Meu perfil | Obra Circular'
     else if (pathname === '/perfil/enderecos') document.title = 'Meus endereços | Obra Circular'

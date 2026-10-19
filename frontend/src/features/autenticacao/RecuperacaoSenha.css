@@ -1,0 +1,100 @@
+.recuperacao-card {
+  width: min(100%, 480px);
+}
+
+.recuperacao-form {
+  display: grid;
+  margin-top: 32px;
+  gap: 20px;
+}
+
+.recuperacao-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 26px;
+  padding: 0;
+  border: 0;
+  color: var(--cinza-texto);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.recuperacao-voltar:hover {
+  color: var(--azul-marinho);
+}
+
+.recuperacao-voltar svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.recuperacao-status {
+  min-height: 380px;
+}
+
+.recuperacao-status .submit-button {
+  width: 100%;
+}
+
+.success-state > .recuperacao-reenvio {
+  margin: 20px 0 0;
+}
+
+.recuperacao-reenvio button {
+  padding: 0;
+  border: 0;
+  color: var(--azul-marinho);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+.recuperacao-reenvio button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.recuperacao-alerta {
+  margin-top: 16px;
+  text-align: left;
+}
+
+.recuperacao-spinner {
+  width: 34px;
+  height: 34px;
+  margin: 0 auto 20px;
+  border-color: var(--azul-suave-borda);
+  border-top-color: var(--azul-marinho);
+}
+
+.recuperacao-icone-erro {
+  border-color: #f3c6bd;
+  color: var(--vermelho);
+  background: #fdecea;
+}
+
+.login-esqueci {
+  padding: 0;
+  border: 0;
+  color: var(--azul-marinho);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.login-esqueci:hover {
+  text-decoration: underline;
+}

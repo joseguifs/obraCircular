@@ -1,5 +1,6 @@
 @import url('./features/usuarios/CadastroUsuarioPage.css');
 @import url('./features/autenticacao/LoginPage.css');
+@import url('./features/autenticacao/RecuperacaoSenha.css');
 @import url('./layouts/MarketplaceLayout.css');
 @import url('./features/home/HomePage.css');
 @import url('./features/not-found/NotFoundPage.css');
