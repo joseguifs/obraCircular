@@ -21,6 +21,11 @@ O MVP permite no máximo um reembolso por pagamento, sempre integral.
 - Em caso de falha técnica, o mesmo registro passa de `FALHOU` novamente para
   `PROCESSANDO`; não se cria outro reembolso.
 - A mesma `idempotency_key` deve ser reutilizada nas tentativas da mesma operação.
+- Repetir uma solicitação concluída retorna o mesmo reembolso. Um reembolso já
+  confirmado como em processamento no provedor não gera outra chamada de devolução.
+- A confirmação consultada pelo webhook atualiza também o registro do reembolso.
+- Falhas na obtenção do token do vendedor deixam o reembolso em `FALHOU`, mantendo
+  visível a necessidade de reconectar a conta ou procurar o atendimento.
 
 ## Efeitos do reembolso concluído
 
@@ -34,3 +39,18 @@ Na mesma transação da confirmação:
    sido devolvida durante o cancelamento.
 
 O reembolso não pode ser concluído se o repasse já estiver `PAGO`.
+
+No Split 1:1 do MVP, `PAGO` é criado junto com a aprovação e não impede o reembolso.
+O item anterior aplica-se apenas a um eventual repasse manual futuro e fica substituído
+por estas regras:
+
+- o reembolso é solicitado com o token OAuth do vendedor e chave de idempotência;
+- Mercado Pago e marketplace devolvem suas parcelas proporcionalmente;
+- se faltar saldo do vendedor, o reembolso local passa para `FALHOU` e exige análise;
+- a plataforma pode cobrir a diferença somente depois de confirmar saldo do fundo e
+  executar a devolução por um meio autorizado;
+- o valor coberto cria dívida contábil do vendedor; uma sobretaxa configurável em vendas
+  futuras poderá amortizá-la até zerar;
+- a API pública do Split 1:1 não completa automaticamente a parcela sem saldo. A saída
+  do fundo e a cobrança futura serão implementadas quando o meio autorizado e o fluxo
+  administrativo estiverem definidos.
