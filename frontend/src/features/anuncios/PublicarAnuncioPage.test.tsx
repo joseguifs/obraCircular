@@ -24,6 +24,22 @@ const endereco = {
   estado: 'SP',
 }
 
+const contaAtiva = {
+  provedor: 'MERCADO_PAGO',
+  status: 'ATIVA',
+  conta_externa_id: '123456789',
+  autorizado_em: '2026-10-16T12:00:00Z',
+  token_expira_em: '2027-04-16T12:00:00Z',
+}
+
+const contaPendente = {
+  ...contaAtiva,
+  status: 'PENDENTE',
+  conta_externa_id: null,
+  autorizado_em: null,
+  token_expira_em: null,
+}
+
 beforeEach(() => {
   window.history.replaceState({}, '', '/anuncios/novo')
   sessionStorage.setItem(
@@ -64,6 +80,7 @@ describe('PublicarAnuncioPage', () => {
       .fn()
       .mockResolvedValueOnce(respostaJson({ items: [categoria], total: 1, offset: 0, limit: 100 }))
       .mockResolvedValueOnce(respostaJson({ items: [endereco], total: 1, offset: 0, limit: 100 }))
+      .mockResolvedValueOnce(respostaJson(contaAtiva))
     vi.stubGlobal('fetch', fetchMock)
     const user = userEvent.setup()
     renderPagina()
@@ -73,7 +90,7 @@ describe('PublicarAnuncioPage', () => {
 
     expect(screen.getByText('Informe um título com pelo menos 3 caracteres.')).toBeInTheDocument()
     expect(screen.getByText('Selecione uma categoria.')).toBeInTheDocument()
-    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).toHaveBeenCalledTimes(3)
   })
 
   it('publica os dados válidos e abre a confirmação', async () => {
@@ -82,6 +99,7 @@ describe('PublicarAnuncioPage', () => {
       .fn()
       .mockResolvedValueOnce(respostaJson({ items: [categoria], total: 1, offset: 0, limit: 100 }))
       .mockResolvedValueOnce(respostaJson({ items: [endereco], total: 1, offset: 0, limit: 100 }))
+      .mockResolvedValueOnce(respostaJson(contaAtiva))
       .mockResolvedValueOnce(
         respostaJson(
           {
@@ -114,9 +132,9 @@ describe('PublicarAnuncioPage', () => {
 
     expect(await screen.findByText('Seu material já está no marketplace')).toBeInTheDocument()
     expect(window.location.pathname).toBe(`/anuncios/${anuncioId}/publicado`)
-    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(fetchMock).toHaveBeenCalledTimes(4)
 
-    const [url, opcoes] = fetchMock.mock.calls[2] as [string, RequestInit]
+    const [url, opcoes] = fetchMock.mock.calls[3] as [string, RequestInit]
     expect(url).toBe('http://localhost:8000/api/v1/ads')
     expect(JSON.parse(opcoes.body as string)).toEqual({
       titulo: 'Blocos de concreto',
@@ -134,6 +152,7 @@ describe('PublicarAnuncioPage', () => {
       .fn()
       .mockResolvedValueOnce(respostaJson({ items: [categoria], total: 1, offset: 0, limit: 100 }))
       .mockResolvedValueOnce(respostaJson({ items: [], total: 0, offset: 0, limit: 100 }))
+      .mockResolvedValueOnce(respostaJson(contaAtiva))
       .mockResolvedValueOnce(respostaJson(endereco, 201))
     vi.stubGlobal('fetch', fetchMock)
     const user = userEvent.setup()
@@ -150,10 +169,25 @@ describe('PublicarAnuncioPage', () => {
 
     await waitFor(() => expect(screen.getByRole('radio')).toBeChecked())
     expect(screen.queryByRole('heading', { name: 'Novo endereço' })).not.toBeInTheDocument()
-    const [url, opcoes] = fetchMock.mock.calls[2] as [string, RequestInit]
+    const [url, opcoes] = fetchMock.mock.calls[3] as [string, RequestInit]
     expect(url).toBe('http://localhost:8000/api/v1/users/me/addresses')
     expect(JSON.parse(opcoes.body as string)).toEqual(
       expect.objectContaining({ cep: '01310100', estado: 'SP' }),
     )
+  })
+
+  it('oferece cadastro no Mercado Pago antes de exibir o formulário', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(respostaJson({ items: [categoria], total: 1, offset: 0, limit: 100 }))
+      .mockResolvedValueOnce(respostaJson({ items: [endereco], total: 1, offset: 0, limit: 100 }))
+      .mockResolvedValueOnce(respostaJson(contaPendente))
+    vi.stubGlobal('fetch', fetchMock)
+    renderPagina()
+
+    expect(
+      await screen.findByRole('button', { name: 'Cadastrar conta do Mercado Pago' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Publicar anúncio' })).not.toBeInTheDocument()
   })
 })

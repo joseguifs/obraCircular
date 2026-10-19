@@ -20,8 +20,6 @@ const POR_PAGINA = 10
 
 type Painel = { modo: 'novo' } | { modo: 'editar'; categoria: Categoria } | null
 
-// TODO(autenticação): esta tela é pública por enquanto. Quando o perfil administrativo
-// existir, mover a rota para dentro do ProtectedRoute e voltar a exigir login na API.
 export function CategoriasPage() {
   const [filtro, setFiltro] = useState<FiltroStatus>('')
   const [offset, setOffset] = useState(0)

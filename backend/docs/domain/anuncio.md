@@ -8,6 +8,9 @@
 
 ## Regras
 
+- Não existe um papel fixo de vendedor: qualquer usuário `ATIVO` pode anunciar.
+- Antes de publicar o primeiro anúncio, o usuário deve conectar uma conta Mercado Pago
+  com status `ATIVA`.
 - O endereço do anúncio deve pertencer ao vendedor.
 - O vendedor não pode comprar o próprio anúncio.
 - Preço e quantidade não podem ser negativos.

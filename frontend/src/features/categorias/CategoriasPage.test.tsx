@@ -191,19 +191,42 @@ describe('CategoriasPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Falha interna.')
   })
 
-  it('é acessível sem login pela rota /categorias', async () => {
+  it('redireciona /categorias para a administração e exige login', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(lista([tijolos])))
 
-    render(
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRouter />
-        </AuthProvider>
-      </BrowserRouter>,
+    renderApp()
+
+    expect(await screen.findByRole('heading', { name: 'Bem-vindo de volta' })).toBeInTheDocument()
+    expect(screen.queryByText('Tijolos e blocos')).not.toBeInTheDocument()
+  })
+
+  it('é exibida na administração para administradores', async () => {
+    sessionStorage.setItem(
+      'obra-circular:sessao',
+      JSON.stringify({
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token',
+        expiraEm: Date.now() + 900_000,
+        usuario: { id: 'admin-id', nome: 'Ana Admin', administrador: true },
+      }),
     )
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(lista([tijolos])))
+
+    renderApp()
 
     expect(await screen.findByRole('heading', { name: 'Categorias' })).toBeInTheDocument()
     expect(await screen.findByText('Tijolos e blocos')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Sair' })).not.toBeInTheDocument()
+    expect(window.location.pathname).toBe('/admin/categorias')
+    expect(screen.getByRole('link', { name: 'Categorias' })).toHaveClass('admin-tab--ativa')
   })
 })
+
+function renderApp() {
+  return render(
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRouter />
+      </AuthProvider>
+    </BrowserRouter>,
+  )
+}

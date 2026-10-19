@@ -1,4 +1,9 @@
+from uuid import UUID
+
 from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.administrador import Administrador
 
 USUARIO_PADRAO = {
     "nome": "Ana Silva",
@@ -88,7 +93,9 @@ async def test_obter_outro_usuario_retorna_403(client: AsyncClient) -> None:
     assert resposta.status_code == 403
 
 
-async def test_listar_usuarios_nao_inclui_excluidos(client: AsyncClient) -> None:
+async def test_listar_usuarios_nao_inclui_excluidos(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
     visivel = await _criar_usuario(client, email="visivel@example.com")
     excluido = await _criar_usuario(client, email="excluido@example.com")
     headers_excluido = await _headers_autenticacao(client, email="excluido@example.com")
@@ -98,6 +105,8 @@ async def test_listar_usuarios_nao_inclui_excluidos(client: AsyncClient) -> None
     )
     assert resposta_delete.status_code == 204
 
+    db_session.add(Administrador(usuario_id=UUID(visivel["id"])))
+    await db_session.commit()
     headers_visivel = await _headers_autenticacao(client, email="visivel@example.com")
     resposta_lista = await client.get("/api/v1/users", headers=headers_visivel)
     assert resposta_lista.status_code == 200
@@ -106,6 +115,18 @@ async def test_listar_usuarios_nao_inclui_excluidos(client: AsyncClient) -> None
 
     assert visivel["id"] in ids_listados
     assert excluido["id"] not in ids_listados
+
+
+async def test_listar_usuarios_exige_administrador(client: AsyncClient) -> None:
+    await _criar_usuario(client)
+    headers = await _headers_autenticacao(client)
+
+    sem_login = await client.get("/api/v1/users")
+    sem_perfil = await client.get("/api/v1/users", headers=headers)
+
+    assert sem_login.status_code == 401
+    assert sem_perfil.status_code == 403
+    assert sem_perfil.json()["code"] == "FORBIDDEN"
 
 
 async def test_usuario_excluido_nao_aparece_mais_no_get_por_id(client: AsyncClient) -> None:

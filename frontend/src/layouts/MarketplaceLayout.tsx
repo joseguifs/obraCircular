@@ -44,7 +44,25 @@ export function MarketplaceLayout() {
               Explorar
             </Link>
             <span className="app-nav-item app-nav-item--futuro">Meus anúncios</span>
+            {sessao && (
+              <Link to="/pedidos" className={location.pathname.startsWith('/pedidos')
+                ? 'app-nav-link app-nav-link--ativo' : 'app-nav-link'}>
+                Meus pedidos
+              </Link>
+            )}
             <span className="app-nav-item app-nav-item--futuro">Mensagens</span>
+            {sessao?.usuario.administrador && (
+              <Link
+                to="/admin"
+                className={
+                  location.pathname.startsWith('/admin')
+                    ? 'app-nav-link app-nav-link--ativo'
+                    : 'app-nav-link'
+                }
+              >
+                Administração
+              </Link>
+            )}
           </nav>
 
           <form className="app-search" role="search" onSubmit={enviarBusca}>

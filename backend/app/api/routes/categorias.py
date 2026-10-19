@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Response, status
 
-from app.api.dependencies import CurrentUser, DatabaseSession
+from app.api.dependencies import CurrentAdmin, DatabaseSession
 from app.schemas.categoria import (
     CategoriaCreate,
     CategoriaFilters,
@@ -25,9 +25,8 @@ router = APIRouter(prefix="/categories", tags=["categorias"])
 async def criar_categoria(
     dados: CategoriaCreate,
     session: DatabaseSession,
+    _admin: CurrentAdmin,
 ) -> CategoriaResponse:
-    # TODO(autenticação): exigir usuário autenticado (CurrentUser) novamente quando
-    # houver perfil administrativo. Liberado temporariamente para a tela de categorias.
     categoria = await CategoriaService(session).criar(dados)
     return CategoriaResponse.model_validate(categoria)
 
@@ -63,9 +62,8 @@ async def atualizar_categoria(
     categoria_id: UUID,
     dados: CategoriaUpdate,
     session: DatabaseSession,
+    _admin: CurrentAdmin,
 ) -> CategoriaResponse:
-    # TODO(autenticação): exigir usuário autenticado (CurrentUser) novamente quando
-    # houver perfil administrativo. Liberado temporariamente para a tela de categorias.
     categoria = await CategoriaService(session).atualizar(categoria_id, dados)
     return CategoriaResponse.model_validate(categoria)
 
@@ -78,7 +76,7 @@ async def atualizar_categoria(
 async def excluir_categoria(
     categoria_id: UUID,
     session: DatabaseSession,
-    _usuario: CurrentUser,
+    _admin: CurrentAdmin,
 ) -> Response:
     await CategoriaService(session).excluir(categoria_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -1,5 +1,11 @@
 import { apiRequest, type ListResponse } from '../../lib/api'
-import type { Anuncio, AnuncioFiltros, AnuncioImagem, AnuncioPayload } from './types'
+import type {
+  Anuncio,
+  AnuncioFiltros,
+  AnuncioImagem,
+  AnuncioPayload,
+  AnuncioPergunta,
+} from './types'
 
 export function listarAnuncios(filtros: AnuncioFiltros = {}): Promise<ListResponse<Anuncio>> {
   return apiRequest<ListResponse<Anuncio>>(`/ads${queryString(filtros)}`)
@@ -51,4 +57,31 @@ export async function enviarImagens(anuncioId: string, imagens: File[]): Promise
 
 export function excluirAnuncio(anuncioId: string): Promise<void> {
   return apiRequest<void>(`/ads/${anuncioId}`, { method: 'DELETE' })
+}
+
+export function listarPerguntas(
+  anuncioId: string,
+  paginacao: { offset?: number; limit?: number } = {},
+): Promise<ListResponse<AnuncioPergunta>> {
+  return apiRequest<ListResponse<AnuncioPergunta>>(
+    `/ads/${anuncioId}/questions${queryString(paginacao)}`,
+  )
+}
+
+export function criarPergunta(anuncioId: string, pergunta: string): Promise<AnuncioPergunta> {
+  return apiRequest<AnuncioPergunta>(`/ads/${anuncioId}/questions`, {
+    method: 'POST',
+    body: JSON.stringify({ pergunta }),
+  })
+}
+
+export function responderPergunta(
+  anuncioId: string,
+  perguntaId: string,
+  resposta: string,
+): Promise<AnuncioPergunta> {
+  return apiRequest<AnuncioPergunta>(`/ads/${anuncioId}/questions/${perguntaId}/answer`, {
+    method: 'POST',
+    body: JSON.stringify({ resposta }),
+  })
 }

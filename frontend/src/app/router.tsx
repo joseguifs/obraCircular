@@ -1,6 +1,13 @@
 import { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
+import { AdminAnunciosPage } from '../features/admin/AdminAnunciosPage'
+import { AdminLayout } from '../features/admin/AdminLayout'
+import { AdminResumoPage } from '../features/admin/AdminResumoPage'
+import { AdminUsuariosPage } from '../features/admin/AdminUsuariosPage'
+import { Navigate, Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router'
+import { EsqueciSenhaPage } from '../features/autenticacao/EsqueciSenhaPage'
 import { LoginPage } from '../features/autenticacao/LoginPage'
+import { RedefinirSenhaPage } from '../features/autenticacao/RedefinirSenhaPage'
 import { AnuncioDetalhePage } from '../features/anuncios/AnuncioDetalhePage'
 import { AnuncioPublicadoPage } from '../features/anuncios/AnuncioPublicadoPage'
 import { PublicarAnuncioPage } from '../features/anuncios/PublicarAnuncioPage'
@@ -9,10 +16,14 @@ import type { Sessao } from '../features/autenticacao/types'
 import { useAuth } from '../features/autenticacao/useAuth'
 import { EnderecosPage } from '../features/enderecos/EnderecosPage'
 import { HomePage } from '../features/home/HomePage'
+import { ContaMercadoPagoPage } from '../features/pagamentos/ContaMercadoPagoPage'
+import { PagamentoRetornoPage } from '../features/pagamentos/PagamentoRetornoPage'
+import { PedidosPage } from '../features/pagamentos/PedidosPage'
 import { NotFoundPage } from '../features/not-found/NotFoundPage'
 import { CadastroUsuarioPage } from '../features/usuarios/CadastroUsuarioPage'
 import { PerfilPage } from '../features/usuarios/PerfilPage'
 import { MarketplaceLayout } from '../layouts/MarketplaceLayout'
+import { AdminRoute } from '../routes/AdminRoute'
 import { ProtectedRoute } from '../routes/ProtectedRoute'
 import { PublicOnlyRoute } from '../routes/PublicOnlyRoute'
 
@@ -24,7 +35,11 @@ export function AppRouter() {
         <Route element={<PublicOnlyRoute />}>
           <Route path="/login" element={<LoginRoute />} />
           <Route path="/cadastro" element={<CadastroRoute />} />
+          <Route path="/esqueci-senha" element={<EsqueciSenhaRoute />} />
         </Route>
+
+        {/* Fora do PublicOnlyRoute: o link do e-mail deve abrir mesmo com uma sessão ativa. */}
+        <Route path="/redefinir-senha" element={<RedefinirSenhaRoute />} />
 
         <Route element={<ProtectedRoute />}>
           <Route element={<MarketplaceLayout />}>
@@ -32,15 +47,24 @@ export function AppRouter() {
             <Route path="/home" element={<HomePage />} />
             <Route path="/perfil" element={<PerfilPage />} />
             <Route path="/perfil/enderecos" element={<EnderecosPage />} />
+            <Route path="/perfil/mercado-pago" element={<ContaMercadoPagoPage />} />
+            <Route path="/pagamento/retorno" element={<PagamentoRetornoPage />} />
+            <Route path="/pedidos" element={<PedidosPage />} />
+            <Route path="/pedidos/:pedidoId" element={<PagamentoRetornoPage />} />
             <Route path="/anuncios/novo" element={<PublicarAnuncioPage />} />
             <Route path="/anuncios/:anuncioId/publicado" element={<AnuncioPublicadoPage />} />
             <Route path="/anuncios/:anuncioId" element={<AnuncioDetalhePage />} />
-          </Route>
-        </Route>
+            <Route path="/categorias" element={<Navigate to="/admin/categorias" replace />} />
 
-        <Route element={<MarketplaceLayout />}>
-          {/* TODO(autenticação): rota pública por enquanto; mover para o ProtectedRoute depois. */}
-          <Route path="/categorias" element={<CategoriasPage />} />
+            <Route element={<AdminRoute />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminResumoPage />} />
+                <Route path="anuncios" element={<AdminAnunciosPage />} />
+                <Route path="usuarios" element={<AdminUsuariosPage />} />
+                <Route path="categorias" element={<CategoriasPage />} />
+              </Route>
+            </Route>
+          </Route>
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />
@@ -64,6 +88,7 @@ function LoginRoute() {
     <LoginPage
       aoAutenticar={concluirLogin}
       aoCadastrar={() => navegar('/cadastro')}
+      aoRecuperarSenha={() => navegar('/esqueci-senha')}
     />
   )
 }
@@ -73,15 +98,43 @@ function CadastroRoute() {
   return <CadastroUsuarioPage aoEntrar={() => navegar('/login')} />
 }
 
+function EsqueciSenhaRoute() {
+  const navegar = useNavigate()
+  return <EsqueciSenhaPage aoVoltarParaLogin={() => navegar('/login')} />
+}
+
+function RedefinirSenhaRoute() {
+  const navegar = useNavigate()
+  const [parametros] = useSearchParams()
+  return (
+    <RedefinirSenhaPage
+      token={parametros.get('token')}
+      aoIrParaLogin={() => navegar('/login', { replace: true })}
+      aoSolicitarNovoLink={() => navegar('/esqueci-senha', { replace: true })}
+    />
+  )
+}
+
 function AtualizarTitulo() {
   const { pathname } = useLocation()
 
   useEffect(() => {
     if (pathname === '/login') document.title = 'Entrar | Obra Circular'
     else if (pathname === '/cadastro') document.title = 'Crie sua conta | Obra Circular'
+    else if (pathname === '/esqueci-senha') document.title = 'Recuperar senha | Obra Circular'
+    else if (pathname === '/redefinir-senha') document.title = 'Redefinir senha | Obra Circular'
     else if (pathname === '/home' || pathname === '/') document.title = 'Início | Obra Circular'
     else if (pathname === '/perfil') document.title = 'Meu perfil | Obra Circular'
     else if (pathname === '/perfil/enderecos') document.title = 'Meus endereços | Obra Circular'
+    else if (pathname === '/admin') document.title = 'Administração | Obra Circular'
+    else if (pathname === '/admin/anuncios') document.title = 'Anúncios · Administração | Obra Circular'
+    else if (pathname === '/admin/usuarios') document.title = 'Usuários · Administração | Obra Circular'
+    else if (pathname === '/admin/categorias' || pathname === '/categorias')
+      document.title = 'Categorias · Administração | Obra Circular'
+    else if (pathname === '/perfil/mercado-pago') document.title = 'Mercado Pago | Obra Circular'
+    else if (pathname === '/pagamento/retorno') document.title = 'Pagamento | Obra Circular'
+    else if (pathname === '/pedidos') document.title = 'Meus pedidos | Obra Circular'
+    else if (pathname.startsWith('/pedidos/')) document.title = 'Pedido | Obra Circular'
     else if (pathname === '/categorias') document.title = 'Categorias | Obra Circular'
     else if (pathname === '/anuncios/novo') document.title = 'Publicar anúncio | Obra Circular'
     else if (/^\/anuncios\/[^/]+\/publicado$/.test(pathname)) document.title = 'Anúncio publicado | Obra Circular'

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import CheckConstraint, Index, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import CheckConstraint, Index, Integer, String, Text, UniqueConstraint, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -24,6 +24,13 @@ class EventoProvedor(UUIDPrimaryKeyMixin, Base):
             "status_processamento",
             "recebido_em",
         ),
+        Index(
+            "ix_eventos_reprocessamento",
+            "status_processamento",
+            "proxima_tentativa_em",
+            "bloqueado_ate",
+            postgresql_where=text("status_processamento IN ('PENDENTE', 'FALHOU')"),
+        ),
         Index("ix_eventos_recurso_externo", "provedor", "recurso_externo_id"),
     )
 
@@ -43,5 +50,9 @@ class EventoProvedor(UUIDPrimaryKeyMixin, Base):
     )
     tentativas: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     recebido_em: Mapped[datetime] = mapped_column(server_default=func.now())
+    ultima_tentativa_em: Mapped[datetime | None]
+    proxima_tentativa_em: Mapped[datetime | None]
+    bloqueado_ate: Mapped[datetime | None]
+    bloqueado_por: Mapped[str | None] = mapped_column(String(100))
     processado_em: Mapped[datetime | None]
     erro: Mapped[str | None] = mapped_column(Text)

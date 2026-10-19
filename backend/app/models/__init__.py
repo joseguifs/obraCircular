@@ -1,5 +1,8 @@
+from app.models.administrador import Administrador
 from app.models.anuncio import Anuncio
 from app.models.anuncio_imagem import AnuncioImagem
+from app.models.anuncio_pergunta import AnuncioPergunta
+from app.models.autorizacao_oauth import AutorizacaoOAuth
 from app.models.base import Base
 from app.models.categoria import Categoria
 from app.models.conta_pagamento import ContaPagamento
@@ -11,11 +14,15 @@ from app.models.pagamento import Pagamento
 from app.models.pedido import Pedido
 from app.models.reembolso import Reembolso
 from app.models.repasse import Repasse
+from app.models.token_recuperacao_senha import TokenRecuperacaoSenha
 from app.models.usuario import Usuario
 
 __all__ = [
+    "Administrador",
     "Anuncio",
     "AnuncioImagem",
+    "AnuncioPergunta",
+    "AutorizacaoOAuth",
     "Base",
     "Categoria",
     "ContaPagamento",
@@ -27,5 +34,6 @@ __all__ = [
     "Pedido",
     "Reembolso",
     "Repasse",
+    "TokenRecuperacaoSenha",
     "Usuario",
 ]

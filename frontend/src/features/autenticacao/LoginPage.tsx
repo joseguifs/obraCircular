@@ -8,6 +8,7 @@ import type { Sessao } from './types'
 interface LoginPageProps {
   aoAutenticar: (sessao: Sessao) => void
   aoCadastrar: () => void
+  aoRecuperarSenha: () => void
 }
 
 interface ErrosLogin {
@@ -15,7 +16,7 @@ interface ErrosLogin {
   senha?: string
 }
 
-export function LoginPage({ aoAutenticar, aoCadastrar }: LoginPageProps) {
+export function LoginPage({ aoAutenticar, aoCadastrar, aoRecuperarSenha }: LoginPageProps) {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [mostrarSenha, setMostrarSenha] = useState(false)
@@ -136,6 +137,9 @@ export function LoginPage({ aoAutenticar, aoCadastrar }: LoginPageProps) {
               </button>
               <span>Mostrar senha</span>
             </div>
+            <button type="button" className="login-esqueci" onClick={aoRecuperarSenha}>
+              Esqueci minha senha
+            </button>
           </div>
 
           {erroGeral && (

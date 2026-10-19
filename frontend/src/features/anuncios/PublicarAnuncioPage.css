@@ -47,6 +47,42 @@
   gap: 22px;
 }
 
+.publish-payment-gate {
+  max-width: 720px;
+  padding: clamp(24px, 4vw, 38px);
+  border: 1px solid var(--azul-suave-borda);
+  border-radius: 22px;
+  background: var(--azul-suave-bg);
+  box-shadow: 0 14px 36px rgba(12, 30, 54, 0.06);
+}
+
+.publish-payment-gate h2 {
+  margin: 12px 0;
+  color: var(--azul-marinho);
+  font-size: clamp(25px, 4vw, 34px);
+}
+
+.publish-payment-gate p {
+  max-width: 620px;
+  color: var(--cinza-texto);
+  line-height: 1.6;
+}
+
+.publish-payment-gate .publish-button {
+  margin-top: 10px;
+}
+
+.publish-account-success {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid #a7d7bc;
+  border-radius: 12px;
+  color: #17663a;
+  background: #eaf8ef;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .publish-card {
   padding: clamp(24px, 4vw, 38px);
   border: 1px solid var(--cinza-borda);

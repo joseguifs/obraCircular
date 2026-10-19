@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.dependencies import CurrentUser
+from app.api.dependencies import CurrentAdmin, CurrentUser
 from app.core.database import get_db_session
 from app.core.errors import AuthorizationError
 from app.models.enums import UsuarioStatus
@@ -37,7 +37,7 @@ async def criar_usuario(dados: UsuarioCreate, servico: ServicoDep) -> UsuarioRea
 @router.get("", response_model=UsuarioListResponse)
 async def listar_usuarios(
     servico: ServicoDep,
-    _usuario_atual: CurrentUser,
+    _admin: CurrentAdmin,
     status_filtro: Annotated[UsuarioStatus | None, Query(alias="status")] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     offset: Annotated[int, Query(ge=0)] = 0,

@@ -12,8 +12,16 @@ from app.schemas.anuncio import (
     AnuncioUpdate,
 )
 from app.schemas.anuncio_imagem import AnuncioImagemListResponse
+from app.schemas.anuncio_pergunta import (
+    AnuncioPerguntaCreate,
+    AnuncioPerguntaFilters,
+    AnuncioPerguntaListResponse,
+    AnuncioPerguntaResponse,
+    AnuncioRespostaCreate,
+)
 from app.services.anuncio import AnuncioService
 from app.services.anuncio_imagem import AnuncioImagemService
+from app.services.anuncio_pergunta import AnuncioPerguntaService
 
 router = APIRouter(prefix="/ads", tags=["anúncios"])
 user_router = APIRouter(prefix="/users", tags=["anúncios"])
@@ -59,6 +67,53 @@ async def listar_imagens(
     session: DatabaseSession,
 ) -> AnuncioImagemListResponse:
     return await AnuncioImagemService(session).listar(anuncio_id)
+
+
+@router.get(
+    "/{anuncio_id}/questions",
+    response_model=AnuncioPerguntaListResponse,
+    summary="Lista as perguntas públicas de um anúncio",
+)
+async def listar_perguntas(
+    anuncio_id: UUID,
+    session: DatabaseSession,
+    filtros: Annotated[AnuncioPerguntaFilters, Query()],
+) -> AnuncioPerguntaListResponse:
+    return await AnuncioPerguntaService(session).listar(anuncio_id, filtros)
+
+
+@router.post(
+    "/{anuncio_id}/questions",
+    response_model=AnuncioPerguntaResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Faz uma pergunta ao vendedor do anúncio",
+)
+async def criar_pergunta(
+    anuncio_id: UUID,
+    dados: AnuncioPerguntaCreate,
+    session: DatabaseSession,
+    usuario: CurrentUser,
+) -> AnuncioPerguntaResponse:
+    pergunta = await AnuncioPerguntaService(session).perguntar(anuncio_id, dados, usuario.id)
+    return AnuncioPerguntaResponse.model_validate(pergunta)
+
+
+@router.post(
+    "/{anuncio_id}/questions/{pergunta_id}/answer",
+    response_model=AnuncioPerguntaResponse,
+    summary="Responde uma pergunta do anúncio (somente o vendedor)",
+)
+async def responder_pergunta(
+    anuncio_id: UUID,
+    pergunta_id: UUID,
+    dados: AnuncioRespostaCreate,
+    session: DatabaseSession,
+    vendedor: CurrentUser,
+) -> AnuncioPerguntaResponse:
+    pergunta = await AnuncioPerguntaService(session).responder(
+        anuncio_id, pergunta_id, dados, vendedor.id
+    )
+    return AnuncioPerguntaResponse.model_validate(pergunta)
 
 
 @router.get(

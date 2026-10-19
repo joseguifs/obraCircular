@@ -32,7 +32,7 @@ describe('LoginPage', () => {
     vi.stubGlobal('fetch', fetchMock)
     const user = userEvent.setup()
 
-    render(<LoginPage aoAutenticar={vi.fn()} aoCadastrar={vi.fn()} />)
+    render(<LoginPage aoAutenticar={vi.fn()} aoCadastrar={vi.fn()} aoRecuperarSenha={vi.fn()} />)
     await user.click(screen.getByRole('button', { name: 'Entrar na plataforma' }))
 
     expect(await screen.findByText('Informe seu e-mail.')).toBeInTheDocument()
@@ -49,7 +49,7 @@ describe('LoginPage', () => {
     const aoAutenticar = vi.fn()
     const user = userEvent.setup()
 
-    render(<LoginPage aoAutenticar={aoAutenticar} aoCadastrar={vi.fn()} />)
+    render(<LoginPage aoAutenticar={aoAutenticar} aoCadastrar={vi.fn()} aoRecuperarSenha={vi.fn()} />)
     await user.type(screen.getByLabelText('E-mail'), 'ANA@EXAMPLE.COM')
     await user.type(screen.getByLabelText('Senha'), 'senha-forte-123')
     await user.click(screen.getByRole('button', { name: 'Entrar na plataforma' }))
@@ -83,7 +83,7 @@ describe('LoginPage', () => {
     vi.stubGlobal('fetch', fetchMock)
     const user = userEvent.setup()
 
-    render(<LoginPage aoAutenticar={vi.fn()} aoCadastrar={vi.fn()} />)
+    render(<LoginPage aoAutenticar={vi.fn()} aoCadastrar={vi.fn()} aoRecuperarSenha={vi.fn()} />)
     await user.type(screen.getByLabelText('E-mail'), 'ana@example.com')
     await user.type(screen.getByLabelText('Senha'), 'senha-errada')
     await user.click(screen.getByRole('button', { name: 'Entrar na plataforma' }))

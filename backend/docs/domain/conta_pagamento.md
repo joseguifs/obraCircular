@@ -26,6 +26,9 @@ DESCONECTADA -> PENDENTE
 
 ## Regras
 
+- A vinculação faz parte do fluxo de publicação: qualquer usuário ativo que queira
+  anunciar pode cadastrar sua conta Mercado Pago, sem possuir previamente um papel de
+  vendedor.
 - Cada vendedor possui no máximo uma conta por provedor.
 - `conta_externa_id` identifica o vendedor no Mercado Pago.
 - Tokens OAuth nunca são armazenados em texto puro.

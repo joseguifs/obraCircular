@@ -142,6 +142,33 @@ local ignorado pelo Git. O caminho e os limites de upload podem ser alterados no
 Os arquivos `.env` contêm configurações locais, estão no `.gitignore` e não devem ser
 commitados.
 
+## Envio de e-mails (recuperação de senha)
+
+A recuperação de senha envia um link por e-mail usando SMTP. Sem SMTP configurado
+(`OBRA_CIRCULAR_SMTP_HOST` vazio), o backend não envia nada e apenas mostra o conteúdo
+do e-mail, com o link, no terminal do backend — suficiente para testar localmente.
+
+Para enviar de verdade com a conta Gmail do sistema:
+
+1. Na conta Google do Obra Circular, ative a **Verificação em duas etapas**
+   (Conta Google → Segurança).
+2. Acesse <https://myaccount.google.com/apppasswords>, crie uma senha de app
+   (ex.: "Obra Circular API") e copie os 16 caracteres gerados.
+3. Preencha no `backend/.env`:
+
+```env
+OBRA_CIRCULAR_FRONTEND_URL=http://localhost:5173
+OBRA_CIRCULAR_SMTP_HOST=smtp.gmail.com
+OBRA_CIRCULAR_SMTP_PORT=587
+OBRA_CIRCULAR_SMTP_SECURITY=starttls
+OBRA_CIRCULAR_SMTP_USERNAME=conta-do-sistema@gmail.com
+OBRA_CIRCULAR_SMTP_PASSWORD=senhadeappgerada
+OBRA_CIRCULAR_SMTP_FROM_EMAIL=conta-do-sistema@gmail.com
+```
+
+A senha de app não é a senha da conta Google e nunca deve ser commitada. Falhas de envio
+aparecem no log do backend; o usuário sempre recebe a mesma resposta na tela.
+
 ## Executar backend e frontend juntos
 
 São necessários dois terminais.

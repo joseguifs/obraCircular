@@ -8,17 +8,17 @@ transação.
 
 ```text
 Pedido criado
--> pagamento aprovado pelo provedor
--> estoque reduzido com bloqueio do anúncio
--> repasse criado como AGUARDANDO_ENTREGA
+-> estoque reservado com bloqueio do anúncio
+-> comprador conclui o Checkout Pro
+-> pagamento aprovado e confirmado consultando o provedor
+-> reserva convertida em venda sem nova baixa
+-> repasse contábil criado como PAGO, refletindo o split automático
 -> vendedor prepara e envia os materiais
 -> comprador confere e fornece o PIN
 -> vendedor valida o PIN
 -> pedido e entrega passam para ENTREGUE
 -> inicia janela de contestação de 7 dias corridos
 -> prazo termina sem contestação ativa
--> repasse passa para PRONTO_PARA_LIBERACAO
--> provedor confirma o repasse como PAGO
 -> pedido passa para CONCLUIDO
 ```
 
@@ -31,16 +31,16 @@ no local combinado e fornece o PIN ao vendedor.
 Provedor confirma RECUSADO
 -> tentativa de pagamento passa para RECUSADO
 -> pedido permanece AGUARDANDO_PAGAMENTO
--> estoque não é alterado
+-> reserva permanece até nova tentativa, cancelamento ou expiração
 -> comprador pode iniciar uma nova tentativa
 ```
 
 ## Cancelamento
 
-Sem pagamento aprovado, o pedido passa diretamente para `CANCELADO`. Depois do
-pagamento aprovado e antes do PIN, o pedido passa para `CANCELADO`, o estoque é
-reposto uma única vez, o repasse passa para `CANCELADO` e é iniciado o reembolso
-integral. Quando o provedor confirmar o reembolso, pedido, pagamento e repasse
+Sem pagamento aprovado, o pedido passa diretamente para `CANCELADO` e a reserva é
+devolvida. Depois do pagamento aprovado e antes do PIN, o pedido passa para
+`CANCELADO`, inicia-se o reembolso integral e o estoque é reposto uma única vez na
+confirmação. Quando o provedor confirmar o reembolso, pedido, pagamento e repasse
 passam para `REEMBOLSADO`.
 
 ## Contestação
