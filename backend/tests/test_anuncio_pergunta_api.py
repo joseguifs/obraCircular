@@ -1,11 +1,14 @@
 """Fluxo completo de perguntas e respostas usando o banco e a autenticação reais."""
 
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from httpx import AsyncClient
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.categoria import Categoria
+from app.models.conta_pagamento import ContaPagamento
+from app.models.enums import ContaPagamentoStatus
 
 SENHA = "senha-segura-123"
 
@@ -43,6 +46,20 @@ async def _criar_anuncio(
         },
     )
     assert endereco.status_code == 201, endereco.text
+    vendedor_id = UUID(endereco.json()["usuario_id"])
+    conta = await db_session.scalar(
+        select(ContaPagamento).where(ContaPagamento.usuario_id == vendedor_id)
+    )
+    if conta is None:
+        # Publicar exige uma conta ativa; o teste de perguntas não executa OAuth.
+        db_session.add(
+            ContaPagamento(
+                usuario_id=vendedor_id,
+                conta_externa_id=f"vendedor-perguntas-{vendedor_id}",
+                status=ContaPagamentoStatus.ATIVA,
+            )
+        )
+    await db_session.commit()
     anuncio = await client.post(
         "/api/v1/ads",
         headers=headers,

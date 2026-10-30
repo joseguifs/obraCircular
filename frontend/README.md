@@ -17,6 +17,10 @@ npm.cmd run dev
 O frontend fica disponível em `http://localhost:5173`. Por padrão, ele consome a API
 em `http://localhost:8000/api/v1`; altere `VITE_API_URL` no `.env` quando necessário.
 
+A porta `5173` é fixa para coincidir com o CORS da API e os retornos do Mercado Pago.
+Se ela estiver ocupada, o Vite informa o erro em vez de iniciar em outra porta.
+Mantenha o frontend em execução enquanto testa o retorno do checkout no mesmo computador.
+
 ## Comandos
 
 ```powershell

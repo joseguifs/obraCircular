@@ -29,6 +29,7 @@ htmlcov/
 *.sqlite
 *.sqlite3
 backend/storage/
+.codex-e2e/
 
 # IDEs e sistema operacional
 .idea/

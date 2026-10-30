@@ -83,6 +83,7 @@ describe('AnuncioDetalhePage', () => {
       .mockResolvedValueOnce(resposta(categoria))
       .mockResolvedValueOnce(resposta({ items: imagens }))
       .mockResolvedValueOnce(resposta(semPerguntas))
+      .mockResolvedValueOnce(resposta({ items: [] }))
     vi.stubGlobal('fetch', fetchMock)
     const user = userEvent.setup()
 
@@ -92,7 +93,8 @@ describe('AnuncioDetalhePage', () => {
     expect(screen.getByText(categoria.nome)).toBeInTheDocument()
     expect(screen.getByText(anuncio.descricao)).toBeInTheDocument()
     expect(screen.getByText('40 unidades disponíveis')).toBeInTheDocument()
-    expect(screen.getByText(/R\$\s*420,00/)).toBeInTheDocument()
+    expect(screen.getByText(/^R\$\s*420,00$/)).toBeInTheDocument()
+    expect(screen.getByText(/^Total: R\$\s*420,00$/)).toBeInTheDocument()
     expect(screen.getByText('Preço por unidade')).toBeInTheDocument()
 
     const fotoPrincipal = screen.getByRole('img', {
@@ -106,6 +108,7 @@ describe('AnuncioDetalhePage', () => {
       expect.stringContaining(`/categories/${anuncio.categoria_id}`),
       expect.stringContaining(`/ads/${anuncio.id}/images`),
       expect.stringContaining(`/ads/${anuncio.id}/questions`),
+      expect.stringContaining('/users/me/addresses?limit=100'),
     ])
   })
 
@@ -117,6 +120,7 @@ describe('AnuncioDetalhePage', () => {
       .mockResolvedValueOnce(resposta({ detail: 'Categoria indisponível.' }, 503))
       .mockResolvedValueOnce(resposta({ items: [] }))
       .mockResolvedValueOnce(resposta(semPerguntas))
+      .mockResolvedValueOnce(resposta({ items: [] }))
     vi.stubGlobal('fetch', fetchMock)
     const user = userEvent.setup()
 
