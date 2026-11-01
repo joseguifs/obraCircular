@@ -3,6 +3,11 @@ from uuid import UUID
 from fastapi import APIRouter, Response, status
 
 from app.api.dependencies import CurrentUser, DatabaseSession
+from app.schemas.contestacao import (
+    ContestacaoCreate,
+    ContestacaoListResponse,
+    ContestacaoResponse,
+)
 from app.schemas.pedido import (
     CheckoutCreate,
     CheckoutResponse,
@@ -10,6 +15,7 @@ from app.schemas.pedido import (
     PedidoResponse,
     ReembolsoResponse,
 )
+from app.services.contestacao import ContestacaoService
 from app.services.pedido import PedidoService
 from app.services.reembolso import ReembolsoService
 
@@ -54,3 +60,24 @@ async def solicitar_reembolso(
     pedido_id: UUID, session: DatabaseSession, comprador: CurrentUser
 ) -> ReembolsoResponse:
     return await ReembolsoService(session).solicitar(pedido_id, comprador.id)
+
+
+@router.post(
+    "/{pedido_id}/disputes",
+    response_model=ContestacaoResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def abrir_contestacao(
+    pedido_id: UUID,
+    dados: ContestacaoCreate,
+    session: DatabaseSession,
+    comprador: CurrentUser,
+) -> ContestacaoResponse:
+    return await ContestacaoService(session).abrir(pedido_id, dados, comprador.id)
+
+
+@router.get("/{pedido_id}/disputes", response_model=ContestacaoListResponse)
+async def listar_contestacoes(
+    pedido_id: UUID, session: DatabaseSession, comprador: CurrentUser
+) -> ContestacaoListResponse:
+    return await ContestacaoService(session).listar(pedido_id, comprador.id)

@@ -37,3 +37,13 @@ DESCONECTADA -> PENDENTE
 - Tokens expirados devem ser renovados antes de iniciar uma operação. Falha de
   renovação altera a conta para `BLOQUEADA`; revogação confirmada altera para
   `DESCONECTADA`.
+
+## Recebimento centralizado e destino do repasse
+
+Nas novas vendas, o checkout usa a credencial da Obra Circular. O OAuth do vendedor
+continua armazenado para compatibilidade com vendas anteriores e com o onboarding
+existente; n?o ? utilizado para cobrar ou reembolsar uma venda centralizada.
+O destino das novas transfer?ncias ? cadastrado separadamente em `destinos_repasse`,
+com chave Pix criptografada e confer?ncia de titularidade por administrador. O vendedor
+precisa estar ativo. Instru??es iniciadas preservam seu destino mesmo que o cadastro
+seja alterado posteriormente. Estados de autoriza??o OAuth referem-se ao fluxo legado.

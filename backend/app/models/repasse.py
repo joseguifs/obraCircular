@@ -3,6 +3,7 @@ from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     ForeignKey,
     Index,
@@ -27,7 +28,8 @@ class Repasse(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         CheckConstraint(
             "valor_bruto >= 0 AND taxa_provedor >= 0 AND taxa_marketplace >= 0 "
             "AND valor_liquido >= 0 "
-            "AND valor_liquido = ROUND(valor_bruto - taxa_provedor - taxa_marketplace, 2)",
+            "AND valor_liquido = ROUND(valor_bruto - taxa_marketplace - "
+            "CASE WHEN taxas_por_conta_marketplace THEN 0 ELSE taxa_provedor END, 2)",
             name="ck_repasses_valores",
         ),
         CheckConstraint(
@@ -63,6 +65,9 @@ class Repasse(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     valor_bruto: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     taxa_provedor: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=0, server_default="0")
     taxa_marketplace: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=0, server_default="0")
+    taxas_por_conta_marketplace: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false"
+    )
     valor_liquido: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     percentual_marketplace: Mapped[Decimal] = mapped_column(
         Numeric(5, 2), default=0, server_default="0"

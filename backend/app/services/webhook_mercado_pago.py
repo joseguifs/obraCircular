@@ -29,11 +29,13 @@ from app.models.enums import (
     RepasseStatus,
 )
 from app.models.evento_provedor import EventoProvedor
+from app.models.operacao_repasse import EventoRepasse
 from app.models.pagamento import Pagamento
 from app.models.pedido import Pedido
 from app.models.reembolso import Reembolso
 from app.models.repasse import Repasse
 from app.services.conta_pagamento import ContaPagamentoService
+from app.services.credencial_pagamento import token_marketplace
 from app.services.pedido import CENTAVOS, PedidoService
 
 logger = logging.getLogger(__name__)
@@ -246,6 +248,14 @@ class WebhookMercadoPagoService:
         trabalhador: str,
     ) -> None:
         tipo = str(payload.get("type") or "")
+        if payload.get("_payout_notification") is True:
+            from app.services.repasse import RepasseService
+
+            await RepasseService(self.session, settings=self.settings).conciliar_recurso(recurso_id)
+            await self._marcar_evento(
+                evento_id, EventoProcessamentoStatus.PROCESSADO, trabalhador=trabalhador
+            )
+            return
         if tipo == "mp-connect":
             await self._processar_mp_connect(evento_id, payload, trabalhador=trabalhador)
             return
@@ -257,9 +267,12 @@ class WebhookMercadoPagoService:
             )
             return
         usuario_id = await self._identificar_vendedor(payload)
-        _, access_token = await ContaPagamentoService(
-            self.session, settings=self.settings, gateway=self.gateway
-        ).obter_access_token(usuario_id)
+        if usuario_id is None:
+            access_token = token_marketplace(self.settings)
+        else:
+            _, access_token = await ContaPagamentoService(
+                self.session, settings=self.settings, gateway=self.gateway
+            ).obter_access_token(usuario_id)
         if tipo == "order":
             order_mp = (
                 await self.gateway.obter_order(access_token=access_token, order_id=recurso_id)
@@ -433,7 +446,7 @@ class WebhookMercadoPagoService:
             await self.session.flush()
         return evento
 
-    async def _identificar_vendedor(self, payload: dict[str, Any]) -> UUID:
+    async def _identificar_vendedor(self, payload: dict[str, Any]) -> UUID | None:
         conta_externa_id = str(payload.get("user_id") or "")
         if not conta_externa_id:
             raise self._erro(
@@ -441,6 +454,8 @@ class WebhookMercadoPagoService:
                 "Webhook sem identificação do vendedor.",
                 "MP_WEBHOOK_USER_MISSING",
             )
+        if conta_externa_id == self.settings.mp_marketplace_user_id:
+            return None
         async with self.session.begin():
             conta = await self.session.scalar(
                 select(ContaPagamento).where(
@@ -456,7 +471,7 @@ class WebhookMercadoPagoService:
         self,
         evento_id: UUID,
         dados: dict[str, Any],
-        vendedor_id: UUID,
+        vendedor_id: UUID | None,
         *,
         ordem_externa_id: str | None = None,
         trabalhador: str | None = None,
@@ -522,7 +537,12 @@ class WebhookMercadoPagoService:
             anuncio = await self.session.scalar(
                 select(Anuncio).where(Anuncio.id == pedido.anuncio_id).with_for_update()
             )
-            if anuncio is None or anuncio.vendedor_id != vendedor_id:
+            centralizado = pedido.modelo_financeiro == "REPASSE_POSTERIOR"
+            if (
+                anuncio is None
+                or (not centralizado and anuncio.vendedor_id != vendedor_id)
+                or (centralizado and vendedor_id is not None)
+            ):
                 raise self._erro(
                     409,
                     "Vendedor do pagamento é inconsistente.",
@@ -530,12 +550,16 @@ class WebhookMercadoPagoService:
                 )
             conta = await self.session.scalar(
                 select(ContaPagamento).where(
-                    ContaPagamento.usuario_id == vendedor_id,
+                    ContaPagamento.usuario_id == anuncio.vendedor_id,
                     ContaPagamento.provedor == ProvedorPagamento.MERCADO_PAGO,
                 )
             )
-            if conta is None:
+            if conta is None and not centralizado:
                 raise self._erro(409, "Conta do vendedor não encontrada.", "MP_SELLER_UNKNOWN")
+            if centralizado and str(dados.get("collector_id")) != pedido.recebedor_externo_id:
+                raise self._erro(
+                    409, "Recebedor do pagamento é inconsistente.", "PAYMENT_COLLECTOR_MISMATCH"
+                )
             self._validar_dados(dados, pedido)
             pagamento.pagamento_externo_id = str(dados["id"])
             pagamento.status_detalhe = self._texto_opcional(dados.get("status_detail"))
@@ -549,7 +573,9 @@ class WebhookMercadoPagoService:
             devolver = False
             if status_mp == "approved":
                 if pagamento.status != PagamentoStatus.REEMBOLSADO:
-                    devolver = self._aprovar(pedido, pagamento, anuncio, conta.id, dados, agora)
+                    devolver = self._aprovar(
+                        pedido, pagamento, anuncio, conta.id if conta else None, dados, agora
+                    )
             elif status_mp in {"pending", "authorized"}:
                 if pagamento.status not in {PagamentoStatus.APROVADO, PagamentoStatus.REEMBOLSADO}:
                     pagamento.status = PagamentoStatus.PENDENTE
@@ -576,7 +602,19 @@ class WebhookMercadoPagoService:
                     select(Repasse).where(Repasse.pagamento_id == pagamento.id)
                 )
                 if repasse:
-                    repasse.status = RepasseStatus.REEMBOLSADO
+                    if centralizado and repasse.status in {
+                        RepasseStatus.PROCESSANDO,
+                        RepasseStatus.PAGO,
+                    }:
+                        self.session.add(
+                            EventoRepasse(
+                                repasse_id=repasse.id,
+                                acao="RECEBIMENTO_ESTORNADO_APOS_LIBERACAO",
+                                status=repasse.status,
+                            )
+                        )
+                    else:
+                        repasse.status = RepasseStatus.REEMBOLSADO
                 reembolso = await self.session.scalar(
                     select(Reembolso)
                     .where(Reembolso.pagamento_id == pagamento.id)
@@ -704,7 +742,7 @@ class WebhookMercadoPagoService:
         pedido: Pedido,
         pagamento: Pagamento,
         anuncio: Anuncio,
-        conta_pagamento_id: UUID,
+        conta_pagamento_id: UUID | None,
         dados: dict[str, Any],
         agora: datetime,
     ) -> bool:
@@ -729,13 +767,18 @@ class WebhookMercadoPagoService:
         )
         if devolucao_necessaria:
             pedido.cancelado_em = pedido.cancelado_em or agora
-        taxa_marketplace = PedidoService.calcular_taxa_marketplace(
-            pedido.valor_total, self.settings.marketplace_fee_percent
-        )
+        centralizado = pedido.modelo_financeiro == "REPASSE_POSTERIOR"
+        taxa_marketplace = pedido.taxa_marketplace
+        if taxa_marketplace is None:
+            taxa_marketplace = PedidoService.calcular_taxa_marketplace(
+                pedido.valor_total, pedido.percentual_marketplace
+            )
         taxa_provedor = self._taxa_provedor(dados)
-        valor_liquido = (pedido.valor_total - taxa_marketplace - taxa_provedor).quantize(
-            CENTAVOS, rounding=ROUND_HALF_UP
-        )
+        valor_liquido = (
+            pedido.valor_total
+            - taxa_marketplace
+            - (Decimal("0") if centralizado else taxa_provedor)
+        ).quantize(CENTAVOS, rounding=ROUND_HALF_UP)
         if valor_liquido < 0:
             raise self._erro(
                 409,
@@ -750,14 +793,15 @@ class WebhookMercadoPagoService:
             valor_bruto=pedido.valor_total,
             taxa_provedor=taxa_provedor,
             taxa_marketplace=taxa_marketplace,
+            taxas_por_conta_marketplace=centralizado,
             valor_liquido=valor_liquido,
-            percentual_marketplace=self.settings.marketplace_fee_percent,
-            status=RepasseStatus.PAGO,
+            percentual_marketplace=pedido.percentual_marketplace,
+            status=RepasseStatus.AGUARDANDO_ENTREGA if centralizado else RepasseStatus.PAGO,
             liberacao_prevista_em=None,
-            repasse_externo_id=str(dados["id"]),
+            repasse_externo_id=None if centralizado else str(dados["id"]),
             tentativas=0,
-            liberado_em=agora,
-            pago_em=agora,
+            liberado_em=None if centralizado else agora,
+            pago_em=None if centralizado else agora,
             bloqueado_em=None,
         )
         self.session.add(repasse)

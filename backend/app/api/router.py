@@ -10,6 +10,7 @@ from app.api.routes.contas_pagamento import integration_router as integracoes_ro
 from app.api.routes.enderecos import router as enderecos_router
 from app.api.routes.health import router as health_router
 from app.api.routes.pedidos import router as pedidos_router
+from app.api.routes.repasses import router as repasses_router
 from app.api.routes.usuarios import router as usuarios_router
 from app.api.routes.webhooks import router as webhooks_router
 
@@ -26,3 +27,4 @@ api_router.include_router(enderecos_router)
 api_router.include_router(usuarios_router)
 api_router.include_router(admin_router)
 api_router.include_router(webhooks_router)
+api_router.include_router(repasses_router)

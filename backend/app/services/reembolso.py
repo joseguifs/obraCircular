@@ -15,7 +15,7 @@ from app.models.pedido import Pedido
 from app.models.reembolso import Reembolso
 from app.models.repasse import Repasse
 from app.schemas.pedido import ReembolsoResponse
-from app.services.conta_pagamento import ContaPagamentoService
+from app.services.credencial_pagamento import token_do_pedido
 from app.services.pedido import PedidoService
 
 
@@ -37,9 +37,9 @@ class ReembolsoService:
             return preparado
         vendedor_id, pagamento_id, pagamento_externo_id, reembolso_id = preparado
         try:
-            _, access_token = await ContaPagamentoService(
-                self.session, settings=self.settings, gateway=self.gateway
-            ).obter_access_token(vendedor_id)
+            access_token = await token_do_pedido(
+                self.session, pedido_id, vendedor_id, self.settings, self.gateway
+            )
             reembolso = await self.session.get(Reembolso, reembolso_id)
             if reembolso is None:
                 raise self._erro(500, "Reembolso não encontrado.", "REFUND_NOT_FOUND")
