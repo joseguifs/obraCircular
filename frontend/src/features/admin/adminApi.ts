@@ -1,5 +1,9 @@
 import { apiRequest } from '../../lib/api'
 import type {
+  ContestacaoAdmin,
+  ContestacaoStatus,
+  DecisaoContestacao,
+  ListaContestacoesAdmin,
   FiltrosAnunciosAdmin,
   FiltrosUsuariosAdmin,
   ListaAnunciosAdmin,
@@ -8,6 +12,18 @@ import type {
   UsuarioAdmin,
   UsuarioStatus,
 } from './types'
+
+export function listarContestacoesAdmin(status: '' | ContestacaoStatus, offset: number, limit: number) {
+  const parametros = new URLSearchParams({ offset: String(offset), limit: String(limit) })
+  if (status) parametros.set('status', status)
+  return apiRequest<ListaContestacoesAdmin>(`/admin/disputes?${parametros}`)
+}
+
+export function decidirContestacaoAdmin(id: string, status: DecisaoContestacao, resolucao: string) {
+  return apiRequest<ContestacaoAdmin>(`/admin/disputes/${id}/decision`, {
+    method: 'POST', body: JSON.stringify({ status, resolucao }),
+  })
+}
 
 export function obterResumoAdmin(): Promise<ResumoAdmin> {
   return apiRequest<ResumoAdmin>('/admin/summary')

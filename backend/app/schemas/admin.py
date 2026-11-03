@@ -1,10 +1,17 @@
 from datetime import datetime
 from decimal import Decimal
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models.enums import AnuncioStatus, UsuarioStatus
+from app.models.enums import (
+    AnuncioStatus,
+    ContestacaoMotivo,
+    ContestacaoStatus,
+    ReembolsoStatus,
+    UsuarioStatus,
+)
 
 
 class ContagemPorStatus(BaseModel):
@@ -89,3 +96,40 @@ class AdminAnuncioListResponse(BaseModel):
     total: int
     offset: int
     limit: int
+
+
+class AdminContestacaoFilters(BaseModel):
+    status: ContestacaoStatus | None = None
+    offset: int = Field(default=0, ge=0)
+    limit: int = Field(default=20, ge=1, le=100)
+
+
+class AdminContestacaoResponse(BaseModel):
+    id: UUID
+    pedido_id: UUID
+    anuncio_titulo: str
+    comprador_nome: str
+    vendedor_nome: str
+    motivo: ContestacaoMotivo
+    descricao: str
+    status: ContestacaoStatus
+    criado_em: datetime
+    resolucao: str | None
+    resolvida_por: UUID | None
+    resolvida_em: datetime | None
+    reembolso_status: ReembolsoStatus | None
+    reembolso_externo_id: str | None
+
+
+class AdminContestacaoListResponse(BaseModel):
+    items: list[AdminContestacaoResponse]
+    total: int
+    offset: int
+    limit: int
+
+
+class AdminContestacaoDecisao(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    status: Literal["ACEITA", "RECUSADA"]
+    resolucao: str = Field(min_length=3, max_length=2000)

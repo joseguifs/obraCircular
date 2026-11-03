@@ -7,6 +7,22 @@
   padding: 24px 0 0;
 }
 
+.admin-contestacao {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.admin-contestacao-texto {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.admin-decisao {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
 .admin-tab {
   padding: 9px 16px;
   border: 1px solid var(--cinza-borda);

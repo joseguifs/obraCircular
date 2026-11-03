@@ -5,6 +5,26 @@ import type { Usuario } from '../usuarios/types'
 export type UsuarioStatus = Usuario['status']
 export type AnuncioStatus = Anuncio['status']
 
+export type ContestacaoStatus = 'ABERTA' | 'EM_ANALISE' | 'AGUARDANDO_VENDEDOR' | 'ACEITA' | 'RECUSADA' | 'CANCELADA' | 'RESOLVIDA'
+export type DecisaoContestacao = 'ACEITA' | 'RECUSADA'
+export interface ContestacaoAdmin {
+  id: string
+  pedido_id: string
+  anuncio_titulo: string
+  comprador_nome: string
+  vendedor_nome: string
+  motivo: string
+  descricao: string
+  status: ContestacaoStatus
+  criado_em: string
+  resolucao: string | null
+  resolvida_por: string | null
+  resolvida_em: string | null
+  reembolso_status: string | null
+  reembolso_externo_id: string | null
+}
+export type ListaContestacoesAdmin = ListResponse<ContestacaoAdmin>
+
 export interface ContagemPorStatus {
   total: number
   por_status: Record<string, number>
