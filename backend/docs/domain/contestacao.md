@@ -45,8 +45,9 @@ do fluxo automatizado de contestação.
 
 - `ACEITA`: cria o único reembolso integral e mantém pedido e repasse bloqueados.
 - `RECUSADA` ou `CANCELADA`: o pedido retorna para `ENTREGUE`. Se o prazo ainda não
-  terminou, o repasse retorna para `EM_PERIODO_CONTESTACAO`; caso contrário, passa
-  para `PRONTO_PARA_LIBERACAO`.
+  terminou, o repasse retorna para `EM_PERIODO_CONTESTACAO`; caso contrário, retorna
+  para `PAGO`, conforme a razão contábil do Split 1:1 descrita em `repasse.md`.
+  Isso não executa uma transferência financeira.
 - `RESOLVIDA`: somente pode ser definido depois que o reembolso estiver
   `CONCLUIDO`.
 - Se o reembolso falhar, a contestação permanece `ACEITA` e ativa.

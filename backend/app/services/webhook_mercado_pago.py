@@ -35,6 +35,7 @@ from app.models.reembolso import Reembolso
 from app.models.repasse import Repasse
 from app.services.conta_pagamento import ContaPagamentoService
 from app.services.pedido import CENTAVOS, PedidoService
+from app.services.reembolso import ReembolsoService
 
 logger = logging.getLogger(__name__)
 
@@ -287,8 +288,6 @@ class WebhookMercadoPagoService:
         if devolver is not None:
             # A aprovação já foi conciliada em uma transação independente. Uma
             # queda aqui deixa o evento com lease, retomável pelo worker periódico.
-            from app.services.reembolso import ReembolsoService
-
             pedido_id, comprador_id = devolver
             try:
                 reembolso = await ReembolsoService(
@@ -586,6 +585,7 @@ class WebhookMercadoPagoService:
                     reembolso.status = ReembolsoStatus.CONCLUIDO
                     reembolso.processado_em = agora
                     reembolso.falhou_em = None
+                    await ReembolsoService(self.session).resolver_contestacao(reembolso)
             else:
                 evento.status_processamento = EventoProcessamentoStatus.IGNORADO
                 evento.processado_em = agora
