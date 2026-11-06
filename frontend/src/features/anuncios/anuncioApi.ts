@@ -29,6 +29,10 @@ export function listarAnunciosDoVendedor(
   return apiRequest<ListResponse<Anuncio>>(`/users/${vendedorId}/ads${queryString(filtros)}`)
 }
 
+export function listarMeusAnuncios(filtros: AnuncioFiltros = {}): Promise<ListResponse<Anuncio>> {
+  return apiRequest<ListResponse<Anuncio>>(`/ads/mine${queryString(filtros)}`)
+}
+
 function queryString(filtros: AnuncioFiltros): string {
   const parametros = new URLSearchParams()
   for (const [chave, valor] of Object.entries(filtros)) {

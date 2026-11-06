@@ -122,3 +122,49 @@ async def test_lista_imagens_do_anuncio(monkeypatch: Any) -> None:
     assert response.status_code == 200
     assert response.json()["items"][0]["id"] == str(imagem_id)
     assert response.json()["items"][0]["ordem"] == 0
+
+
+async def test_meus_anuncios_exige_autenticacao() -> None:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/api/v1/ads/mine")
+
+    assert response.status_code == 401
+    assert response.json()["code"] == "AUTHENTICATION_REQUIRED"
+
+
+async def test_meus_anuncios_filtra_pelo_usuario_autenticado(
+    monkeypatch: Any,
+    usuario_autenticado: Any,
+) -> None:
+    vendedor_ids: list[object] = []
+    filtros_recebidos: list[AnuncioFilters] = []
+
+    class FakeService:
+        def __init__(self, _: object) -> None:
+            pass
+
+        async def listar(
+            self,
+            filtros: AnuncioFilters,
+            *,
+            vendedor_id: object | None = None,
+        ) -> AnuncioListResponse:
+            vendedor_ids.append(vendedor_id)
+            filtros_recebidos.append(filtros)
+            return AnuncioListResponse(
+                items=[], total=0, offset=filtros.offset, limit=filtros.limit
+            )
+
+    monkeypatch.setattr(anuncios_routes, "AnuncioService", FakeService)
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get(
+            "/api/v1/ads/mine",
+            params={"status": "ENCERRADO", "offset": 2, "limit": 5},
+        )
+
+    assert response.status_code == 200
+    assert response.json() == {"items": [], "total": 0, "offset": 2, "limit": 5}
+    assert vendedor_ids == [usuario_autenticado.id]
+    assert filtros_recebidos[0].status == "ENCERRADO"

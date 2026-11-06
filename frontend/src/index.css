@@ -8,6 +8,7 @@
 @import url('./features/categorias/CategoriasPage.css');
 @import url('./features/admin/AdminPage.css');
 @import url('./features/anuncios/AnuncioDetalhePage.css');
+@import url('./features/anuncios/MeusAnunciosPage.css');
 @import url('./features/anuncios/PerguntasAnuncio.css');
 @import url('./features/usuarios/PerfilPage.css');
 @import url('./features/pagamentos/Pagamentos.css');

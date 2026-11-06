@@ -111,10 +111,10 @@ export function HomePage() {
           <p>{resumoBusca}</p>
         </div>
         <div className="home-stats">
-          <div className="home-stat">
+          <Link to="/anuncios/meus" className="home-stat">
             <strong>{totalMeusAnuncios ?? '—'}</strong>
             <span>Anúncios seus</span>
-          </div>
+          </Link>
           <div className="home-stat">
             <strong>{totalDisponiveis}</strong>
             <span>Anúncios disponíveis</span>
