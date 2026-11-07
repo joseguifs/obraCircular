@@ -3,6 +3,8 @@ import type {
   CheckoutPayload,
   CheckoutResponse,
   ContaMercadoPago,
+  Contestacao,
+  ContestacaoPayload,
   Pedido,
   Reembolso,
 } from './types'
@@ -60,4 +62,15 @@ export function cancelarCheckout(pedidoId: string): Promise<void> {
 
 export function solicitarReembolso(pedidoId: string): Promise<Reembolso> {
   return apiRequest<Reembolso>(`/orders/${pedidoId}/refund`, { method: 'POST' })
+}
+
+export function abrirContestacao(pedidoId: string, dados: ContestacaoPayload): Promise<Contestacao> {
+  return apiRequest<Contestacao>(`/orders/${pedidoId}/disputes`, {
+    method: 'POST',
+    body: JSON.stringify(dados),
+  })
+}
+
+export function listarContestacoes(pedidoId: string): Promise<{ items: Contestacao[]; total: number }> {
+  return apiRequest<{ items: Contestacao[]; total: number }>(`/orders/${pedidoId}/disputes`)
 }

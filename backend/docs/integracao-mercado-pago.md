@@ -1,6 +1,19 @@
-# Integração Mercado Pago — Checkout Pro Marketplace
+# Integração Mercado Pago
 
-## Decisões do MVP
+O fluxo atual das novas vendas é [recebimento centralizado e repasse posterior](repasse-posterior.md),
+com comissão inicial de 20% congelada por pedido. A seção abaixo documenta o fluxo
+anterior de Split 1:1, mantido somente para conciliar e reembolsar vendas existentes.
+As instruções antigas de credenciais e comissão não configuram o novo checkout.
+
+A [abertura de contestação](abertura-contestacao.md) está disponível na API e na
+tela do comprador e bloqueia a liberação no modelo novo. A confirmação por PIN será
+desenvolvida por outro membro da equipe. As contas de teste usadas não possuem
+chave Pix; a transferência do repasse é validada com gateways simulados, sem
+homologação financeira real nesse ambiente.
+
+## Referência histórica — Checkout Pro com split
+
+## Decisões do MVP legado
 
 - Produto: Checkout Pro com Split de Pagamentos 1:1.
 - Comissão da Obra Circular: 25% do valor bruto da venda.

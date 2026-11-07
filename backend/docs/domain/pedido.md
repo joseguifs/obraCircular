@@ -76,3 +76,11 @@ respectivas fontes de verdade.
 - Boleto fica desabilitado no MVP porque seu prazo assíncrono é incompatível com essa
   reserva curta. Pix e cartões permanecem disponíveis.
 - Um job deve executar `python -m app.jobs.liberar_reservas` periodicamente.
+
+## Snapshot financeiro
+
+Novos pedidos registram `modelo_financeiro=REPASSE_POSTERIOR`, `percentual_marketplace`,
+`taxa_marketplace`, `valor_vendedor` e `recebedor_externo_id` antes de criar a
+Preference. Esses campos e o valor total n?o podem ser alterados depois da cria??o.
+Mudan?as de comiss?o s? afetam novos pedidos. Os pedidos anteriores usam
+`SPLIT_LEGADO`; seu c?lculo e o recebedor original s?o preservados na migra??o.

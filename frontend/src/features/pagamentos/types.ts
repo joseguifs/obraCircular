@@ -57,3 +57,28 @@ export interface Reembolso {
   valor: string
   reembolso_externo_id: string | null
 }
+
+export type ContestacaoMotivo =
+  | 'PEDIDO_NAO_RECEBIDO'
+  | 'PRODUTO_DANIFICADO'
+  | 'QUANTIDADE_INCORRETA'
+  | 'PRODUTO_DIFERENTE'
+  | 'ENTREGA_PARCIAL'
+  | 'OUTRO'
+
+export interface ContestacaoPayload {
+  motivo: ContestacaoMotivo
+  descricao: string
+}
+
+export interface Contestacao extends ContestacaoPayload {
+  id: string
+  pedido_id: string
+  comprador_id: string
+  status: 'ABERTA' | 'EM_ANALISE' | 'AGUARDANDO_VENDEDOR' | 'ACEITA'
+    | 'RECUSADA' | 'CANCELADA' | 'RESOLVIDA'
+  resolucao: string | null
+  resolvida_em: string | null
+  criado_em: string
+  atualizado_em: string
+}
