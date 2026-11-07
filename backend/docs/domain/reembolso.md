@@ -54,3 +54,12 @@ por estas regras:
 - a API pública do Split 1:1 não completa automaticamente a parcela sem saldo. A saída
   do fundo e a cobrança futura serão implementadas quando o meio autorizado e o fluxo
   administrativo estiverem definidos.
+
+## Novas vendas com recebimento centralizado
+
+Para `REPASSE_POSTERIOR`, o reembolso usa a credencial da plataforma que recebeu a
+venda e devolve o pagamento integral. Uma solicita??o de reembolso n?o cancelada
+impede o repasse. Depois de uma transfer?ncia ao vendedor, o caso exige tratamento
+administrativo de recupera??o; uma devolu??o ao comprador n?o prova que o repasse
+financeiro ao vendedor foi revertido. As regras de divis?o proporcional e falta de
+saldo do vendedor descritas para o Split 1:1 aplicam-se somente ao `SPLIT_LEGADO`.

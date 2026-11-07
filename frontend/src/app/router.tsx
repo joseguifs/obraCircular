@@ -4,6 +4,7 @@ import { AdminAnunciosPage } from '../features/admin/AdminAnunciosPage'
 import { AdminLayout } from '../features/admin/AdminLayout'
 import { AdminResumoPage } from '../features/admin/AdminResumoPage'
 import { AdminUsuariosPage } from '../features/admin/AdminUsuariosPage'
+import { AdminRepassesPage } from '../features/admin/AdminRepassesPage'
 import { EsqueciSenhaPage } from '../features/autenticacao/EsqueciSenhaPage'
 import { LoginPage } from '../features/autenticacao/LoginPage'
 import { RedefinirSenhaPage } from '../features/autenticacao/RedefinirSenhaPage'
@@ -16,6 +17,8 @@ import { useAuth } from '../features/autenticacao/useAuth'
 import { EnderecosPage } from '../features/enderecos/EnderecosPage'
 import { HomePage } from '../features/home/HomePage'
 import { ContaMercadoPagoPage } from '../features/pagamentos/ContaMercadoPagoPage'
+import { ContestacaoPage } from '../features/pagamentos/ContestacaoPage'
+import { ContestacaoTestePage } from '../features/pagamentos/ContestacaoTestePage'
 import { PagamentoRetornoPage } from '../features/pagamentos/PagamentoRetornoPage'
 import { PedidosPage } from '../features/pagamentos/PedidosPage'
 import { NotFoundPage } from '../features/not-found/NotFoundPage'
@@ -50,6 +53,8 @@ export function AppRouter() {
             <Route path="/pagamento/retorno" element={<PagamentoRetornoPage />} />
             <Route path="/pedidos" element={<PedidosPage />} />
             <Route path="/pedidos/:pedidoId" element={<PagamentoRetornoPage />} />
+            <Route path="/pedidos/:pedidoId/contestacoes" element={<ContestacaoPage />} />
+            {import.meta.env.DEV && <Route path="/testes/contestacao" element={<ContestacaoTestePage />} />}
             <Route path="/anuncios/novo" element={<PublicarAnuncioPage />} />
             <Route path="/anuncios/:anuncioId/publicado" element={<AnuncioPublicadoPage />} />
             <Route path="/anuncios/:anuncioId" element={<AnuncioDetalhePage />} />
@@ -61,6 +66,7 @@ export function AppRouter() {
                 <Route path="anuncios" element={<AdminAnunciosPage />} />
                 <Route path="usuarios" element={<AdminUsuariosPage />} />
                 <Route path="categorias" element={<CategoriasPage />} />
+                <Route path="repasses" element={<AdminRepassesPage />} />
               </Route>
             </Route>
           </Route>
@@ -128,11 +134,14 @@ function AtualizarTitulo() {
     else if (pathname === '/admin') document.title = 'Administração | Obra Circular'
     else if (pathname === '/admin/anuncios') document.title = 'Anúncios · Administração | Obra Circular'
     else if (pathname === '/admin/usuarios') document.title = 'Usuários · Administração | Obra Circular'
+    else if (pathname === '/admin/repasses') document.title = 'Repasses · Administração | Obra Circular'
     else if (pathname === '/admin/categorias' || pathname === '/categorias')
       document.title = 'Categorias · Administração | Obra Circular'
     else if (pathname === '/perfil/mercado-pago') document.title = 'Mercado Pago | Obra Circular'
     else if (pathname === '/pagamento/retorno') document.title = 'Pagamento | Obra Circular'
     else if (pathname === '/pedidos') document.title = 'Meus pedidos | Obra Circular'
+    else if (pathname === '/testes/contestacao') document.title = 'Testar contestação | Obra Circular'
+    else if (/^\/pedidos\/[^/]+\/contestacoes$/.test(pathname)) document.title = 'Contestação do pedido | Obra Circular'
     else if (pathname.startsWith('/pedidos/')) document.title = 'Pedido | Obra Circular'
     else if (pathname === '/anuncios/novo') document.title = 'Publicar anúncio | Obra Circular'
     else if (/^\/anuncios\/[^/]+\/publicado$/.test(pathname)) document.title = 'Anúncio publicado | Obra Circular'

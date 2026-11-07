@@ -40,8 +40,8 @@ class FakeGateway:
     ) -> MercadoPagoResponse:
         self.preferencias_criadas += 1
         assert self.preferencias_criadas == 1
-        assert access_token == "token-vendedor"
-        assert payload["marketplace_fee"] == 25.0
+        assert access_token == "token-marketplace"
+        assert "marketplace_fee" not in payload
         assert payload["statement_descriptor"] == "OBRACIRCULAR"
         assert payload["notification_url"] == "https://example.test/webhook"
         assert payload["items"][0]["category_id"] == "home"
@@ -62,7 +62,7 @@ class FakeGateway:
     async def obter_preferencia(
         self, *, access_token: str, preferencia_id: str
     ) -> MercadoPagoResponse:
-        assert access_token == "token-vendedor"
+        assert access_token == "token-marketplace"
         assert preferencia_id == "PREF-1"
         self.preferencias_consultadas += 1
         return MercadoPagoResponse(
@@ -158,6 +158,9 @@ async def test_checkout_reserva_e_job_devolve_estoque_expirado(
         mp_webhook_url="https://example.test/webhook",
         mp_public_base_url="https://example.test",
         mp_oauth_test_token=True,
+        mp_access_token=SecretStr("token-marketplace"),
+        mp_marketplace_user_id="marketplace-test",
+        marketplace_fee_percent=Decimal("20.00"),
         stock_reservation_minutes=30,
     )
     gateway = FakeGateway()
@@ -184,7 +187,9 @@ async def test_checkout_reserva_e_job_devolve_estoque_expirado(
         comprador_criado_em=comprador_criado_em,
     )
 
-    assert resposta.taxa_marketplace == Decimal("25.00")
+    assert resposta.taxa_marketplace == Decimal("20.00")
+    # Alterar a configuracao nao altera uma venda que ja iniciou o checkout.
+    servico.settings.marketplace_fee_percent = Decimal("35.00")
 
     retomada = await servico.criar_checkout(
         dados_checkout,
@@ -197,6 +202,7 @@ async def test_checkout_reserva_e_job_devolve_estoque_expirado(
     assert retomada.pagamento_id == resposta.pagamento_id
     assert retomada.preferencia_externa_id == resposta.preferencia_externa_id
     assert retomada.init_point == resposta.init_point
+    assert retomada.taxa_marketplace == Decimal("20.00")
     assert gateway.preferencias_criadas == 1
     assert gateway.preferencias_consultadas == 1
 
@@ -207,6 +213,10 @@ async def test_checkout_reserva_e_job_devolve_estoque_expirado(
         pedido = await db_session.get(Pedido, resposta.pedido_id)
         assert pedido is not None
         assert pedido.endereco_entrega_snapshot is None
+        assert pedido.modelo_financeiro == "REPASSE_POSTERIOR"
+        assert pedido.percentual_marketplace == Decimal("20.00")
+        assert pedido.taxa_marketplace == Decimal("20.00")
+        assert pedido.valor_vendedor == Decimal("80.00")
         pagamento = await db_session.get(Pagamento, resposta.pagamento_id)
         assert pagamento is not None
         assert pagamento.preferencia_externa_id == "PREF-1"
