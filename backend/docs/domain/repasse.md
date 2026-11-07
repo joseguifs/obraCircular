@@ -51,6 +51,15 @@ os demais bloqueios, os prazos gravados na entrega e os valores da venda. A
 instrução registra `PRAZO_DISPENSADO_EM_TESTE` na auditoria. Restaurar `false` e
 reiniciar o backend ao terminar o teste.
 
+Uma exceção operacional por pedido também pode ser registrada, somente em
+`local`/`test`, pelo evento de auditoria `AUTORIZACAO_PRAZO_PEDIDO_TESTE` no repasse.
+Ela permite testar com contas reais sem alterar as datas de entrega ou o prazo
+original. Não habilita Payouts nem dispensa assinatura, saldo, destino conferido,
+aprovação administrativa, pagamento aprovado ou os bloqueios de contestação e
+reembolso. O evento mais recente entre autorização e
+`REVOGACAO_PRAZO_PEDIDO_TESTE` determina a vigência. Em staging/produção ambos são
+ignorados. Não existe endpoint público para conceder essa exceção.
+
 ## Instrução, auditoria e concorrência
 
 O painel e o job usam o mesmo serviço. Somente administradores ativos autorizam a

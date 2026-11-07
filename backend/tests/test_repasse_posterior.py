@@ -603,16 +603,86 @@ async def test_dispensa_temporaria_libera_entrega_recente_e_preserva_prazo_origi
         )
 
 
+@pytest.mark.parametrize(
+    "environment,autorizado,esperado",
+    [
+        ("local", True, True),
+        ("test", True, True),
+        ("local", False, False),
+        ("staging", True, False),
+        ("production", True, False),
+    ],
+)
+async def test_excecao_por_pedido_com_conta_real_preserva_datas_e_escopo(
+    db_session: AsyncSession,
+    compra_entregue: CompraEntregue,
+    operacao: tuple[RepasseService, GatewayRepasses, GatewayPagamentos, UUID],
+    environment: str,
+    autorizado: bool,
+    esperado: bool,
+) -> None:
+    service, gateway, _, admin = operacao
+    service.settings = service.settings.model_copy(
+        update={"environment": environment, "mp_live_mode": True, "mp_payouts_test_mode": False}
+    )
+    confirmado = datetime.now(UTC) - timedelta(minutes=1)
+    prazo = confirmado + timedelta(days=7)
+    async with db_session.begin():
+        entrega = await db_session.get(Entrega, compra_entregue.entrega_id)
+        repasse = await db_session.get(Repasse, compra_entregue.repasse_id)
+        assert entrega is not None and repasse is not None
+        entrega.confirmado_em = confirmado
+        entrega.prazo_contestacao_em = prazo
+        if autorizado:
+            service._auditar(repasse, "AUTORIZACAO_PRAZO_PEDIDO_TESTE", admin)
+    await service.atualizar_estados()
+    pedido = await db_session.get(Pedido, compra_entregue.pedido_id)
+    repasse = await db_session.get(Repasse, compra_entregue.repasse_id)
+    assert pedido is not None and repasse is not None
+    resposta = await service._resposta(repasse, pedido)
+    assert resposta.pode_liberar is esperado
+    assert (repasse.status == RepasseStatus.PRONTO_PARA_LIBERACAO) is esperado
+    assert not await service._dispensar_prazo_pedido_teste(uuid4())
+    entrega = await db_session.get(Entrega, compra_entregue.entrega_id)
+    assert entrega is not None
+    assert entrega.confirmado_em == confirmado
+    assert entrega.prazo_contestacao_em == prazo
+    assert gateway.criacoes == []
+    await db_session.rollback()
+    if esperado:
+        async with db_session.begin():
+            db_session.add(
+                EventoRepasse(
+                    repasse_id=compra_entregue.repasse_id,
+                    operador_id=admin,
+                    acao="REVOGACAO_PRAZO_PEDIDO_TESTE",
+                    status=RepasseStatus.PRONTO_PARA_LIBERACAO,
+                    criado_em=datetime.now(UTC) + timedelta(seconds=1),
+                )
+            )
+        await service.atualizar_estados()
+        pedido = await db_session.get(Pedido, compra_entregue.pedido_id)
+        repasse = await db_session.get(Repasse, compra_entregue.repasse_id)
+        assert pedido is not None and repasse is not None
+        assert not (await service._resposta(repasse, pedido)).pode_liberar
+
+
+@pytest.mark.parametrize("excecao_por_pedido", [False, True])
 @pytest.mark.parametrize("bloqueio", ["entrega", "confirmacao", "contestacao", "reembolso"])
 async def test_dispensa_de_prazo_mantem_demais_bloqueios(
     db_session: AsyncSession,
     compra_entregue: CompraEntregue,
     operacao: tuple[RepasseService, GatewayRepasses, GatewayPagamentos, UUID],
     bloqueio: str,
+    excecao_por_pedido: bool,
 ) -> None:
     service, gateway, _, admin = operacao
-    service.settings.mp_payouts_test_skip_wait = True
+    service.settings.mp_payouts_test_skip_wait = not excecao_por_pedido
     async with db_session.begin():
+        if excecao_por_pedido:
+            repasse = await db_session.get(Repasse, compra_entregue.repasse_id)
+            assert repasse is not None
+            service._auditar(repasse, "AUTORIZACAO_PRAZO_PEDIDO_TESTE", admin)
         entrega = await db_session.get(Entrega, compra_entregue.entrega_id)
         assert entrega is not None
         entrega.confirmado_em = datetime.now(UTC) - timedelta(minutes=1)

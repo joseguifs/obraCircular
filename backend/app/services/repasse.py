@@ -150,9 +150,26 @@ class RepasseService:
             and not self.settings.mp_live_mode
         )
 
-    def _fim_periodo_contestacao(self, entrega: Entrega) -> datetime:
+    async def _dispensar_prazo_pedido_teste(self, repasse_id: UUID) -> bool:
+        # Excecao operacional por pedido; nunca se aplica em staging/producao.
+        if self.settings.environment not in {"local", "test"}:
+            return False
+        acao = await self.session.scalar(
+            select(EventoRepasse.acao)
+            .where(
+                EventoRepasse.repasse_id == repasse_id,
+                EventoRepasse.acao.in_(
+                    {"AUTORIZACAO_PRAZO_PEDIDO_TESTE", "REVOGACAO_PRAZO_PEDIDO_TESTE"}
+                ),
+            )
+            .order_by(EventoRepasse.criado_em.desc(), EventoRepasse.id.desc())
+            .limit(1)
+        )
+        return acao == "AUTORIZACAO_PRAZO_PEDIDO_TESTE"
+
+    async def _fim_periodo_contestacao(self, entrega: Entrega, repasse_id: UUID) -> datetime:
         assert entrega.confirmado_em is not None and entrega.prazo_contestacao_em is not None
-        if self._dispensar_prazo_teste():
+        if self._dispensar_prazo_teste() or await self._dispensar_prazo_pedido_teste(repasse_id):
             return entrega.confirmado_em
         return max(entrega.prazo_contestacao_em, entrega.confirmado_em + timedelta(days=7))
 
@@ -180,7 +197,7 @@ class RepasseService:
             return "A entrega precisa estar confirmada com prazo de contestação."
         if entrega.confirmado_por != repasse.vendedor_id:
             return "A entrega precisa ter sido confirmada pelo vendedor."
-        fim_periodo = self._fim_periodo_contestacao(entrega)
+        fim_periodo = await self._fim_periodo_contestacao(entrega, repasse.id)
         if datetime.now(UTC) <= fim_periodo:
             return "O período de contestação ainda não terminou."
         if await self.session.scalar(
@@ -273,7 +290,7 @@ class RepasseService:
                 ):
                     continue
                 novo = RepasseStatus.EM_PERIODO_CONTESTACAO
-                fim_periodo = self._fim_periodo_contestacao(entrega)
+                fim_periodo = await self._fim_periodo_contestacao(entrega, repasse.id)
                 if datetime.now(UTC) > fim_periodo:
                     if await self._motivo(repasse, pedido, exigir_destino=False):
                         continue
@@ -436,7 +453,9 @@ class RepasseService:
                     test_mode=self.settings.mp_payouts_test_mode,
                 )
                 self.session.add(instrucao)
-                if self._dispensar_prazo_teste():
+                if self._dispensar_prazo_teste() or await self._dispensar_prazo_pedido_teste(
+                    repasse.id
+                ):
                     self._auditar(repasse, "PRAZO_DISPENSADO_EM_TESTE", operador_id)
             elif instrucao.test_mode != self.settings.mp_payouts_test_mode:
                 raise self._erro(
