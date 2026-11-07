@@ -152,3 +152,42 @@ def _derivar(senha: str, salt: str, iteracoes: int) -> str:
         salt.encode("utf-8"),
         iteracoes,
     ).hex()
+
+
+# --- PIN de confirmação de entrega -------------------------------------------------
+#
+# O PIN tem apenas 10^5 combinações, então qualquer hash sem segredo seria revertido
+# por força bruta em milissegundos caso o banco vazasse. Por isso o hash é um
+# HMAC-SHA256 com chave do servidor, vinculado ao id da entrega (o mesmo PIN em
+# entregas diferentes gera hashes diferentes). O prefixo de versão permite trocar
+# o esquema no futuro sem invalidar silenciosamente os PINs ativos.
+
+PIN_ENTREGA_DIGITOS = 5
+_PIN_HASH_VERSAO = "hmac_sha256_v1"
+_PIN_HASH_CONTEXTO = b"obra-circular:entrega-pin:v1"
+
+
+def gerar_pin_entrega() -> str:
+    """Gera um PIN numérico de 5 dígitos com o CSPRNG do sistema operacional."""
+    return f"{secrets.randbelow(10**PIN_ENTREGA_DIGITOS):0{PIN_ENTREGA_DIGITOS}d}"
+
+
+def hash_pin_entrega(pin: str, entrega_id: UUID, settings: Settings) -> str:
+    digest = hmac.new(
+        _chave_pin_entrega(settings),
+        f"{entrega_id}:{pin}".encode(),
+        hashlib.sha256,
+    ).hexdigest()
+    return f"{_PIN_HASH_VERSAO}${digest}"
+
+
+def verificar_pin_entrega(pin: str, entrega_id: UUID, pin_hash: str, settings: Settings) -> bool:
+    esperado = hash_pin_entrega(pin, entrega_id, settings)
+    return hmac.compare_digest(esperado.encode(), pin_hash.encode())
+
+
+def _chave_pin_entrega(settings: Settings) -> bytes:
+    segredo = settings.delivery_pin_secret_key or settings.jwt_secret_key
+    # Deriva uma subchave própria para que o PIN nunca use o segredo do JWT diretamente.
+    chave = segredo.get_secret_value().encode()
+    return hmac.new(chave, _PIN_HASH_CONTEXTO, hashlib.sha256).digest()

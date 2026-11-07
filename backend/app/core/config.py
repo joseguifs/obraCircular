@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     # Endereço do frontend usado para montar links enviados por e-mail.
     frontend_url: str = "http://localhost:5173"
     password_reset_token_expire_minutes: int = Field(default=30, ge=5, le=1440)
+    # Chave do HMAC dos PINs de entrega. Sem ela, deriva-se uma subchave do segredo JWT.
+    delivery_pin_secret_key: SecretStr | None = None
+    delivery_pin_expire_hours: int = Field(default=24, ge=1, le=168)
     # Sem `smtp_host` os e-mails não são enviados: o conteúdo vai para o log do servidor.
     smtp_host: str | None = None
     smtp_port: int = Field(default=587, ge=1, le=65535)
@@ -80,6 +83,13 @@ class Settings(BaseSettings):
             raise ValueError("OBRA_CIRCULAR_JWT_SECRET_KEY deve ter ao menos 32 caracteres.")
         if self.environment == "production" and segredo == _LOCAL_JWT_SECRET:
             raise ValueError("Configure OBRA_CIRCULAR_JWT_SECRET_KEY em produção.")
+        segredo_pin = self.delivery_pin_secret_key
+        if segredo_pin is not None and not segredo_pin.get_secret_value():
+            self.delivery_pin_secret_key = None
+        elif segredo_pin is not None and len(segredo_pin.get_secret_value()) < 32:
+            raise ValueError(
+                "OBRA_CIRCULAR_DELIVERY_PIN_SECRET_KEY deve ter ao menos 32 caracteres."
+            )
         return self
 
 
