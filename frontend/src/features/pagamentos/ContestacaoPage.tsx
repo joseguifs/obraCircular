@@ -3,32 +3,10 @@ import { Link, useParams } from 'react-router'
 import { mensagemApiErro } from '../../lib/api'
 import { formatarMoeda } from '../../lib/formatarTempo'
 import { abrirContestacao, consultarPedido, listarContestacoes } from './pagamentoApi'
+import { contestacaoAtiva, MOTIVOS_CONTESTACAO, STATUS_CONTESTACAO } from './contestacaoApresentacao'
 import { STATUS_PEDIDO } from './pedidoApresentacao'
 import type { Contestacao, ContestacaoMotivo, Pedido } from './types'
 import './ContestacaoPage.css'
-
-const MOTIVOS: Record<ContestacaoMotivo, string> = {
-  PEDIDO_NAO_RECEBIDO: 'Pedido não recebido',
-  PRODUTO_DANIFICADO: 'Produto danificado',
-  QUANTIDADE_INCORRETA: 'Quantidade incorreta',
-  PRODUTO_DIFERENTE: 'Produto diferente do anunciado',
-  ENTREGA_PARCIAL: 'Entrega parcial',
-  OUTRO: 'Outro motivo',
-}
-
-const STATUS: Record<Contestacao['status'], string> = {
-  ABERTA: 'Aberta',
-  EM_ANALISE: 'Em análise',
-  AGUARDANDO_VENDEDOR: 'Aguardando vendedor',
-  ACEITA: 'Aceita',
-  RECUSADA: 'Recusada',
-  CANCELADA: 'Cancelada',
-  RESOLVIDA: 'Resolvida',
-}
-
-function estaAtiva(contestacao: Contestacao) {
-  return ['ABERTA', 'EM_ANALISE', 'AGUARDANDO_VENDEDOR', 'ACEITA'].includes(contestacao.status)
-}
 
 export function ContestacaoPage() {
   const { pedidoId } = useParams()
@@ -89,7 +67,7 @@ export function ContestacaoPedido({ pedidoId }: { pedidoId: string }) {
     return () => { estado.ativo = false; estado.versao += 1 }
   }, [atualizar])
 
-  const ativa = historico.some(estaAtiva)
+  const ativa = historico.some((item) => contestacaoAtiva(item.status))
   const podeAbrir = pedido?.status === 'ENTREGUE' && !ativa
     && !carregando && !enviando && !erroConsulta
 
@@ -150,7 +128,7 @@ export function ContestacaoPedido({ pedidoId }: { pedidoId: string }) {
           <label htmlFor="motivo-contestacao">Motivo</label>
           <select id="motivo-contestacao" value={motivo}
             onChange={(evento) => setMotivo(evento.target.value as ContestacaoMotivo)}>
-            {Object.entries(MOTIVOS).map(([valor, rotulo]) => <option key={valor} value={valor}>{rotulo}</option>)}
+            {Object.entries(MOTIVOS_CONTESTACAO).map(([valor, rotulo]) => <option key={valor} value={valor}>{rotulo}</option>)}
           </select>
           <label htmlFor="descricao-contestacao">Descreva o problema</label>
           <textarea id="descricao-contestacao" value={descricao} rows={5} required maxLength={5000}
@@ -174,8 +152,8 @@ export function ContestacaoPedido({ pedidoId }: { pedidoId: string }) {
           {historico.map((item) => (
             <li key={item.id}>
               <div className="dispute-history-title">
-                <h3>{MOTIVOS[item.motivo]}</h3>
-                <span className="dispute-badge">{STATUS[item.status]}</span>
+                <h3>{MOTIVOS_CONTESTACAO[item.motivo]}</h3>
+                <span className="dispute-badge">{STATUS_CONTESTACAO[item.status]}</span>
               </div>
               <p className="dispute-description">{item.descricao}</p>
               <p>Aberta em <time dateTime={item.criado_em}>{new Date(item.criado_em).toLocaleString('pt-BR')}</time></p>

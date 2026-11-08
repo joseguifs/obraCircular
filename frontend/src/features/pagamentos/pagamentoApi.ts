@@ -5,6 +5,7 @@ import type {
   ContaMercadoPago,
   Contestacao,
   ContestacaoPayload,
+  ListaContestacoes,
   Pedido,
   Reembolso,
 } from './types'
@@ -71,6 +72,6 @@ export function abrirContestacao(pedidoId: string, dados: ContestacaoPayload): P
   })
 }
 
-export function listarContestacoes(pedidoId: string): Promise<{ items: Contestacao[]; total: number }> {
-  return apiRequest<{ items: Contestacao[]; total: number }>(`/orders/${pedidoId}/disputes`)
+export function listarContestacoes(pedidoId: string): Promise<ListaContestacoes> {
+  return apiRequest<ListaContestacoes>(`/orders/${pedidoId}/disputes`)
 }

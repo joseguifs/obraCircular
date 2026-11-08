@@ -1,20 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { mensagemApiErro } from '../../lib/api'
+import { formatarData } from '../../lib/formatarTempo'
+import { contestacaoPendente, MOTIVOS_CONTESTACAO, STATUS_CONTESTACAO } from '../pagamentos/contestacaoApresentacao'
 import { decidirContestacaoAdmin, listarContestacoesAdmin } from './adminApi'
 import { Paginacao } from './Paginacao'
-import { formatarData } from './rotulos'
 import type { ContestacaoAdmin, ContestacaoStatus, DecisaoContestacao, ListaContestacoesAdmin } from './types'
 
 const POR_PAGINA = 10
-const STATUS: Record<ContestacaoStatus, string> = {
-  ABERTA: 'Aberta', EM_ANALISE: 'Em análise', AGUARDANDO_VENDEDOR: 'Aguardando vendedor',
-  ACEITA: 'Aceita', RECUSADA: 'Recusada', CANCELADA: 'Cancelada', RESOLVIDA: 'Resolvida',
-}
-const MOTIVOS: Record<string, string> = {
-  PEDIDO_NAO_RECEBIDO: 'Pedido não recebido', PRODUTO_DANIFICADO: 'Produto danificado',
-  QUANTIDADE_INCORRETA: 'Quantidade incorreta', PRODUTO_DIFERENTE: 'Produto diferente',
-  ENTREGA_PARCIAL: 'Entrega parcial', OUTRO: 'Outro',
-}
 
 export function AdminContestacoesPage() {
   const [status, setStatus] = useState<'' | ContestacaoStatus>('')
@@ -94,7 +86,7 @@ export function AdminContestacoesPage() {
             setConfirmando(null)
           }}>
             <option value="">Todas</option>
-            {Object.entries(STATUS).map(([valor, rotulo]) => <option key={valor} value={valor}>{rotulo}</option>)}
+            {Object.entries(STATUS_CONTESTACAO).map(([valor, rotulo]) => <option key={valor} value={valor}>{rotulo}</option>)}
           </select>
         </label>
         <button type="button" className="secondary-button" disabled={carregando || executando} onClick={() => setVersao((atual) => atual + 1)}>Atualizar</button>
@@ -108,10 +100,10 @@ export function AdminContestacoesPage() {
             {lista.items.map((item) => (
               <li className="cat-item admin-contestacao" key={item.id}>
                 <div className="cat-item-main">
-                  <div className="cat-item-title"><h2>{item.anuncio_titulo}</h2><span className="cat-badge">{STATUS[item.status]}</span></div>
+                  <div className="cat-item-title"><h2>{item.anuncio_titulo}</h2><span className="cat-badge">{STATUS_CONTESTACAO[item.status]}</span></div>
                   <p>Pedido: {item.pedido_id}</p>
                   <p>Comprador: {item.comprador_nome} · Vendedor: {item.vendedor_nome}</p>
-                  <p><strong>{MOTIVOS[item.motivo] ?? item.motivo}</strong> · {formatarData(item.criado_em)}</p>
+                  <p><strong>{MOTIVOS_CONTESTACAO[item.motivo] ?? item.motivo}</strong> · {formatarData(item.criado_em)}</p>
                   <p className="admin-contestacao-texto">{item.descricao}</p>
                   {item.resolucao && <p className="admin-contestacao-texto">Decisão: {item.resolucao}</p>}
                   {item.resolvida_em && <small>Analisada em {formatarData(item.resolvida_em)}</small>}
@@ -130,7 +122,7 @@ export function AdminContestacoesPage() {
                   </form>
                 ) : (
                   <div className="admin-actions">
-                    {['ABERTA', 'EM_ANALISE', 'AGUARDANDO_VENDEDOR'].includes(item.status) && <>
+                    {contestacaoPendente(item.status) && <>
                       <button type="button" className="publish-button" disabled={executando} onClick={() => solicitar(item, 'ACEITA')}>Aprovar</button>
                       <button type="button" className="secondary-button admin-button--perigo-texto" disabled={executando} onClick={() => solicitar(item, 'RECUSADA')}>Recusar</button>
                     </>}

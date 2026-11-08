@@ -3,7 +3,8 @@ import { mensagemApiErro } from '../../lib/api'
 import { useAuth } from '../autenticacao/useAuth'
 import { alterarStatusUsuario, definirAdministrador, listarUsuariosAdmin } from './adminApi'
 import { Paginacao } from './Paginacao'
-import { formatarData, ROTULOS_STATUS_USUARIO } from './rotulos'
+import { formatarData } from '../../lib/formatarTempo'
+import { ROTULOS_STATUS_USUARIO } from './rotulos'
 import type { ListaUsuariosAdmin, UsuarioAdmin, UsuarioStatus } from './types'
 
 const POR_PAGINA = 10

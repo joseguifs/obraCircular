@@ -66,6 +66,15 @@ export type ContestacaoMotivo =
   | 'ENTREGA_PARCIAL'
   | 'OUTRO'
 
+export type ContestacaoStatus =
+  | 'ABERTA'
+  | 'EM_ANALISE'
+  | 'AGUARDANDO_VENDEDOR'
+  | 'ACEITA'
+  | 'RECUSADA'
+  | 'CANCELADA'
+  | 'RESOLVIDA'
+
 export interface ContestacaoPayload {
   motivo: ContestacaoMotivo
   descricao: string
@@ -75,10 +84,14 @@ export interface Contestacao extends ContestacaoPayload {
   id: string
   pedido_id: string
   comprador_id: string
-  status: 'ABERTA' | 'EM_ANALISE' | 'AGUARDANDO_VENDEDOR' | 'ACEITA'
-    | 'RECUSADA' | 'CANCELADA' | 'RESOLVIDA'
+  status: ContestacaoStatus
   resolucao: string | null
   resolvida_em: string | null
   criado_em: string
   atualizado_em: string
+}
+
+export interface ListaContestacoes {
+  items: Contestacao[]
+  total: number
 }
