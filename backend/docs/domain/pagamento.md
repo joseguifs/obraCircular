@@ -33,7 +33,8 @@ não é produzido pelo fluxo de negócio do MVP, que aceita somente reembolso to
   com tentativas criadas durante a integração anterior pela API de Orders.
 - O frontend e o webhook não são fontes definitivas do estado.
 - Depois de receber um webhook `type=payment`, o backend consulta
-  `GET /v1/payments/{id}` com o token OAuth do vendedor.
+  `GET /v1/payments/{id}` com a credencial da conta recebedora registrada no pedido.
+  Para novas vendas, essa ? a conta da Obra Circular; no split legado, o vendedor.
 - Somente a confirmação do provedor permite alterar pagamento e pedido para
   `APROVADO` e `PAGAMENTO_APROVADO`.
 - O checkout reserva estoque antes de redirecionar o comprador. A aprovação confirma
@@ -55,3 +56,10 @@ pagamento já aprovado ou reembolsado. Uma aprovação antiga não reabre um ree
 No Checkout Pro, o método pode permanecer desconhecido (`NULL`) enquanto a tentativa
 está em `CRIADO` ou `PENDENTE`, porque o comprador escolhe o meio no Mercado Pago. O
 webhook confirmado preenche o método efetivamente utilizado.
+
+## Recebimento centralizado
+
+Nas novas vendas, a Preference usa a credencial da plataforma e omite `marketplace_fee`.
+O webhook confere tamb?m `collector_id` contra o snapshot. Aprova??o cria um repasse
+`AGUARDANDO_ENTREGA`; n?o representa transfer?ncia ao vendedor. Comiss?o e parcela
+do vendedor s?o recuperadas do pedido, sem usar o percentual atualmente configurado.

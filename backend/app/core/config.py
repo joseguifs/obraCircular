@@ -51,13 +51,21 @@ class Settings(BaseSettings):
     mp_oauth_redirect_uri: str | None = None
     mp_oauth_test_token: bool = False
     mp_live_mode: bool = False
+    mp_access_token: SecretStr | None = None
+    mp_marketplace_user_id: str | None = None
+    mp_payouts_enabled: bool = False
+    mp_payouts_test_mode: bool = True
+    mp_payouts_test_skip_wait: bool = False
+    mp_payouts_test_account_max_amount: Decimal = Field(default=Decimal("20.00"), gt=0, le=100)
+    mp_payouts_notification_url: str | None = None
+    mp_payouts_private_key_path: Path | None = None
     mp_webhook_url: str | None = None
     mp_public_base_url: str | None = None
     mp_oauth_success_url: str = "http://localhost:5173/perfil/mercado-pago?mercado_pago=conectado"
     mp_checkout_success_url: str = "http://localhost:5173/pagamento/retorno?status=success"
     mp_checkout_pending_url: str = "http://localhost:5173/pagamento/retorno?status=pending"
     mp_checkout_failure_url: str = "http://localhost:5173/pagamento/retorno?status=failure"
-    marketplace_fee_percent: Decimal = Field(default=Decimal("25.00"), ge=0, le=100)
+    marketplace_fee_percent: Decimal = Field(default=Decimal("20.00"), ge=0, lt=100)
     stock_reservation_minutes: int = Field(default=30, ge=5, le=1440)
     webhook_retry_max_attempts: int = Field(default=8, ge=1, le=50)
     webhook_retry_base_seconds: int = Field(default=30, ge=1, le=3600)
@@ -89,6 +97,19 @@ class Settings(BaseSettings):
         elif segredo_pin is not None and len(segredo_pin.get_secret_value()) < 32:
             raise ValueError(
                 "OBRA_CIRCULAR_DELIVERY_PIN_SECRET_KEY deve ter ao menos 32 caracteres."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def validar_dispensa_prazo_repasse(self) -> "Settings":
+        if self.mp_payouts_test_skip_wait and (
+            self.environment not in {"local", "test"}
+            or not self.mp_payouts_test_mode
+            or self.mp_live_mode
+        ):
+            raise ValueError(
+                "OBRA_CIRCULAR_MP_PAYOUTS_TEST_SKIP_WAIT exige ambiente local/test, "
+                "MP_PAYOUTS_TEST_MODE=true e MP_LIVE_MODE=false."
             )
         return self
 

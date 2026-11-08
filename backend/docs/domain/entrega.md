@@ -59,6 +59,11 @@ AGUARDANDO_ENVIO -> PREPARANDO -> ENTREGUE
 
 ## Prazo de contestação
 
+A geração e validação do PIN são uma feature a ser implementada por outro membro
+da equipe. As regras abaixo são o contrato consumido pela abertura de contestação
+e pelo serviço de repasses; os testes atuais preparam entregas confirmadas por
+fixtures, sem implementar ou contornar a validação do PIN na aplicação.
+
 Após validar o PIN, a aplicação define:
 
 ```text
