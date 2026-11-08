@@ -1,0 +1,37 @@
+.dispute-page { max-width: 880px; }
+.dispute-page > .back-button { display: inline-block; margin-bottom: 20px; }
+.dispute-session { font-size: 14px; overflow-wrap: anywhere; }
+.dispute-note { padding: 14px 16px; border-left: 3px solid var(--azul-marinho); background: var(--azul-suave-bg); font-size: 14px; }
+.dispute-field { display: block; margin: 24px 0 8px; font-weight: 700; }
+.dispute-select, .dispute-form select, .dispute-form textarea {
+  width: 100%; padding: 12px; border: 1px solid var(--cinza-borda); border-radius: 10px;
+  color: var(--azul-marinho); background: #fff; font: inherit;
+}
+.dispute-select:focus-visible, .dispute-form select:focus-visible, .dispute-form textarea:focus-visible {
+  outline: 2px solid var(--azul-marinho); outline-offset: 3px;
+}
+.dispute-content { margin-top: 24px; }
+.dispute-summary { padding: 18px; border: 1px solid var(--cinza-borda); border-radius: 14px; }
+.dispute-id { overflow-wrap: anywhere; font-size: 13px; }
+.dispute-summary dl { display: flex; flex-wrap: wrap; gap: 20px 50px; margin: 18px 0; }
+.dispute-summary dt { font-size: 13px; color: var(--cinza-texto-forte); }
+.dispute-summary dd { margin: 6px 0 0; color: var(--azul-marinho); font-weight: 700; }
+.dispute-form { margin-top: 28px; }
+.dispute-form fieldset { display: grid; gap: 10px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.dispute-form legend { margin-bottom: 18px; color: var(--azul-marinho); font-weight: 700; font-size: 20px; }
+.dispute-form label { font-weight: 700; font-size: 14px; }
+.dispute-form textarea { resize: vertical; min-height: 120px; }
+.dispute-form fieldset:disabled { opacity: 0.6; }
+.dispute-counter { text-align: right; font-size: 12px; color: var(--cinza-texto-forte); }
+.dispute-history { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--cinza-borda); }
+.dispute-history h2 { margin-top: 0; font-size: 22px; }
+.dispute-history ul { display: grid; gap: 14px; padding: 0; list-style: none; }
+.dispute-history li { padding: 18px; border: 1px solid var(--cinza-borda); border-radius: 14px; }
+.dispute-history-title { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.dispute-history-title h3 { margin: 0; font-size: 16px; }
+.dispute-badge { padding: 5px 10px; border-radius: 20px; color: var(--azul-marinho); background: var(--azul-suave-bg); font-size: 12px; font-weight: 700; }
+.dispute-description { white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .dispute-page .payment-card { padding: 20px; }
+  .dispute-page .payment-actions > * { width: 100%; min-width: 0; }
+}

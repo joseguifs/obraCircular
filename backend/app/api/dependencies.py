@@ -48,6 +48,7 @@ async def get_current_admin(session: DatabaseSession, usuario: CurrentUser) -> U
 
 
 CurrentAdmin = Annotated[Usuario, Depends(get_current_admin)]
+
 def get_enviador_email() -> EnviadorEmail:
     return criar_enviador_email(get_settings())
 

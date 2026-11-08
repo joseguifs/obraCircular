@@ -1,10 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { mensagemApiErro, resolverUrlDaApi } from '../../lib/api'
-import { formatarMoeda } from '../../lib/formatarTempo'
+import { formatarData, formatarMoeda } from '../../lib/formatarTempo'
 import { encerrarAnuncioAdmin, excluirAnuncioAdmin, listarAnunciosAdmin } from './adminApi'
 import { Paginacao } from './Paginacao'
-import { formatarData, ROTULOS_STATUS_ANUNCIO } from './rotulos'
+import { ROTULOS_STATUS_ANUNCIO } from './rotulos'
 import type { AnuncioAdmin, AnuncioStatus, ListaAnunciosAdmin } from './types'
 
 const POR_PAGINA = 10

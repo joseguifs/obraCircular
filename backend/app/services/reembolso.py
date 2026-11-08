@@ -8,14 +8,21 @@ from app.core.config import Settings, get_settings
 from app.core.exceptions import AppError
 from app.integrations.mercado_pago import MercadoPagoGateway, MercadoPagoIntegrationError
 from app.models.anuncio import Anuncio
+from app.models.contestacao import Contestacao
 from app.models.entrega import Entrega
-from app.models.enums import PagamentoStatus, PedidoStatus, ReembolsoStatus, RepasseStatus
+from app.models.enums import (
+    ContestacaoStatus,
+    PagamentoStatus,
+    PedidoStatus,
+    ReembolsoStatus,
+    RepasseStatus,
+)
 from app.models.pagamento import Pagamento
 from app.models.pedido import Pedido
 from app.models.reembolso import Reembolso
 from app.models.repasse import Repasse
 from app.schemas.pedido import ReembolsoResponse
-from app.services.conta_pagamento import ContaPagamentoService
+from app.services.credencial_pagamento import token_do_pedido
 from app.services.pedido import PedidoService
 
 
@@ -35,11 +42,16 @@ class ReembolsoService:
         preparado = await self._preparar(pedido_id, comprador_id)
         if isinstance(preparado, ReembolsoResponse):
             return preparado
+        return await self.processar_preparado(pedido_id, preparado)
+
+    async def processar_preparado(
+        self, pedido_id: UUID, preparado: tuple[UUID, UUID, str, UUID]
+    ) -> ReembolsoResponse:
         vendedor_id, pagamento_id, pagamento_externo_id, reembolso_id = preparado
         try:
-            _, access_token = await ContaPagamentoService(
-                self.session, settings=self.settings, gateway=self.gateway
-            ).obter_access_token(vendedor_id)
+            access_token = await token_do_pedido(
+                self.session, pedido_id, vendedor_id, self.settings, self.gateway
+            )
             reembolso = await self.session.get(Reembolso, reembolso_id)
             if reembolso is None:
                 raise self._erro(500, "Reembolso não encontrado.", "REFUND_NOT_FOUND")
@@ -198,6 +210,16 @@ class ReembolsoService:
         )
         if repasse:
             repasse.status = RepasseStatus.REEMBOLSADO
+        await self.resolver_contestacao(reembolso)
+
+    async def resolver_contestacao(self, reembolso: Reembolso) -> None:
+        if reembolso.contestacao_id is None:
+            return
+        contestacao = await self.session.scalar(
+            select(Contestacao).where(Contestacao.id == reembolso.contestacao_id).with_for_update()
+        )
+        if contestacao is not None and contestacao.status == ContestacaoStatus.ACEITA:
+            contestacao.status = ContestacaoStatus.RESOLVIDA
 
     async def _marcar_falha(self, reembolso_id: UUID) -> None:
         if self.session.in_transaction():

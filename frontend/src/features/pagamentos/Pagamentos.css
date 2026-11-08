@@ -116,3 +116,15 @@
   border-radius: 9px;
   background: #fff;
 }
+
+.delivery-panel {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--cinza-borda);
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+
+.delivery-panel h2 { margin-top: 0; font-size: 20px; }
+.delivery-pin { display: block; margin: 8px 0; font-size: 32px; letter-spacing: 0.2em; color: var(--azul-marinho); }
+.delivery-sales-list { padding: 0; list-style: none; }

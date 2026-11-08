@@ -32,7 +32,7 @@ export function PedidosPage() {
       <section className="payment-card">
         <span className="step-label">Minhas compras</span>
         <h1>Meus pedidos</h1>
-        <p>Acompanhe seus pagamentos, cancele checkouts e consulte seus reembolsos.</p>
+        <p>Acompanhe seus pagamentos, entregas, reembolsos e contestações nos detalhes de cada pedido.</p>
         {carregando && <p role="status">Carregando pedidos...</p>}
         {erro && <p className="form-alert" role="alert">{erro}</p>}
         {!carregando && !erro && pedidos.length === 0 && <p>Você ainda não tem pedidos.</p>}
@@ -56,6 +56,11 @@ export function PedidosPage() {
           }}>Tentar novamente</button>
         )}
         <Link className="secondary-button" to="/home">Voltar aos anúncios</Link>
+        {import.meta.env.DEV && (
+          <div className="payment-navigation">
+            <Link className="secondary-button" to="/testes/contestacao">Testar contestação</Link>
+          </div>
+        )}
       </section>
     </main>
   )

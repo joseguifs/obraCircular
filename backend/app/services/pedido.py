@@ -5,7 +5,7 @@ from typing import Any
 from urllib.parse import urlsplit
 from uuid import UUID, uuid4
 
-from sqlalchemy import select
+from sqlalchemy import Select, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import Settings, get_settings
@@ -13,14 +13,17 @@ from app.core.exceptions import AppError
 from app.integrations.mercado_pago import MercadoPagoGateway, MercadoPagoIntegrationError
 from app.models.anuncio import Anuncio
 from app.models.endereco import Endereco
+from app.models.entrega import Entrega
 from app.models.enums import (
     AnuncioStatus,
     PagamentoStatus,
     PedidoStatus,
 )
 from app.models.pagamento import Pagamento
-from app.models.pedido import Pedido
+from app.models.pedido import MODELO_REPASSE_POSTERIOR, Pedido
 from app.models.reembolso import Reembolso
+from app.models.repasse import Repasse
+from app.schemas.entrega import EntregaResponse
 from app.schemas.pedido import (
     CheckoutCreate,
     CheckoutResponse,
@@ -29,7 +32,7 @@ from app.schemas.pedido import (
     PedidoResponse,
     ReembolsoResponse,
 )
-from app.services.conta_pagamento import ContaPagamentoService
+from app.services.credencial_pagamento import token_do_pedido, token_marketplace
 
 CENTAVOS = Decimal("0.01")
 logger = logging.getLogger(__name__)
@@ -57,20 +60,18 @@ class PedidoService:
         comprador_criado_em: datetime | None = None,
     ) -> CheckoutResponse:
         """Cria uma Preference em /checkout/preferences e retorna seu init_point."""
-        vendedor_id = await self._obter_vendedor(dados.anuncio_id)
-        conta, access_token = await ContaPagamentoService(
-            self.session, settings=self.settings, gateway=self.gateway
-        ).obter_access_token(vendedor_id)
+        await self._obter_vendedor(dados.anuncio_id)
 
         agora = datetime.now(UTC)
         checkout_ativo = await self._retomar_checkout_ativo(
             dados,
             comprador_id=comprador_id,
-            access_token=access_token,
             agora=agora,
         )
         if checkout_ativo is not None:
             return checkout_ativo
+
+        access_token = token_marketplace(self.settings)
 
         expira_em = agora + timedelta(minutes=self.settings.stock_reservation_minutes)
         async with self.session.begin():
@@ -121,6 +122,15 @@ class PedidoService:
             valor_total = (anuncio.preco * dados.quantidade).quantize(
                 CENTAVOS, rounding=ROUND_HALF_UP
             )
+            percentual = self.settings.marketplace_fee_percent.quantize(CENTAVOS)
+            taxa_marketplace = self.calcular_taxa_marketplace(valor_total, percentual)
+            valor_vendedor = valor_total - taxa_marketplace
+            if valor_vendedor <= 0:
+                raise self._erro(
+                    409,
+                    "O valor líquido do vendedor precisa ser positivo.",
+                    "INVALID_SELLER_AMOUNT",
+                )
             anuncio.quantidade -= dados.quantidade
             if anuncio.quantidade == 0:
                 anuncio.status = AnuncioStatus.ESGOTADO
@@ -133,6 +143,11 @@ class PedidoService:
                 quantidade=dados.quantidade,
                 preco_unitario=anuncio.preco,
                 valor_total=valor_total,
+                modelo_financeiro=MODELO_REPASSE_POSTERIOR,
+                percentual_marketplace=percentual,
+                taxa_marketplace=taxa_marketplace,
+                valor_vendedor=valor_vendedor,
+                recebedor_externo_id=self.settings.mp_marketplace_user_id,
                 status=PedidoStatus.AGUARDANDO_PAGAMENTO,
                 estoque_reservado_em=agora,
                 reserva_expira_em=expira_em,
@@ -160,9 +175,6 @@ class PedidoService:
             titulo = anuncio.titulo
             descricao = anuncio.descricao
 
-        taxa_marketplace = self.calcular_taxa_marketplace(
-            valor_total, self.settings.marketplace_fee_percent
-        )
         try:
             payload = self._payload_preferencia(
                 pedido_id=pedido_id,
@@ -207,9 +219,8 @@ class PedidoService:
             if isinstance(exc, MercadoPagoIntegrationError) and exc.status_code == 401:
                 raise self._erro(
                     409,
-                    "A autorização Mercado Pago do vendedor está inválida. "
-                    "O vendedor precisa reconectar a conta.",
-                    "MP_SELLER_RECONNECT_REQUIRED",
+                    "A credencial recebedora da Obra Circular foi recusada.",
+                    "MP_MARKETPLACE_CREDENTIAL_INVALID",
                 ) from exc
             raise self._erro(
                 502,
@@ -249,14 +260,24 @@ class PedidoService:
         reembolso = await self.session.scalar(
             select(Reembolso).where(Reembolso.pedido_id == pedido.id)
         )
-        return self._resposta(pedido, pagamento, reembolso)
+        return await self._resposta(pedido, pagamento, reembolso)
 
     async def listar(self, comprador_id: UUID) -> PedidoListResponse:
+        return await self._listar(
+            select(Pedido).where(Pedido.comprador_id == comprador_id)
+        )
+
+    async def listar_vendas(self, vendedor_id: UUID) -> PedidoListResponse:
+        return await self._listar(
+            select(Pedido)
+            .join(Anuncio, Anuncio.id == Pedido.anuncio_id)
+            .where(Anuncio.vendedor_id == vendedor_id)
+        )
+
+    async def _listar(self, consulta: Select[tuple[Pedido]]) -> PedidoListResponse:
         pedidos = list(
             await self.session.scalars(
-                select(Pedido)
-                .where(Pedido.comprador_id == comprador_id)
-                .order_by(Pedido.criado_em.desc())
+                consulta.order_by(Pedido.criado_em.desc(), Pedido.id.desc())
             )
         )
         items: list[PedidoResponse] = []
@@ -269,7 +290,7 @@ class PedidoService:
             reembolso = await self.session.scalar(
                 select(Reembolso).where(Reembolso.pedido_id == pedido.id)
             )
-            items.append(self._resposta(pedido, pagamento, reembolso))
+            items.append(await self._resposta(pedido, pagamento, reembolso))
         return PedidoListResponse(items=items, total=len(items))
 
     async def cancelar(self, pedido_id: UUID, comprador_id: UUID) -> None:
@@ -318,7 +339,6 @@ class PedidoService:
         dados: CheckoutCreate,
         *,
         comprador_id: UUID,
-        access_token: str,
         agora: datetime,
     ) -> CheckoutResponse | None:
         pedido = await self.session.scalar(
@@ -372,11 +392,24 @@ class PedidoService:
         preferencia_id = pagamento.preferencia_externa_id
         reserva_expira_em = pedido.reserva_expira_em
         valor_total = pedido.valor_total
+        taxa_marketplace = pedido.taxa_marketplace
+        if taxa_marketplace is None:
+            taxa_marketplace = self.calcular_taxa_marketplace(
+                pedido.valor_total, pedido.percentual_marketplace
+            )
+        vendedor_id = await self.session.scalar(
+            select(Anuncio.vendedor_id).where(Anuncio.id == pedido.anuncio_id)
+        )
         await self.session.rollback()
 
         if reserva_expira_em is None:
             return None
         try:
+            if vendedor_id is None:
+                raise self._erro(404, "Vendedor não encontrado.", "MP_SELLER_UNKNOWN")
+            access_token = await token_do_pedido(
+                self.session, pedido_id, vendedor_id, self.settings, self.gateway
+            )
             resposta = await self.gateway.obter_preferencia(
                 access_token=access_token,
                 preferencia_id=preferencia_id,
@@ -398,9 +431,7 @@ class PedidoService:
             init_point=init_point,
             reserva_expira_em=reserva_expira_em,
             valor_total=valor_total,
-            taxa_marketplace=self.calcular_taxa_marketplace(
-                valor_total, self.settings.marketplace_fee_percent
-            ),
+            taxa_marketplace=taxa_marketplace,
         )
 
     @staticmethod
@@ -478,7 +509,6 @@ class PedidoService:
             payer["date_created"] = self._data_mp(comprador_criado_em)
         payload: dict[str, Any] = {
             "external_reference": str(pedido_id),
-            "marketplace_fee": float(taxa_marketplace),
             "notification_url": self.settings.mp_webhook_url,
             "statement_descriptor": "OBRACIRCULAR",
             "payer": payer,
@@ -569,10 +599,13 @@ class PedidoService:
     def calcular_taxa_marketplace(valor: Decimal, percentual: Decimal) -> Decimal:
         return (valor * percentual / Decimal("100")).quantize(CENTAVOS, rounding=ROUND_HALF_UP)
 
-    @staticmethod
-    def _resposta(
-        pedido: Pedido, pagamento: Pagamento | None, reembolso: Reembolso | None = None
+    async def _resposta(
+        self, pedido: Pedido, pagamento: Pagamento | None, reembolso: Reembolso | None = None
     ) -> PedidoResponse:
+        entrega = await self.session.scalar(select(Entrega).where(Entrega.pedido_id == pedido.id))
+        repasse_status = await self.session.scalar(
+            select(Repasse.status).where(Repasse.pedido_id == pedido.id)
+        )
         return PedidoResponse(
             id=pedido.id,
             anuncio_id=pedido.anuncio_id,
@@ -586,6 +619,8 @@ class PedidoService:
             reserva_expira_em=pedido.reserva_expira_em,
             pagamento=PagamentoResumo.model_validate(pagamento) if pagamento else None,
             reembolso=ReembolsoResponse.model_validate(reembolso) if reembolso else None,
+            entrega=EntregaResponse.model_validate(entrega) if entrega else None,
+            repasse_status=repasse_status,
         )
 
     @staticmethod

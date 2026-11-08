@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { AppRouter } from '../../app/router'
 import { AuthProvider } from '../autenticacao/AuthProvider'
-import type { AnuncioAdmin, UsuarioAdmin } from './types'
+import type { AnuncioAdmin, ContestacaoAdmin, UsuarioAdmin } from './types'
 
 const adminId = 'b1f7f0c6-7a43-4c3e-9b1f-1f0a5b6f0e01'
 
@@ -40,6 +40,14 @@ const anuncio: AnuncioAdmin = {
 
 function resposta(body: unknown, status = 200) {
   return { ok: status >= 200 && status < 300, status, json: async () => body }
+}
+
+const contestacao: ContestacaoAdmin = {
+  id: 'f5d0fab1-1111-4444-8888-111111111111', pedido_id: 'f5d0fab1-2222-4444-8888-111111111111',
+  anuncio_titulo: 'Sobras de piso', comprador_nome: 'Maria', vendedor_nome: 'Carlos',
+  motivo: 'PRODUTO_DANIFICADO', descricao: 'As peças chegaram quebradas.', status: 'ABERTA',
+  criado_em: '2026-10-30T12:00:00Z', resolucao: null, resolvida_por: null,
+  resolvida_em: null, reembolso_status: null, reembolso_externo_id: null,
 }
 
 function lista<T>(items: T[]) {
@@ -80,6 +88,83 @@ afterEach(() => {
 })
 
 describe('Administração', () => {
+  it.each([['ACEITA', 'Aprovar', 'Confirmar aprovação'], ['RECUSADA', 'Recusar', 'Confirmar recusa']] as const)(
+    'analisa contestação com decisão %s e justificativa', async (status, botao, confirmar) => {
+      let item = { ...contestacao }
+      const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+        if (url.endsWith('/auth/me')) return Promise.resolve(resposta({ id: adminId, administrador: true }))
+        if (init?.method === 'POST') {
+          item = { ...item, status, resolucao: 'Conferido pelo administrador.' }
+          return Promise.resolve(resposta(item))
+        }
+        return Promise.resolve(lista([item]))
+      })
+      vi.stubGlobal('fetch', fetchMock)
+      renderEm('/admin/contestacoes')
+      const usuario = userEvent.setup()
+      expect(await screen.findByText('As peças chegaram quebradas.')).toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: 'Anunciar' })).not.toBeInTheDocument()
+      await usuario.click(screen.getByRole('button', { name: botao }))
+      await usuario.type(screen.getByLabelText('Justificativa'), 'Conferido pelo administrador.')
+      await usuario.click(screen.getByRole('button', { name: confirmar }))
+      await waitFor(() => expect(screen.queryByRole('button', { name: 'Aprovar' })).not.toBeInTheDocument())
+      const chamada = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')!
+      expect(chamada[0]).toContain(`/admin/disputes/${contestacao.id}/decision`)
+      expect(JSON.parse(chamada[1]?.body as string)).toEqual({ status, resolucao: 'Conferido pelo administrador.' })
+    },
+  )
+
+  it('mostra falha de reembolso e permite repetir a operação interrompida', async () => {
+    let item = { ...contestacao, status: 'ACEITA' as const, resolucao: 'Dano confirmado.', reembolso_status: 'SOLICITADO' }
+    vi.stubGlobal('fetch', vi.fn((url: string, init?: RequestInit) => {
+      if (url.endsWith('/auth/me')) return Promise.resolve(resposta({ id: adminId, administrador: true }))
+      if (init?.method === 'POST') {
+        item = { ...item, reembolso_status: 'FALHOU' }
+        return Promise.resolve(resposta(item))
+      }
+      return Promise.resolve(lista([item]))
+    }))
+    renderEm('/admin/contestacoes')
+    const usuario = userEvent.setup()
+    await usuario.click(await screen.findByRole('button', { name: 'Tentar reembolso novamente' }))
+    await usuario.click(screen.getByRole('button', { name: 'Confirmar aprovação' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('o reembolso falhou')
+    expect(await screen.findByRole('button', { name: 'Tentar reembolso novamente' })).toBeInTheDocument()
+  })
+
+  it('filtra e bloqueia paginação enquanto carrega outra página', async () => {
+    let liberar: (valor: ReturnType<typeof resposta>) => void = () => {}
+    const fetchMock = vi.fn((url: string) => {
+      if (url.endsWith('/auth/me')) return Promise.resolve(resposta({ id: adminId, administrador: true }))
+      if (url.includes('offset=10')) return new Promise<ReturnType<typeof resposta>>((resolve) => { liberar = resolve })
+      return Promise.resolve(resposta({ items: [contestacao], total: 11, offset: 0, limit: 10 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    renderEm('/admin/contestacoes')
+    const usuario = userEvent.setup()
+    await screen.findByText('As peças chegaram quebradas.')
+    await usuario.selectOptions(screen.getByLabelText('Status'), 'ABERTA')
+    await waitFor(() => expect(fetchMock.mock.calls.some(([url]) => url.includes('status=ABERTA'))).toBe(true))
+    await usuario.click(screen.getByRole('button', { name: 'Próxima' }))
+    expect(screen.getByRole('button', { name: 'Próxima' })).toBeDisabled()
+    expect(screen.queryByText('As peças chegaram quebradas.')).not.toBeInTheDocument()
+    liberar(resposta({ items: [{ ...contestacao, id: 'outra', anuncio_titulo: 'Outro pedido' }], total: 11, offset: 10, limit: 10 }))
+    expect(await screen.findByText('Outro pedido')).toBeInTheDocument()
+  })
+
+  it('mostra estado vazio e permite tentar novamente após erro de listagem', async () => {
+    let falhar = true
+    vi.stubGlobal('fetch', vi.fn((url: string) => {
+      if (url.endsWith('/auth/me')) return Promise.resolve(resposta({ id: adminId, administrador: true }))
+      return Promise.resolve(falhar ? resposta({ detail: 'Falha na consulta.' }, 500) : lista([]))
+    }))
+    renderEm('/admin/contestacoes')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Falha na consulta.')
+    falhar = false
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Atualizar' }))
+    expect(await screen.findByText('Nenhuma contestação encontrada.')).toBeInTheDocument()
+  })
+
   it('nega o acesso a quem não é administrador', async () => {
     salvarSessao({ id: usuarioComum.id, nome: 'Carlos Vendedor' })
     const fetchMock = vi.fn().mockResolvedValue(resposta({ ...usuarioComum }))

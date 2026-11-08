@@ -44,10 +44,20 @@ Serviços locais:
 
 ## Pagamentos com Mercado Pago
 
-O backend possui integração inicial com Checkout Pro Marketplace, OAuth de vendedores,
-comissão de 25%, webhooks assinados, reembolso e reserva concorrente de estoque.
+Novas vendas usam Checkout Pro com recebimento na conta da plataforma, comissão
+inicial de 20% congelada no pedido e repasse posterior via Pix. O backend também
+possui webhooks assinados, reembolso, reserva concorrente de estoque e abertura de
+contestação com bloqueio do repasse. Pedidos anteriores preservam o split legado;
+seu OAuth e sua comissão histórica não configuram novas vendas.
 
-Consulte [docs/integracao-mercado-pago.md](docs/integracao-mercado-pago.md) para:
+Consulte [docs/repasse-posterior.md](docs/repasse-posterior.md) para configurar o
+fluxo atual e [docs/abertura-contestacao.md](docs/abertura-contestacao.md) para a API,
+tela do comprador, dependência da feature de PIN e limites dos testes financeiros.
+As contas de teste usadas não têm chave Pix; a liberação é coberta por simulações,
+sem transferência real ao vendedor.
+
+O documento [docs/integracao-mercado-pago.md](docs/integracao-mercado-pago.md)
+preserva a referência do split legado, incluindo:
 
 - configurar a aplicação já criada no Mercado Pago;
 - expor OAuth, webhook e retorno local com um único túnel ngrok;
@@ -107,7 +117,7 @@ python -m alembic current
 O resultado esperado do segundo comando é:
 
 ```text
-20261017_0005 (head)
+20261031_0010 (head)
 ```
 
 Para verificar se os models e o banco continuam sincronizados:
@@ -146,7 +156,7 @@ compatibilidade da API existente. Os novos uploads utilizam `anuncio_imagens`.
 
 O painel administrativo (`/admin` no frontend) gerencia anúncios, usuários e categorias.
 O perfil de administrador fica na tabela `administradores` (migration
-`20261017_0005`), com uma linha por usuário administrador. As regras estão em
+`20261017_0005_admin`), com uma linha por usuário administrador. As regras estão em
 `docs/domain/administrador.md`.
 
 Para criar o primeiro administrador, cadastre o usuário normalmente e execute:

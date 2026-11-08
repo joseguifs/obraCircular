@@ -25,6 +25,10 @@ export async function autenticar(dados: LoginPayload): Promise<Sessao> {
   return sessao
 }
 
+export function obterUsuarioAtual(): Promise<Usuario> {
+  return apiRequest<Usuario>('/auth/me')
+}
+
 export function obterSessao(): Sessao | null {
   return obterSessaoArmazenada()
 }

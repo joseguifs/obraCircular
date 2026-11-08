@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { mensagemApiErro } from '../../lib/api'
-import { cancelarCheckout, consultarPedido, solicitarReembolso } from './pagamentoApi'
-import { deveAtualizarPedido, reembolsoPendente, STATUS_PEDIDO } from './pedidoApresentacao'
-import type { Pedido } from './types'
+import { formatarDataHora } from '../../lib/formatarTempo'
+import { cancelarCheckout, consultarPedido, gerarPinEntrega, solicitarReembolso } from './pagamentoApi'
+import { aguardaEntrega, deveAtualizarPedido, impedimentoContestacao, reembolsoPendente, STATUS_PEDIDO } from './pedidoApresentacao'
+import type { EntregaPin, Pedido } from './types'
+import { useHorarioAtual } from './useHorarioAtual'
 
-type AcaoPedido = 'cancelar' | 'reembolsar'
+type AcaoPedido = 'cancelar' | 'reembolsar' | 'gerar-pin'
 
 function conteudoDoPedido(pedido: Pedido | null) {
   if (!pedido) return { titulo: 'Consultar pedido', descricao: 'Carregando os dados do pedido.' }
@@ -81,6 +83,8 @@ function PedidoDetalhe({ pedidoId }: { pedidoId: string }) {
   const [aviso, setAviso] = useState('')
   const [acaoEmAndamento, setAcaoEmAndamento] = useState<AcaoPedido | null>(null)
   const [mensagemAcao, setMensagemAcao] = useState('')
+  const [pinEntrega, setPinEntrega] = useState<EntregaPin | null>(null)
+  const agora = useHorarioAtual()
   const controle = useRef({ ativo: true, versao: 0, acao: false, tentativas: 0 })
   const timer = useRef<number | undefined>(undefined)
   const atualizarRef = useRef<() => Promise<void>>(async () => {})
@@ -93,12 +97,14 @@ function PedidoDetalhe({ pedidoId }: { pedidoId: string }) {
       window.clearTimeout(timer.current)
       const versao = ++estado.versao
       let continuar = true
+      let intervalo = 2000
       try {
         const recebido = await consultarPedido(pedidoId)
         if (!estado.ativo || versao !== estado.versao || estado.acao) return
         setPedido(recebido)
         setErroConsulta('')
         continuar = deveAtualizarPedido(recebido)
+        intervalo = aguardaEntrega(recebido) ? 10_000 : 2000
       } catch (falha) {
         if (!estado.ativo || versao !== estado.versao || estado.acao) return
         setErroConsulta(mensagemApiErro(falha, 'Não foi possível consultar o pedido.'))
@@ -106,19 +112,22 @@ function PedidoDetalhe({ pedidoId }: { pedidoId: string }) {
       if (!estado.ativo || versao !== estado.versao || estado.acao) return
       estado.tentativas += 1
       if (continuar && estado.tentativas < 60) {
-        timer.current = window.setTimeout(() => void atualizar(), 2000)
+        timer.current = window.setTimeout(() => void atualizar(), intervalo)
       } else if (continuar) {
-        setAviso('A confirmação está demorando. Use Atualizar pedido para consultar novamente.')
+        setAviso('O acompanhamento automático foi pausado. Use Atualizar pedido para consultar novamente.')
       } else {
         setAviso('')
       }
     }
     atualizarRef.current = atualizar
     void atualizar()
+    const aoFocar = () => { estado.tentativas = 0; void atualizar() }
+    window.addEventListener('focus', aoFocar)
     return () => {
       estado.ativo = false
       estado.versao += 1
       window.clearTimeout(timer.current)
+      window.removeEventListener('focus', aoFocar)
     }
   }, [pedidoId])
 
@@ -131,8 +140,13 @@ function PedidoDetalhe({ pedidoId }: { pedidoId: string }) {
     setAcaoEmAndamento(acao)
     setErroAcao('')
     setMensagemAcao('')
+    if (acao === 'gerar-pin') setPinEntrega(null)
     try {
-      if (acao === 'cancelar') {
+      if (acao === 'gerar-pin') {
+        const gerado = await gerarPinEntrega(pedido.id)
+        if (!estado.ativo) return
+        setPinEntrega(gerado)
+      } else if (acao === 'cancelar') {
         await cancelarCheckout(pedido.id)
         if (!estado.ativo) return
         setPedido({
@@ -163,7 +177,7 @@ function PedidoDetalhe({ pedidoId }: { pedidoId: string }) {
     } catch (falha) {
       if (estado.ativo) setErroAcao(mensagemApiErro(
         falha,
-        acao === 'cancelar'
+        acao === 'gerar-pin' ? 'Não foi possível gerar o PIN da entrega.' : acao === 'cancelar'
           ? 'Não foi possível cancelar o checkout.'
           : 'Não foi possível solicitar o reembolso.',
       ))
@@ -186,6 +200,9 @@ function PedidoDetalhe({ pedidoId }: { pedidoId: string }) {
     (pedido.status === 'CANCELADO' && pedido.pagamento?.status === 'APROVADO')
   ))
   const bloqueado = acaoEmAndamento !== null || Boolean(erroConsulta)
+  const podeGerarPin = pedido && aguardaEntrega(pedido)
+  const pinExpirado = pinEntrega && agora >= new Date(pinEntrega.expira_em).getTime()
+  const impedimento = pedido ? impedimentoContestacao(pedido, agora) : ''
   return (
     <main className="payment-page">
       <section className="payment-card">
@@ -199,6 +216,26 @@ function PedidoDetalhe({ pedidoId }: { pedidoId: string }) {
         {pedido && (
           <p className="payment-status">Pedido: <strong>{STATUS_PEDIDO[pedido.status]}</strong></p>
         )}
+        {podeGerarPin && <section className="delivery-panel" aria-label="PIN da entrega">
+          <h2>{pedido.modalidade_entrega === 'RETIRADA' ? 'Confirmar retirada' : 'Confirmar recebimento'}</h2>
+          <p>Confira todo o material antes de informar o PIN ao vendedor. Ele usará o código para confirmar a entrega.</p>
+          {pinEntrega && !pinExpirado && <div role="status">
+            <p>Seu PIN: <strong className="delivery-pin">{pinEntrega.pin}</strong></p>
+            <p>Válido até {formatarDataHora(pinEntrega.expira_em)}. Este código aparece somente nesta página.</p>
+          </div>}
+          {pinExpirado && <p role="status">O PIN expirou. Gere um novo código.</p>}
+          <button type="button" className="publish-button" disabled={bloqueado}
+            onClick={() => void executarAcao('gerar-pin')}>
+            {acaoEmAndamento === 'gerar-pin' ? 'Gerando PIN...' : pinEntrega ? 'Gerar novo PIN' : 'Gerar PIN da entrega'}
+          </button>
+          <p>Gerar outro PIN invalida o anterior. Ao sair desta página, será necessário gerar um novo.
+            Após a confirmação pelo vendedor, o pedido será atualizado e começará o prazo de sete dias para contestação.</p>
+        </section>}
+        {pedido?.entrega?.confirmado_em && <div className="delivery-panel">
+          <p>Entrega confirmada em {formatarDataHora(pedido.entrega.confirmado_em)}.</p>
+          {pedido.entrega.prazo_contestacao_em && <p>Prazo de contestação: {formatarDataHora(pedido.entrega.prazo_contestacao_em)}.</p>}
+        </div>}
+        {pedido?.status === 'ENTREGUE' && impedimento && <p role="status">{impedimento}</p>}
         <div className="payment-actions">
           {podeCancelar && (
             <button type="button" className="payment-danger-button" disabled={bloqueado}
@@ -219,6 +256,11 @@ function PedidoDetalhe({ pedidoId }: { pedidoId: string }) {
         </div>
         <div className="payment-navigation">
           <Link className="secondary-button" to="/pedidos">Meus pedidos</Link>
+          {pedido && (
+            <Link className="secondary-button" to={`/pedidos/${pedido.id}/contestacoes`}>
+              {pedido.status === 'ENTREGUE' && !impedimento ? 'Abrir contestação' : 'Ver contestações'}
+            </Link>
+          )}
           <Link className="secondary-button" to="/home">Voltar aos anúncios</Link>
         </div>
       </section>

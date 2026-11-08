@@ -1,6 +1,6 @@
 """Cria a tabela de administradores.
 
-Revision ID: 20261017_0005
+Revision ID: 20261017_0005_admin
 Revises: 20260919_0004
 Create Date: 2026-10-17
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects.postgresql import UUID
 
 from alembic import op
 
-revision: str = "20261017_0005"
+revision: str = "20261017_0005_admin"
 down_revision: str | None = "20260919_0004"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None

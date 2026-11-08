@@ -3,9 +3,11 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import jwt
+from fastapi.routing import APIRoute
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.routes.autenticacao import router as router_autenticacao
 from app.core.config import get_settings
 from app.models.enums import UsuarioStatus
 from app.models.usuario import Usuario
@@ -15,6 +17,15 @@ USUARIO = {
     "email": "joao@example.com",
     "senha": "senha-segura-123",
 }
+
+
+def test_usuario_atual_tem_uma_unica_rota_get() -> None:
+    rotas = [
+        rota
+        for rota in router_autenticacao.routes
+        if isinstance(rota, APIRoute) and rota.path == "/auth/me" and "GET" in rota.methods
+    ]
+    assert len(rotas) == 1
 
 
 async def _criar_usuario(client: AsyncClient, **sobrescritas: object) -> dict:

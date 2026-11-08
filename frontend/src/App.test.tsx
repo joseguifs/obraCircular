@@ -44,6 +44,20 @@ function respostaListaVazia() {
   return respostaJson({ items: [], total: 0, offset: 0, limit: 100 })
 }
 
+it('abre o login pela raiz sem depender da API', async () => {
+  window.history.replaceState({}, '', '/')
+  const fetchMock = vi.fn().mockRejectedValue(new Error('API indisponível'))
+  vi.stubGlobal('fetch', fetchMock)
+
+  renderAplicacao()
+
+  expect(await screen.findByText('Bem-vindo de volta')).toBeInTheDocument()
+  expect(screen.getByLabelText('E-mail')).toBeInTheDocument()
+  expect(screen.getByLabelText('Senha')).toBeInTheDocument()
+  expect(window.location.pathname).toBe('/login')
+  expect(fetchMock).not.toHaveBeenCalled()
+})
+
 it('redireciona para a home após o login e permite encerrar a sessão', async () => {
   const fetchMock = vi
     .fn()

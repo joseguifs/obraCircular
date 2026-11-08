@@ -12,18 +12,25 @@ Pedido criado
 -> comprador conclui o Checkout Pro
 -> pagamento aprovado e confirmado consultando o provedor
 -> reserva convertida em venda sem nova baixa
--> repasse contábil criado como PAGO, refletindo o split automático
+-> repasse criado como AGUARDANDO_ENTREGA, sem transferência ao vendedor
 -> vendedor prepara e envia os materiais
 -> comprador confere e fornece o PIN
 -> vendedor valida o PIN
 -> pedido e entrega passam para ENTREGUE
 -> inicia janela de contestação de 7 dias corridos
 -> prazo termina sem contestação ativa
--> pedido passa para CONCLUIDO
+-> repasse fica elegível para liberação
+-> administrador ou job solicita a transferência Pix
+-> provedor confirma o crédito ao vendedor
+-> repasse passa para PAGO e pedido para CONCLUIDO
 ```
 
 Na modalidade `RETIRADA`, não há etapa `EM_ROTA`. O comprador confere o material
 no local combinado e fornece o PIN ao vendedor.
+
+A geração e validação do PIN serão implementadas por outro membro da equipe. O
+fluxo acima descreve o contrato esperado; a abertura de contestação já consome a
+entrega confirmada, mas não implementa essa confirmação.
 
 ## Pagamento recusado
 
@@ -56,6 +63,10 @@ Se for recusada ou cancelada, o pedido retorna a `ENTREGUE` e o repasse retoma a
 liberação. Se for aceita, permanece ativa em `ACEITA` até o reembolso integral ser
 confirmado; então passa para `RESOLVIDA`.
 
+A abertura e a consulta pelo comprador estão implementadas na API e na tela
+`/pedidos/{pedido_id}/contestacoes`. A análise e resolução administrativa descritas
+acima são uma etapa futura, separada da abertura.
+
 ## Falha no repasse
 
 ```text
@@ -67,8 +78,9 @@ Repasse PROCESSANDO
 -> reutilizar o mesmo repasse e incrementar tentativas
 ```
 
-Não se cria outro repasse. Após três falhas automáticas, ele permanece `FALHOU`
-para tratamento administrativo.
+Não se cria outro repasse nem uma nova instrução após uma rejeição final. Uma
+resposta incerta permanece em conciliação com a mesma chave de idempotência;
+`FALHOU` exige tratamento administrativo.
 
 ## Reembolso
 
@@ -76,3 +88,13 @@ Existe um único reembolso integral por pagamento. Enquanto ele estiver pendente
 o pedido não pode ser concluído e o repasse não pode ser pago. Se falhar, reutiliza
 o mesmo registro. Quando confirmado, os estados relacionados passam para
 `REEMBOLSADO` e o estoque é reposto uma única vez, caso ainda não tenha sido.
+
+## Compatibilidade financeira
+
+O fluxo acima se aplica a `REPASSE_POSTERIOR`. Pedidos anteriores permanecem
+`SPLIT_LEGADO`, com o split financeiro já executado; nenhum painel ou job pode
+transferir dinheiro novamente para esses pedidos. Consulte [repasse.md](repasse.md).
+
+As contas de teste utilizadas não possuem chave Pix. A verificação automatizada
+simula o provedor e cobre o bloqueio por contestação inclusive após o prazo; a
+transferência real ao vendedor não foi homologada nesse ambiente.

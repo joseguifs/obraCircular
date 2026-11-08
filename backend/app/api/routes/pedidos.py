@@ -3,6 +3,12 @@ from uuid import UUID
 from fastapi import APIRouter, Response, status
 
 from app.api.dependencies import CurrentUser, DatabaseSession
+from app.schemas.contestacao import (
+    ContestacaoCreate,
+    ContestacaoListResponse,
+    ContestacaoResponse,
+)
+from app.schemas.entrega import EntregaConfirmacaoCreate, EntregaPinResponse, EntregaResponse
 from app.schemas.pedido import (
     CheckoutCreate,
     CheckoutResponse,
@@ -10,6 +16,8 @@ from app.schemas.pedido import (
     PedidoResponse,
     ReembolsoResponse,
 )
+from app.services.contestacao import ContestacaoService
+from app.services.entrega import EntregaService
 from app.services.pedido import PedidoService
 from app.services.reembolso import ReembolsoService
 
@@ -34,6 +42,11 @@ async def listar_pedidos(session: DatabaseSession, comprador: CurrentUser) -> Pe
     return await PedidoService(session).listar(comprador.id)
 
 
+@router.get("/sales", response_model=PedidoListResponse)
+async def listar_vendas(session: DatabaseSession, vendedor: CurrentUser) -> PedidoListResponse:
+    return await PedidoService(session).listar_vendas(vendedor.id)
+
+
 @router.get("/{pedido_id}", response_model=PedidoResponse)
 async def consultar_pedido(
     pedido_id: UUID, session: DatabaseSession, comprador: CurrentUser
@@ -54,3 +67,51 @@ async def solicitar_reembolso(
     pedido_id: UUID, session: DatabaseSession, comprador: CurrentUser
 ) -> ReembolsoResponse:
     return await ReembolsoService(session).solicitar(pedido_id, comprador.id)
+
+
+@router.post(
+    "/{pedido_id}/delivery/pin",
+    response_model=EntregaPinResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Gera o PIN de confirmação da entrega (comprador)",
+)
+async def gerar_pin_entrega(
+    pedido_id: UUID, session: DatabaseSession, comprador: CurrentUser
+) -> EntregaPinResponse:
+    """Cada chamada gera um novo PIN e invalida o anterior; o PIN só é exibido aqui."""
+    return await EntregaService(session).gerar_pin(pedido_id, comprador.id)
+
+
+@router.post(
+    "/{pedido_id}/delivery/confirm",
+    response_model=EntregaResponse,
+    summary="Confirma a entrega com o PIN informado pelo comprador (vendedor)",
+)
+async def confirmar_entrega(
+    pedido_id: UUID,
+    dados: EntregaConfirmacaoCreate,
+    session: DatabaseSession,
+    vendedor: CurrentUser,
+) -> EntregaResponse:
+    return await EntregaService(session).confirmar(pedido_id, vendedor.id, dados.pin)
+
+
+@router.post(
+    "/{pedido_id}/disputes",
+    response_model=ContestacaoResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def abrir_contestacao(
+    pedido_id: UUID,
+    dados: ContestacaoCreate,
+    session: DatabaseSession,
+    comprador: CurrentUser,
+) -> ContestacaoResponse:
+    return await ContestacaoService(session).abrir(pedido_id, dados, comprador.id)
+
+
+@router.get("/{pedido_id}/disputes", response_model=ContestacaoListResponse)
+async def listar_contestacoes(
+    pedido_id: UUID, session: DatabaseSession, comprador: CurrentUser
+) -> ContestacaoListResponse:
+    return await ContestacaoService(session).listar(pedido_id, comprador.id)

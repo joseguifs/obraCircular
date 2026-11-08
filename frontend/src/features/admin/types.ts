@@ -1,9 +1,30 @@
 import type { ListResponse } from '../../lib/api'
+import type { ContestacaoMotivo, ContestacaoStatus, Reembolso } from '../pagamentos/types'
 import type { Anuncio } from '../anuncios/types'
 import type { Usuario } from '../usuarios/types'
 
 export type UsuarioStatus = Usuario['status']
 export type AnuncioStatus = Anuncio['status']
+
+export type { ContestacaoStatus }
+export type DecisaoContestacao = 'ACEITA' | 'RECUSADA'
+export interface ContestacaoAdmin {
+  id: string
+  pedido_id: string
+  anuncio_titulo: string
+  comprador_nome: string
+  vendedor_nome: string
+  motivo: ContestacaoMotivo
+  descricao: string
+  status: ContestacaoStatus
+  criado_em: string
+  resolucao: string | null
+  resolvida_por: string | null
+  resolvida_em: string | null
+  reembolso_status: Reembolso['status'] | null
+  reembolso_externo_id: string | null
+}
+export type ListaContestacoesAdmin = ListResponse<ContestacaoAdmin>
 
 export interface ContagemPorStatus {
   total: number

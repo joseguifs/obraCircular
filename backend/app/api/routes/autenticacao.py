@@ -1,15 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, status
 
-from app.api.dependencies import CurrentUser, DatabaseSession
-from app.repositories.administrador import AdministradorRepository
-from app.schemas.autenticacao import (
-    LoginRequest,
-    RefreshTokenRequest,
-    TokenResponse,
-    UsuarioAtualResponse,
-)
 from app.api.dependencies import CurrentUser, DatabaseSession, EmailSender
-from app.models.usuario import Usuario
+from app.repositories.administrador import AdministradorRepository
 from app.schemas.autenticacao import (
     EsqueciSenhaRequest,
     EsqueciSenhaResponse,
@@ -17,9 +9,9 @@ from app.schemas.autenticacao import (
     RedefinirSenhaRequest,
     RefreshTokenRequest,
     TokenResponse,
+    UsuarioAtualResponse,
     ValidarTokenRecuperacaoRequest,
 )
-from app.schemas.usuario import UsuarioRead
 from app.services.autenticacao import AutenticacaoService
 from app.services.email import enviar_registrando_falhas
 from app.services.recuperacao_senha import RecuperacaoSenhaService
@@ -56,9 +48,6 @@ async def obter_usuario_atual(
     return UsuarioAtualResponse.model_validate(usuario_atual).model_copy(
         update={"administrador": administrador}
     )
-@router.get("/me", response_model=UsuarioRead)
-async def obter_usuario_atual(usuario_atual: CurrentUser) -> Usuario:
-    return usuario_atual
 
 
 @router.post(

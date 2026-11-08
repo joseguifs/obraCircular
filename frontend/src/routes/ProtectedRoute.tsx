@@ -6,7 +6,7 @@ export function ProtectedRoute() {
   const localizacao = useLocation()
 
   if (!sessao) {
-    return <Navigate to="/login" replace state={{ origem: localizacao.pathname }} />
+    return <Navigate to="/login" replace state={{ origem: localizacao.pathname + localizacao.search }} />
   }
 
   return <Outlet />

@@ -26,6 +26,8 @@ class TokenResponse(BaseModel):
 
 class UsuarioAtualResponse(UsuarioRead):
     administrador: bool = False
+
+
 class EsqueciSenhaRequest(BaseModel):
     email: EmailStr
 

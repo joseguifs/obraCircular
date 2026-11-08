@@ -4,7 +4,9 @@ const SECOES = [
   { para: '/admin', rotulo: 'Visão geral', exato: true },
   { para: '/admin/anuncios', rotulo: 'Anúncios', exato: false },
   { para: '/admin/usuarios', rotulo: 'Usuários', exato: false },
+  { para: '/admin/contestacoes', rotulo: 'Contestações', exato: false },
   { para: '/admin/categorias', rotulo: 'Categorias', exato: false },
+  { para: '/admin/repasses', rotulo: 'Repasses', exato: false },
 ]
 
 export function AdminLayout() {
