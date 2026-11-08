@@ -42,6 +42,11 @@ async def listar_pedidos(session: DatabaseSession, comprador: CurrentUser) -> Pe
     return await PedidoService(session).listar(comprador.id)
 
 
+@router.get("/sales", response_model=PedidoListResponse)
+async def listar_vendas(session: DatabaseSession, vendedor: CurrentUser) -> PedidoListResponse:
+    return await PedidoService(session).listar_vendas(vendedor.id)
+
+
 @router.get("/{pedido_id}", response_model=PedidoResponse)
 async def consultar_pedido(
     pedido_id: UUID, session: DatabaseSession, comprador: CurrentUser

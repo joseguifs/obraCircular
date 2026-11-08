@@ -51,6 +51,8 @@ export function MarketplaceLayout() {
                 Meus pedidos
               </Link>
             )}
+            {sessao && <Link to="/vendas" className={location.pathname === '/vendas'
+              ? 'app-nav-link app-nav-link--ativo' : 'app-nav-link'}>Minhas vendas</Link>}
             <span className="app-nav-item app-nav-item--futuro">Mensagens</span>
             {sessao?.usuario.administrador && (
               <Link

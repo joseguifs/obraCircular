@@ -5,7 +5,7 @@ from typing import Any
 from urllib.parse import urlsplit
 from uuid import UUID, uuid4
 
-from sqlalchemy import select
+from sqlalchemy import Select, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import Settings, get_settings
@@ -13,6 +13,7 @@ from app.core.exceptions import AppError
 from app.integrations.mercado_pago import MercadoPagoGateway, MercadoPagoIntegrationError
 from app.models.anuncio import Anuncio
 from app.models.endereco import Endereco
+from app.models.entrega import Entrega
 from app.models.enums import (
     AnuncioStatus,
     PagamentoStatus,
@@ -21,6 +22,8 @@ from app.models.enums import (
 from app.models.pagamento import Pagamento
 from app.models.pedido import MODELO_REPASSE_POSTERIOR, Pedido
 from app.models.reembolso import Reembolso
+from app.models.repasse import Repasse
+from app.schemas.entrega import EntregaResponse
 from app.schemas.pedido import (
     CheckoutCreate,
     CheckoutResponse,
@@ -257,14 +260,24 @@ class PedidoService:
         reembolso = await self.session.scalar(
             select(Reembolso).where(Reembolso.pedido_id == pedido.id)
         )
-        return self._resposta(pedido, pagamento, reembolso)
+        return await self._resposta(pedido, pagamento, reembolso)
 
     async def listar(self, comprador_id: UUID) -> PedidoListResponse:
+        return await self._listar(
+            select(Pedido).where(Pedido.comprador_id == comprador_id)
+        )
+
+    async def listar_vendas(self, vendedor_id: UUID) -> PedidoListResponse:
+        return await self._listar(
+            select(Pedido)
+            .join(Anuncio, Anuncio.id == Pedido.anuncio_id)
+            .where(Anuncio.vendedor_id == vendedor_id)
+        )
+
+    async def _listar(self, consulta: Select[tuple[Pedido]]) -> PedidoListResponse:
         pedidos = list(
             await self.session.scalars(
-                select(Pedido)
-                .where(Pedido.comprador_id == comprador_id)
-                .order_by(Pedido.criado_em.desc())
+                consulta.order_by(Pedido.criado_em.desc(), Pedido.id.desc())
             )
         )
         items: list[PedidoResponse] = []
@@ -277,7 +290,7 @@ class PedidoService:
             reembolso = await self.session.scalar(
                 select(Reembolso).where(Reembolso.pedido_id == pedido.id)
             )
-            items.append(self._resposta(pedido, pagamento, reembolso))
+            items.append(await self._resposta(pedido, pagamento, reembolso))
         return PedidoListResponse(items=items, total=len(items))
 
     async def cancelar(self, pedido_id: UUID, comprador_id: UUID) -> None:
@@ -586,10 +599,13 @@ class PedidoService:
     def calcular_taxa_marketplace(valor: Decimal, percentual: Decimal) -> Decimal:
         return (valor * percentual / Decimal("100")).quantize(CENTAVOS, rounding=ROUND_HALF_UP)
 
-    @staticmethod
-    def _resposta(
-        pedido: Pedido, pagamento: Pagamento | None, reembolso: Reembolso | None = None
+    async def _resposta(
+        self, pedido: Pedido, pagamento: Pagamento | None, reembolso: Reembolso | None = None
     ) -> PedidoResponse:
+        entrega = await self.session.scalar(select(Entrega).where(Entrega.pedido_id == pedido.id))
+        repasse_status = await self.session.scalar(
+            select(Repasse.status).where(Repasse.pedido_id == pedido.id)
+        )
         return PedidoResponse(
             id=pedido.id,
             anuncio_id=pedido.anuncio_id,
@@ -603,6 +619,8 @@ class PedidoService:
             reserva_expira_em=pedido.reserva_expira_em,
             pagamento=PagamentoResumo.model_validate(pagamento) if pagamento else None,
             reembolso=ReembolsoResponse.model_validate(reembolso) if reembolso else None,
+            entrega=EntregaResponse.model_validate(entrega) if entrega else None,
+            repasse_status=repasse_status,
         )
 
     @staticmethod

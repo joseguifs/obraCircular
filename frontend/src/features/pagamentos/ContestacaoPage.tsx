@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router'
 import { mensagemApiErro } from '../../lib/api'
-import { formatarMoeda } from '../../lib/formatarTempo'
+import { formatarDataHora, formatarMoeda } from '../../lib/formatarTempo'
 import { abrirContestacao, consultarPedido, listarContestacoes } from './pagamentoApi'
 import { contestacaoAtiva, MOTIVOS_CONTESTACAO, STATUS_CONTESTACAO } from './contestacaoApresentacao'
-import { STATUS_PEDIDO } from './pedidoApresentacao'
+import { impedimentoContestacao, STATUS_PEDIDO } from './pedidoApresentacao'
+import { useHorarioAtual } from './useHorarioAtual'
 import type { Contestacao, ContestacaoMotivo, Pedido } from './types'
 import './ContestacaoPage.css'
 
@@ -41,6 +42,7 @@ export function ContestacaoPedido({ pedidoId }: { pedidoId: string }) {
   const [erroAcao, setErroAcao] = useState('')
   const [sucesso, setSucesso] = useState('')
   const controle = useRef({ ativo: true, versao: 0, enviando: false })
+  const agora = useHorarioAtual()
 
   const atualizar = useCallback(async () => {
     const estado = controle.current
@@ -68,7 +70,8 @@ export function ContestacaoPedido({ pedidoId }: { pedidoId: string }) {
   }, [atualizar])
 
   const ativa = historico.some((item) => contestacaoAtiva(item.status))
-  const podeAbrir = pedido?.status === 'ENTREGUE' && !ativa
+  const impedimento = pedido ? impedimentoContestacao(pedido, agora) : ''
+  const podeAbrir = pedido && !impedimento && !ativa
     && !carregando && !enviando && !erroConsulta
 
   async function enviar(evento: FormEvent) {
@@ -111,6 +114,9 @@ export function ContestacaoPedido({ pedidoId }: { pedidoId: string }) {
             <div><dt>Situação</dt><dd>{STATUS_PEDIDO[pedido.status]}</dd></div>
             <div><dt>Total</dt><dd>{formatarMoeda(pedido.valor_total)}</dd></div>
           </dl>
+          {pedido.entrega?.prazo_contestacao_em && <p>
+            Prazo de contestação: {formatarDataHora(pedido.entrega.prazo_contestacao_em)}.
+          </p>}
           <Link to={`/pedidos/${pedidoId}`}>Ver detalhes do pedido →</Link>
         </div>
       )}
@@ -119,8 +125,8 @@ export function ContestacaoPedido({ pedidoId }: { pedidoId: string }) {
       {!carregando && (ativa || pedido?.status === 'EM_CONTESTACAO') && (
         <p>Este pedido já está em contestação. Acompanhe o histórico abaixo.</p>
       )}
-      {!carregando && pedido && !['ENTREGUE', 'EM_CONTESTACAO'].includes(pedido.status) && (
-        <p>Este pedido precisa estar entregue para abrir uma contestação.</p>
+      {!carregando && pedido && pedido.status !== 'EM_CONTESTACAO' && impedimento && (
+        <p>{impedimento}</p>
       )}
       <form className="dispute-form" onSubmit={(evento) => void enviar(evento)}>
         <fieldset disabled={!podeAbrir}>

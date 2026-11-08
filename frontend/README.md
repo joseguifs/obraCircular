@@ -65,9 +65,21 @@ estado permitido. Os erros da API são exibidos sem apagar o texto digitado. Ped
 ainda não entregues ou com contestação ativa não permitem novo envio. Após sucesso
 ou falha de comunicação, a tela consulta novamente o pedido e o histórico.
 
-A geração e validação do PIN serão entregues por outro membro da equipe. Até essa
-integração, os testes precisam de pedidos com dados de pós-entrega preparados no
-ambiente. A interface não confirma entregas nem cria PINs.
+No detalhe de um pedido pago, o comprador pode **Gerar PIN da entrega**. O código
+fica somente na memória da página, com validade exibida; gerar outro invalida o
+anterior. O comprador deve conferir todo o material antes de informar o PIN.
+
+Em **Minhas vendas** (`/vendas`), o vendedor seleciona **Confirmar entrega/retirada**
+e informa os cinco dígitos recebidos. O backend valida o PIN e, na mesma transação,
+confirma a entrega, altera o pedido para `ENTREGUE` e inicia o prazo de sete dias
+para contestação. Erros, expiração e bloqueio do PIN são apresentados na tela.
+As vendas são consultadas por `GET /api/v1/orders/sales`, restrito ao vendedor
+autenticado. A consulta não retorna PIN nem hash.
+
+O detalhe da compra acompanha a confirmação automaticamente a cada dez segundos
+(por até dez minutos), ao retornar à janela ou pelo botão **Atualizar pedido**.
+A tela de contestação mostra o prazo e impede o envio quando ele termina ou quando
+o estado do repasse já impede a abertura. O backend repete as validações ao enviar.
 
 O modelo atual recebe na plataforma e faz repasse posterior via Pix. A contestação
 impede essa liberação; as contas de teste utilizadas não têm chave Pix, portanto
