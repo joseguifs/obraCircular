@@ -129,6 +129,19 @@ async def listar_anuncios(
 
 
 @router.get(
+    "/mine",
+    response_model=AnuncioListResponse,
+    summary="Lista os anúncios do usuário autenticado",
+)
+async def listar_meus_anuncios(
+    session: DatabaseSession,
+    vendedor: CurrentUser,
+    filtros: Annotated[AnuncioFilters, Query()],
+) -> AnuncioListResponse:
+    return await AnuncioService(session).listar(filtros, vendedor_id=vendedor.id)
+
+
+@router.get(
     "/{anuncio_id}",
     response_model=AnuncioResponse,
     summary="Consulta um anúncio",

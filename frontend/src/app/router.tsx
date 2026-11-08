@@ -10,6 +10,7 @@ import { LoginPage } from '../features/autenticacao/LoginPage'
 import { RedefinirSenhaPage } from '../features/autenticacao/RedefinirSenhaPage'
 import { AnuncioDetalhePage } from '../features/anuncios/AnuncioDetalhePage'
 import { AnuncioPublicadoPage } from '../features/anuncios/AnuncioPublicadoPage'
+import { MeusAnunciosPage } from '../features/anuncios/MeusAnunciosPage'
 import { PublicarAnuncioPage } from '../features/anuncios/PublicarAnuncioPage'
 import { CategoriasPage } from '../features/categorias/CategoriasPage'
 import type { Sessao } from '../features/autenticacao/types'
@@ -56,6 +57,7 @@ export function AppRouter() {
             <Route path="/pedidos/:pedidoId/contestacoes" element={<ContestacaoPage />} />
             {import.meta.env.DEV && <Route path="/testes/contestacao" element={<ContestacaoTestePage />} />}
             <Route path="/anuncios/novo" element={<PublicarAnuncioPage />} />
+            <Route path="/anuncios/meus" element={<MeusAnunciosPage />} />
             <Route path="/anuncios/:anuncioId/publicado" element={<AnuncioPublicadoPage />} />
             <Route path="/anuncios/:anuncioId" element={<AnuncioDetalhePage />} />
             <Route path="/categorias" element={<Navigate to="/admin/categorias" replace />} />
@@ -144,6 +146,7 @@ function AtualizarTitulo() {
     else if (/^\/pedidos\/[^/]+\/contestacoes$/.test(pathname)) document.title = 'Contestação do pedido | Obra Circular'
     else if (pathname.startsWith('/pedidos/')) document.title = 'Pedido | Obra Circular'
     else if (pathname === '/anuncios/novo') document.title = 'Publicar anúncio | Obra Circular'
+    else if (pathname === '/anuncios/meus') document.title = 'Meus anúncios | Obra Circular'
     else if (/^\/anuncios\/[^/]+\/publicado$/.test(pathname)) document.title = 'Anúncio publicado | Obra Circular'
     else if (/^\/anuncios\/[^/]+$/.test(pathname)) document.title = 'Anúncio | Obra Circular'
     else document.title = 'Página não encontrada | Obra Circular'
