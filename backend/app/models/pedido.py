@@ -44,6 +44,23 @@ class Pedido(UUIDPrimaryKeyMixin, Base):
         CheckConstraint("preco_unitario >= 0", name="ck_pedidos_preco_unitario"),
         CheckConstraint("valor_total >= 0", name="ck_pedidos_valor_total"),
         CheckConstraint(
+            "modelo_financeiro IN ('SPLIT_LEGADO', 'REPASSE_POSTERIOR')",
+            name="ck_pedidos_modelo_financeiro",
+        ),
+        CheckConstraint(
+            "percentual_marketplace BETWEEN 0 AND 100 AND "
+            "(taxa_marketplace IS NULL OR taxa_marketplace = "
+            "ROUND(valor_total * percentual_marketplace / 100, 2)) AND "
+            "(valor_vendedor IS NULL OR valor_vendedor = valor_total - taxa_marketplace)",
+            name="ck_pedidos_comissao_snapshot",
+        ),
+        CheckConstraint(
+            "modelo_financeiro = 'SPLIT_LEGADO' OR (taxa_marketplace IS NOT NULL "
+            "AND valor_vendedor IS NOT NULL AND valor_vendedor > 0 "
+            "AND recebedor_externo_id IS NOT NULL)",
+            name="ck_pedidos_repasse_posterior",
+        ),
+        CheckConstraint(
             "valor_total = ROUND(quantidade * preco_unitario, 2)",
             name="ck_pedidos_calculo_total",
         ),
@@ -82,6 +99,15 @@ class Pedido(UUIDPrimaryKeyMixin, Base):
     quantidade: Mapped[int] = mapped_column(Integer)
     preco_unitario: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     valor_total: Mapped[Decimal] = mapped_column(Numeric(12, 2))
+    modelo_financeiro: Mapped[str] = mapped_column(
+        String(30), default="SPLIT_LEGADO", server_default="SPLIT_LEGADO"
+    )
+    percentual_marketplace: Mapped[Decimal] = mapped_column(
+        Numeric(5, 2), default=Decimal("25.00"), server_default="25.00"
+    )
+    taxa_marketplace: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
+    valor_vendedor: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
+    recebedor_externo_id: Mapped[str | None] = mapped_column(String(255))
     status: Mapped[PedidoStatus] = mapped_column(
         String(30),
         default=PedidoStatus.AGUARDANDO_PAGAMENTO,

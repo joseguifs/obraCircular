@@ -10,6 +10,7 @@ from app.models.contestacao import Contestacao
 from app.models.endereco import Endereco
 from app.models.entrega import Entrega
 from app.models.evento_provedor import EventoProvedor
+from app.models.operacao_repasse import DestinoRepasse, EventoRepasse, InstrucaoRepasse
 from app.models.pagamento import Pagamento
 from app.models.pedido import Pedido
 from app.models.reembolso import Reembolso
@@ -34,6 +35,9 @@ __all__ = [
     "Pedido",
     "Reembolso",
     "Repasse",
+    "DestinoRepasse",
+    "EventoRepasse",
+    "InstrucaoRepasse",
     "TokenRecuperacaoSenha",
     "Usuario",
 ]

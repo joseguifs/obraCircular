@@ -22,6 +22,7 @@ async def processar_webhook_em_segundo_plano(evento_id: UUID) -> None:
 
 
 @router.post("/mercado-pago", status_code=status.HTTP_200_OK)
+@router.post("/mercado-pago/payouts", status_code=status.HTTP_200_OK)
 async def webhook_mercado_pago(
     request: Request,
     session: DatabaseSession,
@@ -50,6 +51,10 @@ async def webhook_mercado_pago(
             detail="Payload do webhook inválido.",
             code="MP_WEBHOOK_PAYLOAD_INVALID",
         )
+    # O marcador de roteamento e definido pelo servidor, nunca pelo remetente.
+    payload.pop("_payout_notification", None)
+    if request.url.path.endswith("/payouts"):
+        payload["_payout_notification"] = True
     evento_id = await WebhookMercadoPagoService(session).receber(
         payload=payload,
         data_id=data_id,

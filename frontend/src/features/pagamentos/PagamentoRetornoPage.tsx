@@ -219,6 +219,11 @@ function PedidoDetalhe({ pedidoId }: { pedidoId: string }) {
         </div>
         <div className="payment-navigation">
           <Link className="secondary-button" to="/pedidos">Meus pedidos</Link>
+          {pedido && (
+            <Link className="secondary-button" to={`/pedidos/${pedido.id}/contestacoes`}>
+              {pedido.status === 'ENTREGUE' ? 'Abrir contestação' : 'Ver contestações'}
+            </Link>
+          )}
           <Link className="secondary-button" to="/home">Voltar aos anúncios</Link>
         </div>
       </section>

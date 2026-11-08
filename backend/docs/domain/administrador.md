@@ -17,3 +17,11 @@ O administrador é um usuário comum que também possui um registro na tabela
   encerrado não é reativado e pedidos existentes não são alterados.
 - O primeiro administrador é criado pela linha de comando
   (`python -m app.cli.promover_administrador <email>`).
+
+## Opera??o financeira
+
+Administradores ativos acessam `/admin/repasses`, conferem a titularidade do destino
+Pix e autorizam o repasse ap?s o prazo de contesta??o. A autoriza??o n?o marca o
+repasse como pago: ? necess?ria confirma??o do provedor. O painel e o job respeitam
+o mesmo servi?o, bloqueios e idempot?ncia. Todas as opera??es de sa?da de dinheiro
+geram auditoria imut?vel; valores de vendas antigas nunca s?o recalculados.

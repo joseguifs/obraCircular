@@ -42,12 +42,37 @@ política de execução do PowerShell não permite scripts. Em Linux e macOS, us
 - `/perfil/enderecos`: consulta paginada e edição dos próprios endereços.
 - `/anuncios/novo` e `/anuncios/:anuncioId/publicado`: publicação de anúncios (rotas protegidas).
 - `/anuncios/:anuncioId`: detalhes, categoria, disponibilidade, preço e galeria do anúncio.
+- `/pedidos`: lista dos pedidos do comprador autenticado.
+- `/pedidos/:pedidoId`: acompanhamento do pedido, pagamento, reembolso e acesso às contestações.
+- `/pedidos/:pedidoId/contestacoes`: abertura e histórico de contestações do pedido, inclusive em produção.
+- `/testes/contestacao`: seletor auxiliar de pedidos para testar o mesmo formulário; somente em desenvolvimento.
 - `/categorias`: cadastro, listagem e edição de categorias. Pública temporariamente, sem
   autenticação; deve voltar para a área protegida quando houver perfil administrativo.
 - Qualquer endereço desconhecido exibe a página de erro 404.
 
 Em hospedagem estática, o servidor deve redirecionar as URLs do frontend para
 `index.html`, permitindo que o React Router resolva acessos diretos como `/home`.
+
+## Contestações
+
+Em **Meus pedidos**, abra o detalhe do pedido e selecione **Abrir contestação**.
+Informe o motivo e a descrição do problema. A tela apresenta a confirmação, o
+protocolo e o histórico atualizado. Nos demais estados do pedido, o acesso aparece
+como **Ver contestações**. A sessão é obrigatória e a API limita os dados ao comprador.
+
+A abertura exige entrega confirmada, prazo de sete dias ainda válido e repasse em
+estado permitido. Os erros da API são exibidos sem apagar o texto digitado. Pedidos
+ainda não entregues ou com contestação ativa não permitem novo envio. Após sucesso
+ou falha de comunicação, a tela consulta novamente o pedido e o histórico.
+
+A geração e validação do PIN serão entregues por outro membro da equipe. Até essa
+integração, os testes precisam de pedidos com dados de pós-entrega preparados no
+ambiente. A interface não confirma entregas nem cria PINs.
+
+O modelo atual recebe na plataforma e faz repasse posterior via Pix. A contestação
+impede essa liberação; as contas de teste utilizadas não têm chave Pix, portanto
+a transferência financeira é validada apenas com gateways simulados. Detalhes e
+comandos de teste: [abertura de contestação](../backend/docs/abertura-contestacao.md).
 
 ## Perfil e endereços
 
