@@ -7,6 +7,21 @@
   padding: 24px 0 0;
 }
 
+.admin-contestacao {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.admin-contestacao-texto {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.admin-decisao {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
 .admin-payout-list { display: grid; gap: 20px; margin-bottom: 24px; }
 .admin-payout-values { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; }
 .admin-payout-values dt { color: var(--cinza-texto-forte); font-size: 13px; }

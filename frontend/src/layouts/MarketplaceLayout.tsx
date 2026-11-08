@@ -10,6 +10,7 @@ export function MarketplaceLayout() {
   const navegar = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const naHome = location.pathname === '/home'
+  const naAdministracao = location.pathname === '/admin' || location.pathname.startsWith('/admin/')
   const [buscaDigitada, setBuscaDigitada] = useState('')
   const busca = naHome ? searchParams.get('q') ?? '' : buscaDigitada
 
@@ -81,10 +82,12 @@ export function MarketplaceLayout() {
               <BellIcon />
             </span>
 
-            <Link to="/anuncios/novo" className="app-button-primary">
-              <PlusIcon />
-              <span>Anunciar</span>
-            </Link>
+            {!naAdministracao && (
+              <Link to="/anuncios/novo" className="app-button-primary">
+                <PlusIcon />
+                <span>Anunciar</span>
+              </Link>
+            )}
 
             {sessao && (
               <Link

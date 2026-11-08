@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router'
 import { AdminAnunciosPage } from '../features/admin/AdminAnunciosPage'
+import { AdminContestacoesPage } from '../features/admin/AdminContestacoesPage'
 import { AdminLayout } from '../features/admin/AdminLayout'
 import { AdminResumoPage } from '../features/admin/AdminResumoPage'
 import { AdminUsuariosPage } from '../features/admin/AdminUsuariosPage'
@@ -66,6 +67,7 @@ export function AppRouter() {
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminResumoPage />} />
                 <Route path="anuncios" element={<AdminAnunciosPage />} />
+                <Route path="contestacoes" element={<AdminContestacoesPage />} />
                 <Route path="usuarios" element={<AdminUsuariosPage />} />
                 <Route path="categorias" element={<CategoriasPage />} />
                 <Route path="repasses" element={<AdminRepassesPage />} />
@@ -136,6 +138,7 @@ function AtualizarTitulo() {
     else if (pathname === '/admin') document.title = 'Administração | Obra Circular'
     else if (pathname === '/admin/anuncios') document.title = 'Anúncios · Administração | Obra Circular'
     else if (pathname === '/admin/usuarios') document.title = 'Usuários · Administração | Obra Circular'
+    else if (pathname === '/admin/contestacoes') document.title = 'Contestações · Administração | Obra Circular'
     else if (pathname === '/admin/repasses') document.title = 'Repasses · Administração | Obra Circular'
     else if (pathname === '/admin/categorias' || pathname === '/categorias')
       document.title = 'Categorias · Administração | Obra Circular'

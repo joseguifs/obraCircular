@@ -7,6 +7,10 @@ from app.api.dependencies import CurrentAdmin, DatabaseSession
 from app.schemas.admin import (
     AdminAnuncioFilters,
     AdminAnuncioListResponse,
+    AdminContestacaoDecisao,
+    AdminContestacaoFilters,
+    AdminContestacaoListResponse,
+    AdminContestacaoResponse,
     AdminResumoResponse,
     AdminUsuarioFilters,
     AdminUsuarioListResponse,
@@ -14,8 +18,28 @@ from app.schemas.admin import (
     AdminUsuarioStatusUpdate,
 )
 from app.services.admin import AdminService
+from app.services.contestacao import ContestacaoService
 
 router = APIRouter(prefix="/admin", tags=["administração"])
+
+
+@router.get("/disputes", response_model=AdminContestacaoListResponse)
+async def listar_contestacoes(
+    session: DatabaseSession,
+    _admin: CurrentAdmin,
+    filtros: Annotated[AdminContestacaoFilters, Query()],
+) -> AdminContestacaoListResponse:
+    return await ContestacaoService(session).listar(filtros)
+
+
+@router.post("/disputes/{contestacao_id}/decision", response_model=AdminContestacaoResponse)
+async def decidir_contestacao(
+    contestacao_id: UUID,
+    dados: AdminContestacaoDecisao,
+    session: DatabaseSession,
+    admin: CurrentAdmin,
+) -> AdminContestacaoResponse:
+    return await ContestacaoService(session).decidir(contestacao_id, dados, admin.id)
 
 
 @router.get(
