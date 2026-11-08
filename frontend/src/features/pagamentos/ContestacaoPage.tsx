@@ -1,34 +1,13 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router'
 import { mensagemApiErro } from '../../lib/api'
-import { formatarMoeda } from '../../lib/formatarTempo'
+import { formatarDataHora, formatarMoeda } from '../../lib/formatarTempo'
 import { abrirContestacao, consultarPedido, listarContestacoes } from './pagamentoApi'
-import { STATUS_PEDIDO } from './pedidoApresentacao'
+import { contestacaoAtiva, MOTIVOS_CONTESTACAO, STATUS_CONTESTACAO } from './contestacaoApresentacao'
+import { impedimentoContestacao, STATUS_PEDIDO } from './pedidoApresentacao'
+import { useHorarioAtual } from './useHorarioAtual'
 import type { Contestacao, ContestacaoMotivo, Pedido } from './types'
 import './ContestacaoPage.css'
-
-const MOTIVOS: Record<ContestacaoMotivo, string> = {
-  PEDIDO_NAO_RECEBIDO: 'Pedido não recebido',
-  PRODUTO_DANIFICADO: 'Produto danificado',
-  QUANTIDADE_INCORRETA: 'Quantidade incorreta',
-  PRODUTO_DIFERENTE: 'Produto diferente do anunciado',
-  ENTREGA_PARCIAL: 'Entrega parcial',
-  OUTRO: 'Outro motivo',
-}
-
-const STATUS: Record<Contestacao['status'], string> = {
-  ABERTA: 'Aberta',
-  EM_ANALISE: 'Em análise',
-  AGUARDANDO_VENDEDOR: 'Aguardando vendedor',
-  ACEITA: 'Aceita',
-  RECUSADA: 'Recusada',
-  CANCELADA: 'Cancelada',
-  RESOLVIDA: 'Resolvida',
-}
-
-function estaAtiva(contestacao: Contestacao) {
-  return ['ABERTA', 'EM_ANALISE', 'AGUARDANDO_VENDEDOR', 'ACEITA'].includes(contestacao.status)
-}
 
 export function ContestacaoPage() {
   const { pedidoId } = useParams()
@@ -63,6 +42,7 @@ export function ContestacaoPedido({ pedidoId }: { pedidoId: string }) {
   const [erroAcao, setErroAcao] = useState('')
   const [sucesso, setSucesso] = useState('')
   const controle = useRef({ ativo: true, versao: 0, enviando: false })
+  const agora = useHorarioAtual()
 
   const atualizar = useCallback(async () => {
     const estado = controle.current
@@ -89,8 +69,9 @@ export function ContestacaoPedido({ pedidoId }: { pedidoId: string }) {
     return () => { estado.ativo = false; estado.versao += 1 }
   }, [atualizar])
 
-  const ativa = historico.some(estaAtiva)
-  const podeAbrir = pedido?.status === 'ENTREGUE' && !ativa
+  const ativa = historico.some((item) => contestacaoAtiva(item.status))
+  const impedimento = pedido ? impedimentoContestacao(pedido, agora) : ''
+  const podeAbrir = pedido && !impedimento && !ativa
     && !carregando && !enviando && !erroConsulta
 
   async function enviar(evento: FormEvent) {
@@ -133,6 +114,9 @@ export function ContestacaoPedido({ pedidoId }: { pedidoId: string }) {
             <div><dt>Situação</dt><dd>{STATUS_PEDIDO[pedido.status]}</dd></div>
             <div><dt>Total</dt><dd>{formatarMoeda(pedido.valor_total)}</dd></div>
           </dl>
+          {pedido.entrega?.prazo_contestacao_em && <p>
+            Prazo de contestação: {formatarDataHora(pedido.entrega.prazo_contestacao_em)}.
+          </p>}
           <Link to={`/pedidos/${pedidoId}`}>Ver detalhes do pedido →</Link>
         </div>
       )}
@@ -141,8 +125,8 @@ export function ContestacaoPedido({ pedidoId }: { pedidoId: string }) {
       {!carregando && (ativa || pedido?.status === 'EM_CONTESTACAO') && (
         <p>Este pedido já está em contestação. Acompanhe o histórico abaixo.</p>
       )}
-      {!carregando && pedido && !['ENTREGUE', 'EM_CONTESTACAO'].includes(pedido.status) && (
-        <p>Este pedido precisa estar entregue para abrir uma contestação.</p>
+      {!carregando && pedido && pedido.status !== 'EM_CONTESTACAO' && impedimento && (
+        <p>{impedimento}</p>
       )}
       <form className="dispute-form" onSubmit={(evento) => void enviar(evento)}>
         <fieldset disabled={!podeAbrir}>
@@ -150,7 +134,7 @@ export function ContestacaoPedido({ pedidoId }: { pedidoId: string }) {
           <label htmlFor="motivo-contestacao">Motivo</label>
           <select id="motivo-contestacao" value={motivo}
             onChange={(evento) => setMotivo(evento.target.value as ContestacaoMotivo)}>
-            {Object.entries(MOTIVOS).map(([valor, rotulo]) => <option key={valor} value={valor}>{rotulo}</option>)}
+            {Object.entries(MOTIVOS_CONTESTACAO).map(([valor, rotulo]) => <option key={valor} value={valor}>{rotulo}</option>)}
           </select>
           <label htmlFor="descricao-contestacao">Descreva o problema</label>
           <textarea id="descricao-contestacao" value={descricao} rows={5} required maxLength={5000}
@@ -174,8 +158,8 @@ export function ContestacaoPedido({ pedidoId }: { pedidoId: string }) {
           {historico.map((item) => (
             <li key={item.id}>
               <div className="dispute-history-title">
-                <h3>{MOTIVOS[item.motivo]}</h3>
-                <span className="dispute-badge">{STATUS[item.status]}</span>
+                <h3>{MOTIVOS_CONTESTACAO[item.motivo]}</h3>
+                <span className="dispute-badge">{STATUS_CONTESTACAO[item.status]}</span>
               </div>
               <p className="dispute-description">{item.descricao}</p>
               <p>Aberta em <time dateTime={item.criado_em}>{new Date(item.criado_em).toLocaleString('pt-BR')}</time></p>

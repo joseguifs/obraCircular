@@ -209,6 +209,69 @@ async def test_abertura_e_consulta_com_autenticacao_real(
     assert consulta.json() == {"items": [corpo], "total": 1}
 
 
+async def test_fluxo_pin_venda_entrega_e_abertura_pela_api(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    compra_entregue: CompraEntregue,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("app.services.contestacao.datetime", datetime)
+    compra = compra_entregue
+    async with db_session.begin():
+        pedido = await db_session.get(Pedido, compra.pedido_id)
+        entrega = await db_session.get(Entrega, compra.entrega_id)
+        repasse = await db_session.get(Repasse, compra.repasse_id)
+        assert pedido is not None and entrega is not None and repasse is not None
+        pedido.status = PedidoStatus.PAGAMENTO_APROVADO
+        entrega.status = EntregaStatus.PREPARANDO
+        entrega.confirmado_em = None
+        entrega.confirmado_por = None
+        entrega.prazo_contestacao_em = None
+        repasse.status = (
+            RepasseStatus.AGUARDANDO_ENTREGA if pedido.repasse_posterior else RepasseStatus.PAGO
+        )
+
+    base = f"/api/v1/orders/{compra.pedido_id}"
+    pin = await client.post(f"{base}/delivery/pin", headers=compra.headers())
+    assert pin.status_code == 201, pin.text
+    assert len(pin.json()["pin"]) == 5
+    vendedor_headers = compra.headers(compra.vendedor_id)
+    # Consultar vendas não concede ao vendedor acesso às compras ou ao PIN do comprador.
+    assert (await client.get(base, headers=vendedor_headers)).status_code == 404
+    assert (
+        await client.post(f"{base}/delivery/pin", headers=vendedor_headers)
+    ).status_code == 404
+    assert (await client.get("/api/v1/orders/sales")).status_code == 401
+    vendas_comprador = await client.get("/api/v1/orders/sales", headers=compra.headers())
+    assert vendas_comprador.json() == {"items": [], "total": 0}
+
+    confirmacao = await client.post(
+        f"{base}/delivery/confirm", headers=vendedor_headers, json={"pin": pin.json()["pin"]}
+    )
+    assert confirmacao.status_code == 200, confirmacao.text
+    dados_entrega = confirmacao.json()
+    assert dados_entrega["status"] == "ENTREGUE"
+    confirmado = datetime.fromisoformat(dados_entrega["confirmado_em"].replace("Z", "+00:00"))
+    prazo = datetime.fromisoformat(dados_entrega["prazo_contestacao_em"].replace("Z", "+00:00"))
+    assert prazo - confirmado == timedelta(days=7)
+
+    consulta = await client.get(base, headers=compra.headers())
+    assert consulta.status_code == 200, consulta.text
+    assert consulta.json()["status"] == "ENTREGUE"
+    assert consulta.json()["entrega"] == dados_entrega
+    assert consulta.json()["repasse_status"] == "EM_PERIODO_CONTESTACAO"
+    vendas = await client.get("/api/v1/orders/sales", headers=vendedor_headers)
+    assert vendas.status_code == 200, vendas.text
+    assert vendas.json()["items"] == [consulta.json()]
+    assert "pin" not in vendas.text
+
+    abertura = await client.post(compra.url, headers=compra.headers(), json=DADOS)
+    assert abertura.status_code == 201, abertura.text
+    consulta = await client.get(base, headers=compra.headers())
+    assert consulta.json()["status"] == "EM_CONTESTACAO"
+    assert consulta.json()["repasse_status"] == "BLOQUEADO"
+
+
 async def test_abertura_tambem_atende_entrega_domiciliar(
     client: AsyncClient, db_session: AsyncSession, compra_entregue: CompraEntregue
 ) -> None:

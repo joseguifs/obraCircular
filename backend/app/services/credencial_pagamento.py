@@ -30,7 +30,7 @@ async def token_do_pedido(
     pedido = await session.scalar(select(Pedido).where(Pedido.id == pedido_id))
     if pedido is None:
         raise AppError(status_code=404, detail="Pedido não encontrado.", code="ORDER_NOT_FOUND")
-    centralizado = pedido.modelo_financeiro == "REPASSE_POSTERIOR"
+    centralizado = pedido.repasse_posterior
     recebedor = pedido.recebedor_externo_id
     await session.rollback()
     if centralizado:

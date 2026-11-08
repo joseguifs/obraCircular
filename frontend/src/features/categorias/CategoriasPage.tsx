@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { ApiError, mensagemApiErro } from '../../lib/api'
+import { formatarData } from '../../lib/formatarTempo'
 import { atualizarCategoria, criarCategoria, listarCategorias } from './categoriaApi'
 import type {
   Categoria,
@@ -333,9 +334,4 @@ function CategoriaForm({ categoria, aoConcluir, aoCancelar }: CategoriaFormProps
       </div>
     </form>
   )
-}
-
-function formatarData(iso: string): string {
-  const data = new Date(iso)
-  return Number.isNaN(data.getTime()) ? '—' : data.toLocaleDateString('pt-BR')
 }

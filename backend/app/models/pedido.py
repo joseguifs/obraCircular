@@ -20,6 +20,9 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.models.base import Base, UUIDPrimaryKeyMixin
 from app.models.enums import ModalidadeEntrega, PedidoStatus
 
+MODELO_SPLIT_LEGADO = "SPLIT_LEGADO"
+MODELO_REPASSE_POSTERIOR = "REPASSE_POSTERIOR"
+
 
 class Pedido(UUIDPrimaryKeyMixin, Base):
     __tablename__ = "pedidos"
@@ -100,7 +103,7 @@ class Pedido(UUIDPrimaryKeyMixin, Base):
     preco_unitario: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     valor_total: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     modelo_financeiro: Mapped[str] = mapped_column(
-        String(30), default="SPLIT_LEGADO", server_default="SPLIT_LEGADO"
+        String(30), default=MODELO_SPLIT_LEGADO, server_default=MODELO_SPLIT_LEGADO
     )
     percentual_marketplace: Mapped[Decimal] = mapped_column(
         Numeric(5, 2), default=Decimal("25.00"), server_default="25.00"
@@ -123,3 +126,8 @@ class Pedido(UUIDPrimaryKeyMixin, Base):
     estoque_reservado_em: Mapped[datetime | None]
     reserva_expira_em: Mapped[datetime | None]
     estoque_liberado_em: Mapped[datetime | None]
+
+    @property
+    def repasse_posterior(self) -> bool:
+        """Venda recebida pelo marketplace e transferida ao vendedor depois da entrega."""
+        return self.modelo_financeiro == MODELO_REPASSE_POSTERIOR

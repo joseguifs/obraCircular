@@ -23,6 +23,7 @@ import { ContestacaoPage } from '../features/pagamentos/ContestacaoPage'
 import { ContestacaoTestePage } from '../features/pagamentos/ContestacaoTestePage'
 import { PagamentoRetornoPage } from '../features/pagamentos/PagamentoRetornoPage'
 import { PedidosPage } from '../features/pagamentos/PedidosPage'
+import { VendasPage } from '../features/pagamentos/VendasPage'
 import { NotFoundPage } from '../features/not-found/NotFoundPage'
 import { CadastroUsuarioPage } from '../features/usuarios/CadastroUsuarioPage'
 import { PerfilPage } from '../features/usuarios/PerfilPage'
@@ -54,6 +55,7 @@ export function AppRouter() {
             <Route path="/perfil/mercado-pago" element={<ContaMercadoPagoPage />} />
             <Route path="/pagamento/retorno" element={<PagamentoRetornoPage />} />
             <Route path="/pedidos" element={<PedidosPage />} />
+            <Route path="/vendas" element={<VendasPage />} />
             <Route path="/pedidos/:pedidoId" element={<PagamentoRetornoPage />} />
             <Route path="/pedidos/:pedidoId/contestacoes" element={<ContestacaoPage />} />
             {import.meta.env.DEV && <Route path="/testes/contestacao" element={<ContestacaoTestePage />} />}
@@ -145,6 +147,7 @@ function AtualizarTitulo() {
     else if (pathname === '/perfil/mercado-pago') document.title = 'Mercado Pago | Obra Circular'
     else if (pathname === '/pagamento/retorno') document.title = 'Pagamento | Obra Circular'
     else if (pathname === '/pedidos') document.title = 'Meus pedidos | Obra Circular'
+    else if (pathname === '/vendas') document.title = 'Minhas vendas | Obra Circular'
     else if (pathname === '/testes/contestacao') document.title = 'Testar contestação | Obra Circular'
     else if (/^\/pedidos\/[^/]+\/contestacoes$/.test(pathname)) document.title = 'Contestação do pedido | Obra Circular'
     else if (pathname.startsWith('/pedidos/')) document.title = 'Pedido | Obra Circular'

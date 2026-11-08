@@ -9,10 +9,10 @@ from sqlalchemy import select
 from app.core.database import SessionLocal, engine
 from app.core.exceptions import AppError
 from app.models.enums import RepasseStatus
-from app.models.pedido import Pedido
+from app.models.pedido import MODELO_REPASSE_POSTERIOR, Pedido
 from app.models.repasse import Repasse
 from app.models.usuario import Usuario
-from app.services.repasse import RepasseService
+from app.services.repasse import STATUS_LIBERAVEIS, RepasseService
 
 
 async def executar(*, liberar: bool, admin_email: str | None) -> int:
@@ -30,15 +30,8 @@ async def executar(*, liberar: bool, admin_email: str | None) -> int:
                 select(Repasse.id)
                 .join(Pedido)
                 .where(
-                    Pedido.modelo_financeiro == "REPASSE_POSTERIOR",
-                    Repasse.status.in_(
-                        {
-                            RepasseStatus.AGUARDANDO_ENTREGA,
-                            RepasseStatus.EM_PERIODO_CONTESTACAO,
-                            RepasseStatus.PRONTO_PARA_LIBERACAO,
-                            RepasseStatus.PROCESSANDO,
-                        }
-                    ),
+                    Pedido.modelo_financeiro == MODELO_REPASSE_POSTERIOR,
+                    Repasse.status.in_(STATUS_LIBERAVEIS),
                 )
             )
         )

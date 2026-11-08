@@ -29,7 +29,7 @@ async def listar_contestacoes(
     _admin: CurrentAdmin,
     filtros: Annotated[AdminContestacaoFilters, Query()],
 ) -> AdminContestacaoListResponse:
-    return await ContestacaoService(session).listar(filtros)
+    return await ContestacaoService(session).listar_admin(filtros)
 
 
 @router.post("/disputes/{contestacao_id}/decision", response_model=AdminContestacaoResponse)

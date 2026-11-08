@@ -107,9 +107,11 @@ para esse modelo.
 
 ## Dependência da entrega/PIN e escopo
 
-A geração e validação do PIN serão implementadas por outro membro da equipe. Esta
-feature consome o resultado dessa confirmação e não cria nem valida PINs.
-O módulo de entrega deverá persistir, de forma atômica:
+O comprador gera o PIN no detalhe de sua compra e o informa ao vendedor após
+conferir os materiais. Em **Minhas vendas** (`/vendas`), o vendedor valida os cinco
+dígitos pela API. O PIN fica apenas na memória da página do comprador e nunca é
+incluído nas consultas de pedidos ou vendas. Gerar outro código invalida o anterior.
+O módulo de entrega persiste, de forma atômica:
 
 - pedido e entrega com status `ENTREGUE`;
 - `confirmado_em` em UTC e `confirmado_por` com o vendedor do pedido;
@@ -119,10 +121,12 @@ O serviço de repasses atualiza o repasse para `EM_PERIODO_CONTESTACAO` ao encon
 essa entrega. A abertura também aceita `AGUARDANDO_ENTREGA` quando os dados da
 entrega já estão válidos, sem depender da execução prévia do job.
 
-Até a integração do PIN, testes usam registros de pós-entrega preparados por
-fixtures. A tela não altera dados para tornar um pedido elegível. Análise e
-resolução administrativa das contestações permanecem uma etapa separada; os
-status e regras dessa etapa estão especificados no domínio.
+O detalhe da compra acompanha a confirmação automaticamente e também oferece
+atualização manual. O resumo da entrega mostra a confirmação e o prazo. A abertura
+de contestação fica habilitada após a confirmação, dentro do prazo e antes de um
+estado incompatível do repasse. O backend continua sendo a autoridade para essas
+validações. Há testes pela API cobrindo geração, confirmação e abertura nos dois
+modelos financeiros, além dos testes da interface com as duas sessões.
 
 ## Verificação e limites
 

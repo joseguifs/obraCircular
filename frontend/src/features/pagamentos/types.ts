@@ -48,6 +48,23 @@ export interface Pedido {
     status_detalhe: string | null
   } | null
   reembolso?: Reembolso | null
+  entrega?: Entrega | null
+  repasse_status?: 'AGUARDANDO_ENTREGA' | 'EM_PERIODO_CONTESTACAO' | 'BLOQUEADO'
+    | 'PRONTO_PARA_LIBERACAO' | 'PROCESSANDO' | 'PAGO' | 'FALHOU' | 'CANCELADO' | 'REEMBOLSADO' | null
+}
+
+export interface EntregaPin {
+  pin: string
+  expira_em: string
+  tentativas_restantes: number
+}
+
+export interface Entrega {
+  id: string
+  pedido_id: string
+  status: 'AGUARDANDO_ENVIO' | 'PREPARANDO' | 'EM_ROTA' | 'ENTREGUE' | 'RECUSADA' | 'CANCELADA'
+  confirmado_em: string | null
+  prazo_contestacao_em: string | null
 }
 
 export interface Reembolso {
@@ -66,6 +83,15 @@ export type ContestacaoMotivo =
   | 'ENTREGA_PARCIAL'
   | 'OUTRO'
 
+export type ContestacaoStatus =
+  | 'ABERTA'
+  | 'EM_ANALISE'
+  | 'AGUARDANDO_VENDEDOR'
+  | 'ACEITA'
+  | 'RECUSADA'
+  | 'CANCELADA'
+  | 'RESOLVIDA'
+
 export interface ContestacaoPayload {
   motivo: ContestacaoMotivo
   descricao: string
@@ -75,10 +101,14 @@ export interface Contestacao extends ContestacaoPayload {
   id: string
   pedido_id: string
   comprador_id: string
-  status: 'ABERTA' | 'EM_ANALISE' | 'AGUARDANDO_VENDEDOR' | 'ACEITA'
-    | 'RECUSADA' | 'CANCELADA' | 'RESOLVIDA'
+  status: ContestacaoStatus
   resolucao: string | null
   resolvida_em: string | null
   criado_em: string
   atualizado_em: string
+}
+
+export interface ListaContestacoes {
+  items: Contestacao[]
+  total: number
 }

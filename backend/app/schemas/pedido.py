@@ -5,7 +5,14 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from app.models.enums import ModalidadeEntrega, PagamentoStatus, PedidoStatus, ReembolsoStatus
+from app.models.enums import (
+    ModalidadeEntrega,
+    PagamentoStatus,
+    PedidoStatus,
+    ReembolsoStatus,
+    RepasseStatus,
+)
+from app.schemas.entrega import EntregaResponse
 
 
 class CheckoutCreate(BaseModel):
@@ -65,6 +72,8 @@ class PedidoResponse(BaseModel):
     reserva_expira_em: datetime | None
     pagamento: PagamentoResumo | None = None
     reembolso: ReembolsoResponse | None = None
+    entrega: EntregaResponse | None = None
+    repasse_status: RepasseStatus | None = None
 
 
 class PedidoListResponse(BaseModel):

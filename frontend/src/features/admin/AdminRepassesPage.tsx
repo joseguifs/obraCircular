@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { apiRequest, mensagemApiErro } from '../../lib/api'
-import { formatarMoeda } from '../../lib/formatarTempo'
+import { formatarData, formatarMoeda } from '../../lib/formatarTempo'
 import { Paginacao } from './Paginacao'
-import { formatarData } from './rotulos'
 
 interface Repasse {
   id: string

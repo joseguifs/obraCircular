@@ -59,10 +59,11 @@ AGUARDANDO_ENVIO -> PREPARANDO -> ENTREGUE
 
 ## Prazo de contestação
 
-A geração e validação do PIN são uma feature a ser implementada por outro membro
-da equipe. As regras abaixo são o contrato consumido pela abertura de contestação
-e pelo serviço de repasses; os testes atuais preparam entregas confirmadas por
-fixtures, sem implementar ou contornar a validação do PIN na aplicação.
+A geração e validação do PIN estão implementadas na API e na interface. O comprador
+gera o código no detalhe da compra, e o vendedor o valida em `/vendas`. As consultas
+de pedidos e vendas incluem o resumo da entrega e o estado do repasse, sem expor o
+PIN ou seu hash. `GET /api/v1/orders/sales` lista apenas pedidos dos anúncios do
+vendedor autenticado; a consulta de compras continua exclusiva do comprador.
 
 Após validar o PIN, a aplicação define:
 

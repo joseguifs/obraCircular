@@ -68,16 +68,29 @@ def preparar(status=ContestacaoStatus.ABERTA):
         resolvida_em=None,
         resolvida_por=None,
     )
-    pedido = SimpleNamespace(id=uuid4(), anuncio_id=uuid4(), status=PedidoStatus.EM_CONTESTACAO)
+    pedido = SimpleNamespace(
+        id=uuid4(),
+        anuncio_id=uuid4(),
+        status=PedidoStatus.EM_CONTESTACAO,
+        repasse_posterior=False,
+    )
     repasse = SimpleNamespace(status=RepasseStatus.BLOQUEADO)
     return session, service, contestacao, pedido, repasse
 
 
 @pytest.mark.parametrize(
-    "dias, esperado", [(2, RepasseStatus.EM_PERIODO_CONTESTACAO), (-2, RepasseStatus.PAGO)]
+    "posterior, dias, esperado",
+    [
+        (False, 2, RepasseStatus.EM_PERIODO_CONTESTACAO),
+        (False, -2, RepasseStatus.PAGO),
+        (True, 2, RepasseStatus.EM_PERIODO_CONTESTACAO),
+        # Sem transferência confirmada, o repasse posterior nunca vira PAGO na recusa.
+        (True, -2, RepasseStatus.EM_PERIODO_CONTESTACAO),
+    ],
 )
-async def test_recusa_atualiza_pedido_e_repasse_conforme_prazo(dias, esperado):
+async def test_recusa_atualiza_pedido_e_repasse_conforme_prazo(posterior, dias, esperado):
     session, service, contestacao, pedido, repasse = preparar()
+    pedido.repasse_posterior = posterior
     entrega = SimpleNamespace(prazo_contestacao_em=datetime.now(UTC) + timedelta(days=dias))
     session.scalar.side_effect = [pedido.id, pedido, contestacao, repasse, entrega]
     admin = uuid4()
@@ -248,6 +261,7 @@ async def test_processa_resposta_do_provedor_e_so_resolve_apos_confirmacao(
     session, _, contestacao, pedido, repasse = preparar(ContestacaoStatus.ACEITA)
     pedido.quantidade = 2
     pedido.estoque_liberado_em = None
+    pedido.recebedor_externo_id = None
     anuncio = SimpleNamespace(quantidade=0, status=AnuncioStatus.ESGOTADO, deletado_em=None)
     pagamento = SimpleNamespace(id=uuid4(), status=PagamentoStatus.APROVADO)
     reembolso = SimpleNamespace(
@@ -260,10 +274,11 @@ async def test_processa_resposta_do_provedor_e_so_resolve_apos_confirmacao(
         reembolso_externo_id=None,
     )
     session.get.return_value = reembolso
+    # O primeiro pedido é lido por `token_do_pedido` para escolher a credencial.
     session.scalar.side_effect = (
-        [pedido, pagamento, reembolso, anuncio, repasse, contestacao]
+        [pedido, pedido, pagamento, reembolso, anuncio, repasse, contestacao]
         if status_mp == "approved"
-        else [pedido, pagamento, reembolso]
+        else [pedido, pedido, pagamento, reembolso]
     )
     gateway = SimpleNamespace(
         reembolsar_pagamento=AsyncMock(

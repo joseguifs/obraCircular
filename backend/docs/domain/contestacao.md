@@ -47,9 +47,14 @@ Estas regras especificam a etapa administrativa, ainda separada da implementaç�
 de abertura e consulta do comprador.
 
 - `ACEITA`: cria o único reembolso integral e mantém pedido e repasse bloqueados.
-- `RECUSADA` ou `CANCELADA`: o pedido retorna para `ENTREGUE`. Se o prazo ainda não
-  terminou, o repasse retorna para `EM_PERIODO_CONTESTACAO`; caso contrário, retorna
-  para `PAGO`, conforme a razão contábil do Split 1:1 descrita em `repasse.md`.
+- `RECUSADA` ou `CANCELADA`: o pedido retorna para `ENTREGUE`.
+  - `REPASSE_POSTERIOR`: o repasse retorna para `EM_PERIODO_CONTESTACAO`, e a
+    atualização periódica o promove a `PRONTO_PARA_LIBERACAO` quando elegível
+    (ver `repasse.md`). Ele nunca vai direto para `PAGO`, que exige confirmação
+    externa da transferência.
+  - `SPLIT_LEGADO`: se o prazo ainda não terminou, o repasse retorna para
+    `EM_PERIODO_CONTESTACAO`; caso contrário, retorna para `PAGO`, conforme a razão
+    contábil do Split 1:1.
   Isso não executa uma transferência financeira.
 - `RESOLVIDA`: somente pode ser definido depois que o reembolso estiver
   `CONCLUIDO`.

@@ -5,6 +5,9 @@ import type {
   ContaMercadoPago,
   Contestacao,
   ContestacaoPayload,
+  ListaContestacoes,
+  Entrega,
+  EntregaPin,
   Pedido,
   Reembolso,
 } from './types'
@@ -56,6 +59,20 @@ export function listarPedidos(): Promise<{ items: Pedido[]; total: number }> {
   return apiRequest<{ items: Pedido[]; total: number }>('/orders')
 }
 
+export function listarVendas(): Promise<{ items: Pedido[]; total: number }> {
+  return apiRequest('/orders/sales')
+}
+
+export function gerarPinEntrega(pedidoId: string): Promise<EntregaPin> {
+  return apiRequest(`/orders/${pedidoId}/delivery/pin`, { method: 'POST' })
+}
+
+export function confirmarEntrega(pedidoId: string, pin: string): Promise<Entrega> {
+  return apiRequest(`/orders/${pedidoId}/delivery/confirm`, {
+    method: 'POST', body: JSON.stringify({ pin }),
+  })
+}
+
 export function cancelarCheckout(pedidoId: string): Promise<void> {
   return apiRequest<void>(`/orders/${pedidoId}/cancel`, { method: 'POST' })
 }
@@ -71,6 +88,6 @@ export function abrirContestacao(pedidoId: string, dados: ContestacaoPayload): P
   })
 }
 
-export function listarContestacoes(pedidoId: string): Promise<{ items: Contestacao[]; total: number }> {
-  return apiRequest<{ items: Contestacao[]; total: number }>(`/orders/${pedidoId}/disputes`)
+export function listarContestacoes(pedidoId: string): Promise<ListaContestacoes> {
+  return apiRequest<ListaContestacoes>(`/orders/${pedidoId}/disputes`)
 }

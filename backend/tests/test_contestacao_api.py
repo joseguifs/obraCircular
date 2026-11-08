@@ -39,7 +39,7 @@ async def test_rotas_contestacoes_exigem_login_e_perfil(api_contestacao, monkeyp
 async def test_listagem_encaminha_filtros(api_contestacao, monkeypatch):
     app.dependency_overrides[get_current_admin] = lambda: SimpleNamespace(id=uuid4())
     listar = AsyncMock(return_value={"items": [], "total": 0, "offset": 20, "limit": 10})
-    monkeypatch.setattr(ContestacaoService, "listar", listar)
+    monkeypatch.setattr(ContestacaoService, "listar_admin", listar)
     resposta = await api_contestacao.get("/api/v1/admin/disputes?status=ABERTA&offset=20&limit=10")
     assert resposta.status_code == 200
     filtros = listar.await_args.args[0]
