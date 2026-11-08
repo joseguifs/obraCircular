@@ -536,7 +536,7 @@ class WebhookMercadoPagoService:
             anuncio = await self.session.scalar(
                 select(Anuncio).where(Anuncio.id == pedido.anuncio_id).with_for_update()
             )
-            centralizado = pedido.modelo_financeiro == "REPASSE_POSTERIOR"
+            centralizado = pedido.repasse_posterior
             if (
                 anuncio is None
                 or (not centralizado and anuncio.vendedor_id != vendedor_id)
@@ -767,7 +767,7 @@ class WebhookMercadoPagoService:
         )
         if devolucao_necessaria:
             pedido.cancelado_em = pedido.cancelado_em or agora
-        centralizado = pedido.modelo_financeiro == "REPASSE_POSTERIOR"
+        centralizado = pedido.repasse_posterior
         taxa_marketplace = pedido.taxa_marketplace
         if taxa_marketplace is None:
             taxa_marketplace = PedidoService.calcular_taxa_marketplace(

@@ -3,12 +3,12 @@ from uuid import UUID
 from fastapi import APIRouter, Response, status
 
 from app.api.dependencies import CurrentUser, DatabaseSession
-from app.schemas.entrega import EntregaConfirmacaoCreate, EntregaPinResponse, EntregaResponse
 from app.schemas.contestacao import (
     ContestacaoCreate,
     ContestacaoListResponse,
     ContestacaoResponse,
 )
+from app.schemas.entrega import EntregaConfirmacaoCreate, EntregaPinResponse, EntregaResponse
 from app.schemas.pedido import (
     CheckoutCreate,
     CheckoutResponse,
@@ -16,8 +16,8 @@ from app.schemas.pedido import (
     PedidoResponse,
     ReembolsoResponse,
 )
-from app.services.entrega import EntregaService
 from app.services.contestacao import ContestacaoService
+from app.services.entrega import EntregaService
 from app.services.pedido import PedidoService
 from app.services.reembolso import ReembolsoService
 
@@ -89,6 +89,9 @@ async def confirmar_entrega(
     vendedor: CurrentUser,
 ) -> EntregaResponse:
     return await EntregaService(session).confirmar(pedido_id, vendedor.id, dados.pin)
+
+
+@router.post(
     "/{pedido_id}/disputes",
     response_model=ContestacaoResponse,
     status_code=status.HTTP_201_CREATED,

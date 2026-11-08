@@ -24,7 +24,7 @@ from app.models.enums import (
 )
 from app.models.operacao_repasse import DestinoRepasse, EventoRepasse, InstrucaoRepasse
 from app.models.pagamento import Pagamento
-from app.models.pedido import Pedido
+from app.models.pedido import MODELO_REPASSE_POSTERIOR, Pedido
 from app.models.reembolso import Reembolso
 from app.models.repasse import Repasse
 from app.models.usuario import Usuario
@@ -38,6 +38,16 @@ from app.services.contestacao import STATUS_ATIVOS
 from app.services.credencial_pagamento import token_marketplace
 
 logger = logging.getLogger(__name__)
+
+# Repasses do modelo posterior que ainda aguardam a liberação ao vendedor.
+STATUS_PRE_LIBERACAO = frozenset(
+    {
+        RepasseStatus.AGUARDANDO_ENTREGA,
+        RepasseStatus.EM_PERIODO_CONTESTACAO,
+        RepasseStatus.PRONTO_PARA_LIBERACAO,
+    }
+)
+STATUS_LIBERAVEIS = STATUS_PRE_LIBERACAO | {RepasseStatus.PROCESSANDO}
 
 
 class RepasseService:
@@ -176,14 +186,9 @@ class RepasseService:
     async def _motivo(
         self, repasse: Repasse, pedido: Pedido, *, exigir_destino: bool = True
     ) -> str | None:
-        if pedido.modelo_financeiro != "REPASSE_POSTERIOR":
+        if not pedido.repasse_posterior:
             return "Venda com split legado; não executar outra transferência."
-        if repasse.status not in {
-            RepasseStatus.AGUARDANDO_ENTREGA,
-            RepasseStatus.EM_PERIODO_CONTESTACAO,
-            RepasseStatus.PRONTO_PARA_LIBERACAO,
-            RepasseStatus.PROCESSANDO,
-        }:
+        if repasse.status not in STATUS_LIBERAVEIS:
             return "O estado do repasse não permite liberação."
         if pedido.status != PedidoStatus.ENTREGUE:
             return "O pedido precisa estar entregue."
@@ -238,14 +243,8 @@ class RepasseService:
                 select(Repasse.id)
                 .join(Pedido)
                 .where(
-                    Pedido.modelo_financeiro == "REPASSE_POSTERIOR",
-                    Repasse.status.in_(
-                        {
-                            RepasseStatus.AGUARDANDO_ENTREGA,
-                            RepasseStatus.EM_PERIODO_CONTESTACAO,
-                            RepasseStatus.PRONTO_PARA_LIBERACAO,
-                        }
-                    ),
+                    Pedido.modelo_financeiro == MODELO_REPASSE_POSTERIOR,
+                    Repasse.status.in_(STATUS_PRE_LIBERACAO),
                 )
                 .order_by(Repasse.criado_em)
                 .limit(500)
@@ -272,11 +271,7 @@ class RepasseService:
                     .with_for_update()
                     .execution_options(populate_existing=True)
                 )
-                if repasse is None or repasse.status not in {
-                    RepasseStatus.AGUARDANDO_ENTREGA,
-                    RepasseStatus.EM_PERIODO_CONTESTACAO,
-                    RepasseStatus.PRONTO_PARA_LIBERACAO,
-                }:
+                if repasse is None or repasse.status not in STATUS_PRE_LIBERACAO:
                     continue
                 entrega = await self.session.scalar(
                     select(Entrega).where(Entrega.pedido_id == pedido.id)

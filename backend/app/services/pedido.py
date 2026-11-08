@@ -19,7 +19,7 @@ from app.models.enums import (
     PedidoStatus,
 )
 from app.models.pagamento import Pagamento
-from app.models.pedido import Pedido
+from app.models.pedido import MODELO_REPASSE_POSTERIOR, Pedido
 from app.models.reembolso import Reembolso
 from app.schemas.pedido import (
     CheckoutCreate,
@@ -140,7 +140,7 @@ class PedidoService:
                 quantidade=dados.quantidade,
                 preco_unitario=anuncio.preco,
                 valor_total=valor_total,
-                modelo_financeiro="REPASSE_POSTERIOR",
+                modelo_financeiro=MODELO_REPASSE_POSTERIOR,
                 percentual_marketplace=percentual,
                 taxa_marketplace=taxa_marketplace,
                 valor_vendedor=valor_vendedor,
