@@ -10,6 +10,7 @@ geral e os documentos dos domínios envolvidos:
 `docs/domain/categoria.md`
 `docs/domain/conta_pagamento.md`
 `docs/domain/contestacao.md`
+`docs/domain/destaque_anuncio.md`
 `docs/domain/endereco.md`
 `docs/domain/entrega.md`
 `docs/domain/evento_provedor.md`

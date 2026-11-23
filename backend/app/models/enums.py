@@ -18,6 +18,13 @@ class AnuncioStatus(StrEnum):
     ENCERRADO = "ENCERRADO"
 
 
+class DestaqueAnuncioStatus(StrEnum):
+    AGUARDANDO_PAGAMENTO = "AGUARDANDO_PAGAMENTO"
+    ATIVO = "ATIVO"
+    CANCELADO = "CANCELADO"
+    REEMBOLSADO = "REEMBOLSADO"
+
+
 class ModalidadeEntrega(StrEnum):
     ENTREGA = "ENTREGA"
     RETIRADA = "RETIRADA"

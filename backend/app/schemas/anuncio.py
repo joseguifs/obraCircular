@@ -1,9 +1,16 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Annotated, Self
 from uuid import UUID
 
-from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, model_validator
+from pydantic import (
+    AnyHttpUrl,
+    BaseModel,
+    ConfigDict,
+    Field,
+    computed_field,
+    model_validator,
+)
 
 from app.models.enums import AnuncioStatus
 
@@ -85,6 +92,12 @@ class AnuncioResponse(BaseModel):
     postado_em: datetime
     atualizado_em: datetime
     encerrado_em: datetime | None
+    destaque_ate: datetime | None = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def em_destaque(self) -> bool:
+        return self.destaque_ate is not None and self.destaque_ate > datetime.now(UTC)
 
 
 class AnuncioListResponse(BaseModel):

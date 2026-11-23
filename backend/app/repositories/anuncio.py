@@ -1,7 +1,7 @@
 from typing import cast
 from uuid import UUID
 
-from sqlalchemy import Select, func, or_, select
+from sqlalchemy import Select, case, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
@@ -95,7 +95,12 @@ class AnuncioRepository:
         consulta = (
             self._consulta_base()
             .where(*condicoes)
-            .order_by(Anuncio.postado_em.desc(), Anuncio.id.desc())
+            .order_by(
+                # Anúncios com destaque pago vigente aparecem primeiro.
+                case((Anuncio.destaque_ate > func.now(), 0), else_=1),
+                Anuncio.postado_em.desc(),
+                Anuncio.id.desc(),
+            )
             .offset(filtros.offset)
             .limit(filtros.limit)
         )

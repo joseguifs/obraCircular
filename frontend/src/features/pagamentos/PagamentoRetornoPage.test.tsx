@@ -206,3 +206,33 @@ it('oferece reembolso quando o cancelamento conflita com uma aprovação recém-
   expect(screen.getByRole('button', { name: 'Solicitar reembolso' })).toBeEnabled()
   expect(screen.getByRole('alert')).toHaveTextContent('Este pedido exige reembolso.')
 })
+
+it('acompanha o pagamento de destaque retornado pelo Mercado Pago', async () => {
+  const destaque = {
+    id: 'destaque-1',
+    anuncio_id: 'anuncio-1',
+    valor: '10.00',
+    duracao_dias: 7,
+    status: 'ATIVO',
+    status_pagamento: 'APROVADO',
+    metodo: 'PIX',
+    checkout_expira_em: '2026-11-23T12:30:00Z',
+    aprovado_em: '2026-11-23T12:05:00Z',
+    inicia_em: '2026-11-23T12:05:00Z',
+    expira_em: '2026-11-30T12:05:00Z',
+    cancelado_em: null,
+    criado_em: '2026-11-23T12:00:00Z',
+  }
+  const fetchMock = vi.fn().mockResolvedValueOnce(respostaJson(destaque))
+  vi.stubGlobal('fetch', fetchMock)
+
+  render(
+    <MemoryRouter initialEntries={['/pagamento/retorno?status=success&external_reference=destaque:destaque-1']}>
+      <PagamentoRetornoPage />
+    </MemoryRouter>,
+  )
+
+  expect(await screen.findByRole('heading', { name: 'Destaque ativado' })).toBeInTheDocument()
+  expect(fetchMock.mock.calls[0][0]).toContain('/featured-ads/destaque-1')
+  expect(screen.getByRole('link', { name: 'Ver anúncio' })).toHaveAttribute('href', '/anuncios/anuncio-1')
+})

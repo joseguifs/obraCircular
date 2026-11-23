@@ -160,6 +160,7 @@ export function HomePage() {
               {categoriasPorId.get(anuncio.categoria_id) && (
                 <span className="home-card-categoria">{categoriasPorId.get(anuncio.categoria_id)}</span>
               )}
+              {anuncio.em_destaque && <span className="home-card-destaque">Destaque</span>}
               <span className="home-card-foto-legenda">
                 {imagemCapa(anuncio) ? 'Foto do anúncio' : 'Sem foto ainda'}
               </span>

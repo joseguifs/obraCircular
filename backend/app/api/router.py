@@ -7,6 +7,7 @@ from app.api.routes.autenticacao import router as autenticacao_router
 from app.api.routes.categorias import router as categorias_router
 from app.api.routes.contas_pagamento import account_router as contas_pagamento_router
 from app.api.routes.contas_pagamento import integration_router as integracoes_router
+from app.api.routes.destaques import router as destaques_router
 from app.api.routes.enderecos import router as enderecos_router
 from app.api.routes.health import router as health_router
 from app.api.routes.pedidos import router as pedidos_router
@@ -18,6 +19,7 @@ api_router = APIRouter()
 api_router.include_router(health_router)
 api_router.include_router(pedidos_router)
 api_router.include_router(autenticacao_router)
+api_router.include_router(destaques_router)
 api_router.include_router(anuncios_router)
 api_router.include_router(usuario_anuncios_router)
 api_router.include_router(categorias_router)

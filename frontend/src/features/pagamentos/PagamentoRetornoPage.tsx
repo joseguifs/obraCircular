@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
+import { DestaqueRetorno } from '../anuncios/DestaqueRetorno'
+import { destaqueDaReferencia } from '../anuncios/destaqueApi'
 import { mensagemApiErro } from '../../lib/api'
 import { formatarDataHora } from '../../lib/formatarTempo'
 import { cancelarCheckout, consultarPedido, gerarPinEntrega, solicitarReembolso } from './pagamentoApi'
@@ -61,6 +63,9 @@ function conteudoDoPedido(pedido: Pedido | null) {
 export function PagamentoRetornoPage() {
   const [parametros] = useSearchParams()
   const { pedidoId: idDaRota } = useParams()
+  // O pagamento de destaque volta pela mesma URL com `external_reference=destaque:<id>`.
+  const destaqueId = idDaRota ? null : destaqueDaReferencia(parametros.get('external_reference'))
+  if (destaqueId) return <DestaqueRetorno key={destaqueId} destaqueId={destaqueId} />
   const pedidoId =
     idDaRota ??
     parametros.get('external_reference') ??

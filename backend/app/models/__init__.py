@@ -7,6 +7,7 @@ from app.models.base import Base
 from app.models.categoria import Categoria
 from app.models.conta_pagamento import ContaPagamento
 from app.models.contestacao import Contestacao
+from app.models.destaque_anuncio import DestaqueAnuncio
 from app.models.endereco import Endereco
 from app.models.entrega import Entrega
 from app.models.evento_provedor import EventoProvedor
@@ -28,6 +29,7 @@ __all__ = [
     "Categoria",
     "ContaPagamento",
     "Contestacao",
+    "DestaqueAnuncio",
     "Endereco",
     "Entrega",
     "EventoProvedor",

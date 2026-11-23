@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { Paginacao } from '../admin/Paginacao'
 import { mensagemApiErro, resolverUrlDaApi } from '../../lib/api'
-import { formatarMoeda, formatarTempoRelativo } from '../../lib/formatarTempo'
+import { formatarDataHora, formatarMoeda, formatarTempoRelativo } from '../../lib/formatarTempo'
 import { listarMeusAnuncios } from './anuncioApi'
-import type { Anuncio } from './types'
+import { consultarPrecoDestaque, iniciarCheckoutDestaque } from './destaqueApi'
+import type { Anuncio, DestaquePreco } from './types'
 
 const POR_PAGINA = 10
 
@@ -60,6 +61,34 @@ export function MeusAnunciosPage() {
   function escolherStatus(novoStatus: FiltroStatus) {
     setStatus(novoStatus)
     setOffset(0)
+  }
+
+  const [destacando, setDestacando] = useState<string | null>(null)
+  const [preco, setPreco] = useState<DestaquePreco | null>(null)
+  const [iniciandoDestaque, setIniciandoDestaque] = useState(false)
+  const [erroDestaque, setErroDestaque] = useState('')
+
+  async function abrirDestaque(anuncioId: string) {
+    setDestacando(anuncioId)
+    setErroDestaque('')
+    if (preco) return
+    try {
+      setPreco(await consultarPrecoDestaque())
+    } catch (falha) {
+      setErroDestaque(mensagemApiErro(falha, 'Não foi possível consultar o preço do destaque.'))
+    }
+  }
+
+  async function pagarDestaque(anuncioId: string) {
+    setIniciandoDestaque(true)
+    setErroDestaque('')
+    try {
+      const checkout = await iniciarCheckoutDestaque(anuncioId)
+      window.location.assign(checkout.init_point)
+    } catch (falha) {
+      setErroDestaque(mensagemApiErro(falha, 'Não foi possível iniciar o pagamento do destaque.'))
+      setIniciandoDestaque(false)
+    }
   }
 
   return (
@@ -142,9 +171,61 @@ export function MeusAnunciosPage() {
                       >
                         {ROTULO_STATUS[anuncio.status]}
                       </span>
+                      {anuncio.em_destaque && (
+                        <span className="meus-anuncios-status meus-anuncios-status--destaque">
+                          Em destaque
+                        </span>
+                      )}
                     </div>
                   </div>
                 </Link>
+                {anuncio.status === 'ATIVO' && (
+                  <div className="meus-anuncios-destaque">
+                    {destacando === anuncio.id ? (
+                      <div className="meus-anuncios-destaque-painel" role="group" aria-label="Destacar anúncio">
+                        <p>
+                          {preco
+                            ? `Destaque por ${formatarMoeda(preco.valor)} durante ${preco.duracao_dias} dias. Seu anúncio aparece antes dos demais nas listagens.`
+                            : 'Consultando o preço do destaque…'}
+                        </p>
+                        {erroDestaque && <p className="meus-anuncios-destaque-erro" role="alert">{erroDestaque}</p>}
+                        <div className="meus-anuncios-destaque-acoes">
+                          <button
+                            type="button"
+                            className="meus-anuncios-destaque-pagar"
+                            disabled={!preco || iniciandoDestaque}
+                            onClick={() => void pagarDestaque(anuncio.id)}
+                          >
+                            {iniciandoDestaque ? 'Abrindo Mercado Pago…' : 'Pagar com Mercado Pago'}
+                          </button>
+                          <button
+                            type="button"
+                            className="meus-anuncios-destaque-cancelar"
+                            disabled={iniciandoDestaque}
+                            onClick={() => setDestacando(null)}
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <span>
+                          {anuncio.em_destaque && anuncio.destaque_ate
+                            ? `Em destaque até ${formatarDataHora(anuncio.destaque_ate)}`
+                            : 'Apareça primeiro nas buscas.'}
+                        </span>
+                        <button
+                          type="button"
+                          className="meus-anuncios-destaque-abrir"
+                          onClick={() => void abrirDestaque(anuncio.id)}
+                        >
+                          {anuncio.em_destaque ? 'Estender destaque' : 'Destacar anúncio'}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
               </li>
             )
           })}

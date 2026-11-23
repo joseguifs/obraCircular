@@ -101,6 +101,66 @@ describe('MeusAnunciosPage', () => {
     expect(screen.queryByText('Perfis metálicos para drywall')).not.toBeInTheDocument()
   })
 
+  it('mostra o preço e inicia o pagamento do destaque no Mercado Pago', async () => {
+    const assign = vi.fn()
+    vi.stubGlobal('location', { ...window.location, assign })
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(respostaJson({ items: [anuncio, encerrado], total: 2, offset: 0, limit: 10 }))
+      .mockResolvedValueOnce(respostaJson({ valor: '10.00', duracao_dias: 7, moeda: 'BRL' }))
+      .mockResolvedValueOnce(
+        respostaJson(
+          {
+            destaque_id: 'destaque-1',
+            anuncio_id: anuncio.id,
+            preferencia_externa_id: 'PREF-1',
+            init_point: 'https://mp.test/checkout',
+            valor: '10.00',
+            duracao_dias: 7,
+            checkout_expira_em: new Date().toISOString(),
+          },
+          201,
+        ),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+    const user = userEvent.setup()
+
+    renderPagina()
+    await screen.findByText('Perfis metálicos para drywall')
+    // Apenas o anúncio disponível pode ser destacado.
+    expect(screen.getAllByRole('button', { name: 'Destacar anúncio' })).toHaveLength(1)
+
+    await user.click(screen.getByRole('button', { name: 'Destacar anúncio' }))
+    expect(await screen.findByText(/R\$\s?10,00 durante 7 dias/)).toBeInTheDocument()
+    expect(fetchMock.mock.calls[1][0]).toContain('/featured-ads/pricing')
+
+    await user.click(screen.getByRole('button', { name: 'Pagar com Mercado Pago' }))
+
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('https://mp.test/checkout'))
+    expect(fetchMock.mock.calls[2][0]).toContain('/featured-ads/checkout')
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toEqual({ anuncio_id: anuncio.id })
+  })
+
+  it('indica anúncios que já estão em destaque', async () => {
+    const destaqueAte = new Date(Date.now() + 3 * 86_400_000).toISOString()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValueOnce(
+        respostaJson({
+          items: [{ ...anuncio, em_destaque: true, destaque_ate: destaqueAte }],
+          total: 1,
+          offset: 0,
+          limit: 10,
+        }),
+      ),
+    )
+
+    renderPagina()
+
+    expect(await screen.findByText('Em destaque')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Estender destaque' })).toBeInTheDocument()
+  })
+
   it('mostra mensagem quando o usuário ainda não publicou anúncios', async () => {
     vi.stubGlobal(
       'fetch',

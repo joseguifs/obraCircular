@@ -153,6 +153,76 @@
   color: #555;
 }
 
+.meus-anuncios-status--destaque {
+  background: #fff1c2;
+  color: #7a5200;
+}
+
+.meus-anuncios-destaque {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--cinza-borda);
+  background: #fbfaf6;
+  color: var(--cinza-texto);
+  font-size: 13px;
+}
+
+.meus-anuncios-destaque-painel {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.meus-anuncios-destaque-painel p {
+  margin: 0;
+  color: inherit;
+  line-height: 1.5;
+}
+
+.meus-anuncios-destaque-erro {
+  color: #b42318 !important;
+  font-weight: 600;
+}
+
+.meus-anuncios-destaque-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.meus-anuncios-destaque-abrir,
+.meus-anuncios-destaque-pagar,
+.meus-anuncios-destaque-cancelar {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.meus-anuncios-destaque-abrir,
+.meus-anuncios-destaque-pagar {
+  border: 0;
+  background: #ffd76a;
+  color: #4a3100;
+}
+
+.meus-anuncios-destaque-cancelar {
+  border: 1px solid var(--cinza-borda);
+  background: #fff;
+  color: inherit;
+}
+
+.meus-anuncios-destaque button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 560px) {
   .meus-anuncios-link {
     grid-template-columns: 1fr;

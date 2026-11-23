@@ -22,6 +22,50 @@ export interface Anuncio {
   postado_em: string
   atualizado_em: string
   encerrado_em: string | null
+  destaque_ate?: string | null
+  em_destaque?: boolean
+}
+
+export interface DestaquePreco {
+  valor: string
+  duracao_dias: number
+  moeda: string
+}
+
+export interface DestaqueCheckout {
+  destaque_id: string
+  anuncio_id: string
+  preferencia_externa_id: string
+  init_point: string
+  valor: string
+  duracao_dias: number
+  checkout_expira_em: string
+}
+
+export type StatusDestaque = 'AGUARDANDO_PAGAMENTO' | 'ATIVO' | 'CANCELADO' | 'REEMBOLSADO'
+
+export interface DestaqueCompra {
+  id: string
+  anuncio_id: string
+  valor: string
+  duracao_dias: number
+  status: StatusDestaque
+  status_pagamento:
+    | 'CRIADO'
+    | 'PENDENTE'
+    | 'EM_PROCESSAMENTO'
+    | 'APROVADO'
+    | 'RECUSADO'
+    | 'CANCELADO'
+    | 'REEMBOLSADO_PARCIAL'
+    | 'REEMBOLSADO'
+  metodo: string | null
+  checkout_expira_em: string
+  aprovado_em: string | null
+  inicia_em: string | null
+  expira_em: string | null
+  cancelado_em: string | null
+  criado_em: string
 }
 
 export interface AnuncioImagem {
