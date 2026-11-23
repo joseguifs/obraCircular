@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ApiError, resolverUrlDaApi } from '../../lib/api'
-import { formatarMoeda, formatarTempoRelativo } from '../../lib/formatarTempo'
+import { formatarDataHora, formatarMoeda, formatarTempoRelativo } from '../../lib/formatarTempo'
 import { buscarCategoria } from '../categorias/categoriaApi'
 import type { Categoria } from '../categorias/types'
 import { listarEnderecos } from '../enderecos/enderecoApi'
@@ -11,6 +11,7 @@ import { createPreferenceCheckout } from '../pagamentos/pagamentoApi'
 import { buscarAnuncio, buscarImagensAnuncio } from './anuncioApi'
 import { PerguntasAnuncio } from './PerguntasAnuncio'
 import type { Anuncio, AnuncioImagem } from './types'
+import { DestaqueOferta, SeloDestaque } from './DestaqueOferta'
 
 const STATUS_LABEL: Record<Anuncio['status'], string> = {
   ATIVO: 'Disponível',
@@ -20,6 +21,7 @@ const STATUS_LABEL: Record<Anuncio['status'], string> = {
 
 export function AnuncioDetalhePage() {
   const { sessao } = useAuth()
+  const [ofertaAberta, setOfertaAberta] = useState(false)
   const { anuncioId } = useParams()
   const [anuncio, setAnuncio] = useState<Anuncio | null>(null)
   const [categoria, setCategoria] = useState<Categoria | null>(null)
@@ -212,7 +214,27 @@ export function AnuncioDetalhePage() {
                 O pagamento é processado em ambiente seguro pelo Mercado Pago.
               </p>
               {anuncio.vendedor_id === sessao?.usuario.id ? (
-                <p className="payment-status">Este anúncio pertence a você.</p>
+                <div className="ad-detail-dono">
+                  <p className="payment-status">Este anúncio pertence a você.</p>
+                  {anuncio.em_destaque && anuncio.destaque_ate && (
+                    <p className="ad-detail-dono-destaque">
+                      <SeloDestaque /> até {formatarDataHora(anuncio.destaque_ate)}
+                    </p>
+                  )}
+                  {anuncio.status === 'ATIVO' &&
+                    (ofertaAberta ? (
+                      <DestaqueOferta
+                        anuncioId={anuncio.id}
+                        emDestaque={anuncio.em_destaque}
+                        destaqueAte={anuncio.destaque_ate}
+                        aoFechar={() => setOfertaAberta(false)}
+                      />
+                    ) : (
+                      <button type="button" className="destaque-abrir" onClick={() => setOfertaAberta(true)}>
+                        {anuncio.em_destaque ? 'Estender destaque' : 'Destacar anúncio'}
+                      </button>
+                    ))}
+                </div>
               ) : anuncio.status === 'ATIVO' ? (
                 <div className="checkout-form">
                   <label>

@@ -43,6 +43,11 @@ class Anuncio(UUIDPrimaryKeyMixin, Base):
             text("postado_em DESC"),
             postgresql_where=text("status = 'ATIVO' AND deletado_em IS NULL"),
         ),
+        Index(
+            "ix_anuncios_destaque_ate",
+            "destaque_ate",
+            postgresql_where=text("destaque_ate IS NOT NULL AND deletado_em IS NULL"),
+        ),
     )
 
     titulo: Mapped[str] = mapped_column(String(150))
@@ -69,3 +74,6 @@ class Anuncio(UUIDPrimaryKeyMixin, Base):
     )
     encerrado_em: Mapped[datetime | None]
     deletado_em: Mapped[datetime | None]
+    # Fim do destaque pago vigente. Denormalizado a partir de `destaques_anuncio`
+    # para ordenar as listagens sem junções.
+    destaque_ate: Mapped[datetime | None]

@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { Paginacao } from '../admin/Paginacao'
 import { mensagemApiErro, resolverUrlDaApi } from '../../lib/api'
-import { formatarMoeda, formatarTempoRelativo } from '../../lib/formatarTempo'
+import { formatarDataHora, formatarMoeda, formatarTempoRelativo } from '../../lib/formatarTempo'
 import { listarMeusAnuncios } from './anuncioApi'
+import { DestaqueOferta, SeloDestaque } from './DestaqueOferta'
 import type { Anuncio } from './types'
 
 const POR_PAGINA = 10
@@ -61,6 +62,8 @@ export function MeusAnunciosPage() {
     setStatus(novoStatus)
     setOffset(0)
   }
+
+  const [destacando, setDestacando] = useState<string | null>(null)
 
   return (
     <main className="meus-anuncios-main">
@@ -142,9 +145,42 @@ export function MeusAnunciosPage() {
                       >
                         {ROTULO_STATUS[anuncio.status]}
                       </span>
+                      {anuncio.em_destaque && <SeloDestaque />}
                     </div>
                   </div>
                 </Link>
+                {anuncio.status === 'ATIVO' &&
+                  (destacando === anuncio.id ? (
+                    <div className="meus-anuncios-destaque-painel">
+                      <DestaqueOferta
+                        anuncioId={anuncio.id}
+                        emDestaque={anuncio.em_destaque}
+                        destaqueAte={anuncio.destaque_ate}
+                        aoFechar={() => setDestacando(null)}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={
+                        anuncio.em_destaque
+                          ? 'meus-anuncios-destaque meus-anuncios-destaque--ativo'
+                          : 'meus-anuncios-destaque'
+                      }
+                    >
+                      <p>
+                        {anuncio.em_destaque && anuncio.destaque_ate
+                          ? `No topo das buscas até ${formatarDataHora(anuncio.destaque_ate)}.`
+                          : 'Quer vender mais rápido? Coloque este anúncio no topo das buscas.'}
+                      </p>
+                      <button
+                        type="button"
+                        className="destaque-abrir"
+                        onClick={() => setDestacando(anuncio.id)}
+                      >
+                        {anuncio.em_destaque ? 'Estender destaque' : 'Destacar anúncio'}
+                      </button>
+                    </div>
+                  ))}
               </li>
             )
           })}

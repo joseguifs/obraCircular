@@ -36,6 +36,7 @@ from app.models.reembolso import Reembolso
 from app.models.repasse import Repasse
 from app.services.conta_pagamento import ContaPagamentoService
 from app.services.credencial_pagamento import token_marketplace
+from app.services.destaque_anuncio import DestaqueAnuncioService, eh_referencia_destaque
 from app.services.pedido import CENTAVOS, PedidoService
 from app.services.reembolso import ReembolsoService
 
@@ -279,6 +280,8 @@ class WebhookMercadoPagoService:
                 await self.gateway.obter_order(access_token=access_token, order_id=recurso_id)
             ).data
             pagamento_mp = self._normalizar_order(order_mp, payload)
+            if await self._aplicar_destaque(evento_id, pagamento_mp, usuario_id, trabalhador):
+                return
             devolver = await self._aplicar_pagamento(
                 evento_id,
                 pagamento_mp,
@@ -292,6 +295,8 @@ class WebhookMercadoPagoService:
                     access_token=access_token, pagamento_externo_id=recurso_id
                 )
             ).data
+            if await self._aplicar_destaque(evento_id, pagamento_mp, usuario_id, trabalhador):
+                return
             devolver = await self._aplicar_pagamento(
                 evento_id,
                 pagamento_mp,
@@ -321,6 +326,32 @@ class WebhookMercadoPagoService:
             await self._marcar_evento(
                 evento_id, EventoProcessamentoStatus.PROCESSADO, trabalhador=trabalhador
             )
+
+    async def _aplicar_destaque(
+        self,
+        evento_id: UUID,
+        pagamento_mp: dict[str, Any],
+        usuario_id: UUID | None,
+        trabalhador: str,
+    ) -> bool:
+        """Concilia pagamentos de destaque; retorna False para pagamentos de pedido."""
+        if not eh_referencia_destaque(pagamento_mp.get("external_reference")):
+            return False
+        if usuario_id is not None:
+            raise self._erro(
+                409,
+                "O destaque deve ser recebido pela conta da Obra Circular.",
+                "PAYMENT_COLLECTOR_MISMATCH",
+            )
+        await DestaqueAnuncioService(
+            self.session, settings=self.settings, gateway=self.gateway
+        ).aplicar_pagamento(
+            evento_id,
+            pagamento_mp,
+            metodo=self._mapear_metodo(pagamento_mp),
+            trabalhador=trabalhador,
+        )
+        return True
 
     @staticmethod
     def _elegivel(agora: datetime) -> ColumnElement[bool]:

@@ -191,6 +191,27 @@
   letter-spacing: 0.3px;
 }
 
+.home-card-destaque {
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  z-index: 1;
+}
+
+.home-card--destaque {
+  border-color: var(--sinal-amarelo);
+  box-shadow: 0 0 0 1px var(--sinal-amarelo);
+}
+
+.home-card--destaque .home-card-foto::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  height: 7px;
+  background: var(--sinal-fita);
+}
+
 .home-card-foto-legenda {
   position: relative;
   z-index: 1;

@@ -66,6 +66,12 @@ class Settings(BaseSettings):
     mp_checkout_pending_url: str = "http://localhost:5173/pagamento/retorno?status=pending"
     mp_checkout_failure_url: str = "http://localhost:5173/pagamento/retorno?status=failure"
     marketplace_fee_percent: Decimal = Field(default=Decimal("20.00"), ge=0, lt=100)
+    # Preço fixo e duração do destaque pago de anúncios.
+    featured_ad_price: Decimal = Field(
+        default=Decimal("10.00"), gt=0, max_digits=12, decimal_places=2
+    )
+    featured_ad_duration_days: int = Field(default=7, ge=1, le=365)
+    featured_ad_checkout_minutes: int = Field(default=30, ge=5, le=1440)
     stock_reservation_minutes: int = Field(default=30, ge=5, le=1440)
     webhook_retry_max_attempts: int = Field(default=8, ge=1, le=50)
     webhook_retry_base_seconds: int = Field(default=30, ge=1, le=3600)

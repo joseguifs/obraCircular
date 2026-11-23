@@ -153,6 +153,38 @@
   color: #555;
 }
 
+.meus-anuncios-destaque {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 12px 14px;
+  border-top: 1px dashed var(--cinza-borda);
+}
+
+.meus-anuncios-destaque p {
+  margin: 0;
+  color: var(--cinza-texto);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.meus-anuncios-destaque--ativo {
+  border-top: 0;
+  background: var(--sinal-fita) top / 100% 5px no-repeat, var(--sinal-papel);
+  padding-top: 17px;
+}
+
+.meus-anuncios-destaque--ativo p {
+  color: var(--sinal-texto);
+  font-weight: 700;
+}
+
+.meus-anuncios-destaque-painel {
+  padding: 0 14px 14px;
+}
+
 @media (max-width: 560px) {
   .meus-anuncios-link {
     grid-template-columns: 1fr;

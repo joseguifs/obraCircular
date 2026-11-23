@@ -8,6 +8,7 @@ import { ApiError, resolverUrlDaApi } from '../../lib/api'
 import { formatarMoeda, formatarTempoRelativo } from '../../lib/formatarTempo'
 import { primeiroNome } from '../../lib/texto'
 import { useAuth } from '../autenticacao/useAuth'
+import { SeloDestaque } from '../anuncios/DestaqueOferta'
 
 const GRADIENTES_PLACEHOLDER = [
   'linear-gradient(140deg,#33526F,#16314B)',
@@ -155,11 +156,17 @@ export function HomePage() {
 
       <div className="home-grid">
         {anuncios.map((anuncio) => (
-          <Link key={anuncio.id} to={`/anuncios/${anuncio.id}`} className="home-card" aria-label={`Ver anúncio ${anuncio.titulo}`}>
+          <Link
+            key={anuncio.id}
+            to={`/anuncios/${anuncio.id}`}
+            className={anuncio.em_destaque ? 'home-card home-card--destaque' : 'home-card'}
+            aria-label={`Ver anúncio ${anuncio.titulo}${anuncio.em_destaque ? ' (em destaque)' : ''}`}
+          >
             <div className="home-card-foto" style={{ background: corPlaceholder(anuncio.id) }}>
               {categoriasPorId.get(anuncio.categoria_id) && (
                 <span className="home-card-categoria">{categoriasPorId.get(anuncio.categoria_id)}</span>
               )}
+              {anuncio.em_destaque && <SeloDestaque className="home-card-destaque" />}
               <span className="home-card-foto-legenda">
                 {imagemCapa(anuncio) ? 'Foto do anúncio' : 'Sem foto ainda'}
               </span>

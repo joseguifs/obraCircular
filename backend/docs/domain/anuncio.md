@@ -27,3 +27,5 @@
 - Um anúncio pode ter até cinco imagens JPEG, PNG ou WebP; a imagem de ordem zero é a capa.
 - O banco armazena apenas a chave e os metadados da imagem. O arquivo fica no serviço de
   armazenamento configurado pela aplicação.
+- O vendedor pode pagar um destaque para o anúncio aparecer primeiro nas listagens.
+  As regras estão em `docs/domain/destaque_anuncio.md`.
