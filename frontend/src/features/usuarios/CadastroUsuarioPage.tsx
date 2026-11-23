@@ -92,7 +92,6 @@ export function CadastroUsuarioPage({ aoEntrar }: CadastroUsuarioPageProps) {
           ) : (
             <>
               <header className="form-heading">
-                <span className="step-label">Comece por aqui</span>
                 <h2>Crie sua conta</h2>
                 <p>Leva menos de dois minutos. Comece a comprar, vender e reaproveitar materiais.</p>
               </header>
@@ -328,7 +327,6 @@ function CadastroConcluido({
       <div className="success-icon" aria-hidden="true">
         <CheckIcon />
       </div>
-      <span className="step-label">Cadastro concluído</span>
       <h2>Boas-vindas, {usuario.nome.split(' ')[0]}!</h2>
       <p>
         Sua conta foi criada com o e-mail <strong>{usuario.email}</strong>. Agora você já faz

@@ -2,7 +2,7 @@
   display: grid;
   min-height: 100vh;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
-  font-family: Arial, sans-serif;
+  font-family: var(--fonte-corpo);
 }
 
 .brand-panel {
@@ -13,41 +13,18 @@
   justify-content: space-between;
   gap: 40px;
   overflow: hidden;
-  padding: 44px clamp(32px, 6vw, 56px) 52px;
-  color: rgba(255, 255, 255, 0.76);
-  background: var(--azul-marinho);
-}
-
-.brand-panel::before,
-.brand-panel::after {
-  position: absolute;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 50%;
-  content: '';
-}
-
-.brand-panel::before {
-  width: 760px;
-  height: 760px;
-  right: -300px;
-  top: -140px;
-}
-
-.brand-panel::after {
-  width: 520px;
-  height: 520px;
-  right: -190px;
-  top: -20px;
-  border-color: rgba(255, 255, 255, 0.06);
+  padding: 44px clamp(32px, 6vw, 64px) 52px;
+  color: rgba(255, 255, 255, 0.78);
+  /* Quadriculado de planta baixa sobre o grafite. */
+  background:
+    linear-gradient(rgba(159, 182, 220, 0.09) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(90deg, rgba(159, 182, 220, 0.09) 1px, transparent 1px) 0 0 / 32px 32px,
+    var(--grafite);
 }
 
 .brand-panel > * {
   position: relative;
   z-index: 1;
-}
-
-.brand-panel::after {
-  z-index: 0;
 }
 
 .brand-logo {
@@ -82,22 +59,25 @@
 
 .eyebrow,
 .step-label {
+  color: var(--planta);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.brand-panel .eyebrow {
   color: var(--azul-texto-claro);
-  font-size: 11.5px;
-  font-weight: 800;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
 }
 
 .brand-copy h1 {
-  max-width: 520px;
-  margin: 18px 0 22px;
+  max-width: 15ch;
+  margin: 0 0 24px;
   color: #fff;
-  font-family: Arial, sans-serif;
-  font-size: clamp(38px, 4.2vw, 58px);
-  font-weight: 400;
-  letter-spacing: -1.4px;
-  line-height: 1.06;
+  font-size: clamp(44px, 5.2vw, 74px);
+  font-weight: 800;
+  font-variation-settings: 'wdth' 72;
+  letter-spacing: -1px;
+  line-height: 0.98;
 }
 
 .brand-copy p {
@@ -155,9 +135,7 @@
   min-height: 100vh;
   place-items: center;
   padding: 56px clamp(24px, 7vw, 48px);
-  background: linear-gradient(var(--fundo-grade) 1px, transparent 1px),
-    linear-gradient(90deg, var(--fundo-grade) 1px, transparent 1px), var(--fundo-pagina);
-  background-size: 26px 26px;
+  background: var(--concreto);
 }
 
 .mobile-logo {
@@ -166,22 +144,20 @@
 
 .form-card {
   width: min(100%, 520px);
-  padding: 44px 44px 36px;
-  border: 1px solid var(--cinza-borda);
-  border-radius: 24px;
+  padding: 40px 40px 32px;
+  border: 1px solid var(--prumo);
+  border-radius: 8px;
   background: #fff;
-  box-shadow: 0 24px 60px rgba(12, 30, 54, 0.1);
 }
 
 .form-heading h2,
 .success-state h2 {
   margin: 10px 0 10px;
-  color: var(--azul-marinho);
-  font-family: Arial, sans-serif;
-  font-size: clamp(32px, 3vw, 40px);
-  font-weight: 600;
-  letter-spacing: -1.2px;
-  line-height: 1.08;
+  color: var(--grafite);
+  font-size: clamp(30px, 3vw, 38px);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.05;
 }
 
 .form-heading p,
@@ -222,17 +198,17 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  height: 54px;
-  padding: 0 16px;
-  border: 1px solid var(--cinza-borda);
-  border-radius: 12px;
+  height: 50px;
+  padding: 0 14px;
+  border: 1.5px solid var(--prumo);
+  border-radius: 8px;
   background: var(--cinza-fundo-input);
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
 .field-box:focus-within {
   border-color: var(--azul);
-  box-shadow: 0 0 0 3px rgba(47, 127, 212, 0.12);
+  box-shadow: 0 0 0 3px var(--planta-suave);
 }
 
 .field-box--erro {
@@ -428,11 +404,12 @@
   align-items: flex-start;
   gap: 10px;
   padding: 12px 14px;
-  border: 1px solid #f3c6bd;
-  border-radius: 12px;
-  background: #fdecea;
+  border: 1px solid #efc2b9;
+  border-left: 4px solid var(--vermelho);
+  border-radius: 6px;
+  background: #fbefec;
   color: var(--vermelho);
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 600;
   line-height: 1.5;
 }
@@ -449,24 +426,28 @@
 
 .submit-button {
   display: flex;
-  min-height: 58px;
+  min-height: 52px;
   align-items: center;
   justify-content: center;
   gap: 11px;
   padding: 0 20px;
   border: 0;
-  border-radius: 13px;
+  border-radius: 8px;
   color: #fff;
-  background: var(--azul-marinho);
+  background: var(--planta);
   cursor: pointer;
   font-size: 16px;
-  font-weight: 800;
-  letter-spacing: 0.2px;
+  font-weight: 700;
   transition: background 160ms ease;
 }
 
 .submit-button:hover:not(:disabled) {
-  background: var(--azul-marinho-hover);
+  background: var(--planta-escuro);
+}
+
+/* O botão já diz o que faz; a seta decorativa sai. */
+.submit-button > svg:not(.spinner) {
+  display: none;
 }
 
 .submit-button:active:not(:disabled) {

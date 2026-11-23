@@ -7,18 +7,19 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  background: var(--azul-marinho);
+  background: var(--grafite);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
 }
 
 .app-header-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 16px 24px;
-  max-width: 1280px;
-  min-height: 72px;
+  gap: 12px 24px;
+  max-width: 1400px;
+  min-height: 64px;
   margin: 0 auto;
-  padding: 12px clamp(20px, 4vw, 40px);
+  padding: 10px clamp(20px, 4vw, 40px);
 }
 
 .app-logo {
@@ -35,49 +36,55 @@
   display: flex;
   flex: 0 1 auto;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
+  align-items: stretch;
+  align-self: stretch;
+  gap: 2px;
   min-width: 0;
 }
 
 .app-nav-link,
 .app-nav-item {
-  padding: 8px 14px;
-  border-radius: 9px;
-  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-bottom: 3px solid transparent;
+  color: var(--cinza-acinzentado-1);
+  font-size: 14px;
   font-weight: 600;
-  color: var(--cinza-acinzentado-2);
   text-decoration: none;
 }
 
 .app-nav-link:hover {
   color: #fff;
-  background: rgba(255, 255, 255, 0.07);
 }
 
 .app-nav-link--ativo {
+  border-bottom-color: var(--azul-texto-claro);
   color: #fff;
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.1);
 }
 
 .app-nav-item--futuro {
   cursor: default;
-  opacity: 0.65;
+  opacity: 0.5;
 }
 
 .app-search {
   display: flex;
-  flex: 1 1 220px;
+  flex: 1 1 180px;
   align-items: center;
   gap: 10px;
-  max-width: 380px;
-  min-width: 190px;
+  max-width: 320px;
+  min-width: 160px;
   height: 42px;
   padding: 0 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.app-search:focus-within {
+  border-color: var(--azul-texto-claro);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .app-search svg {
@@ -85,7 +92,7 @@
   height: 17px;
   flex: none;
   fill: none;
-  stroke: var(--cinza-acinzentado-2);
+  stroke: var(--cinza-acinzentado-1);
   stroke-linecap: round;
   stroke-width: 1.9;
 }
@@ -97,7 +104,7 @@
   outline: none;
   color: #fff;
   background: transparent;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
 }
 
@@ -110,7 +117,7 @@
   flex: 0 0 auto;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   margin-left: auto;
 }
 
@@ -120,16 +127,20 @@
   height: 42px;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.06);
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.app-icon-button:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .app-icon-button svg {
-  width: 18px;
-  height: 18px;
+  width: 19px;
+  height: 19px;
   fill: none;
-  stroke: #dce6f2;
+  stroke: #d9dee5;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.8;
@@ -140,27 +151,27 @@
   align-items: center;
   gap: 8px;
   height: 42px;
-  padding: 0 18px;
+  padding: 0 16px;
   border: none;
-  border-radius: 11px;
-  color: #fff;
-  background: var(--azul);
-  font-size: 13.5px;
-  font-weight: 800;
+  border-radius: 8px;
+  color: var(--grafite);
+  background: #fff;
+  font-size: 14px;
+  font-weight: 700;
   text-decoration: none;
 }
 
 .app-button-primary:hover {
-  background: var(--azul-escuro);
+  background: var(--planta-suave);
 }
 
 .app-button-primary svg {
   width: 16px;
   height: 16px;
   fill: none;
-  stroke: #fff;
+  stroke: currentColor;
   stroke-linecap: round;
-  stroke-width: 2.2;
+  stroke-width: 2.4;
 }
 
 .app-profile-button {
@@ -168,42 +179,59 @@
   align-items: center;
   gap: 9px;
   height: 42px;
-  padding: 0 6px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.06);
+  padding: 0 8px 0 5px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
   text-decoration: none;
 }
 
 .app-profile-button:hover,
 .app-profile-button--ativo {
-  border-color: rgba(255, 255, 255, 0.34);
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .app-profile-button span:last-child {
-  padding-right: 6px;
   color: #fff;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .app-avatar {
   display: flex;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  color: #fff;
-  background: var(--azul);
-  font-size: 12px;
+  border-radius: 6px;
+  color: var(--grafite);
+  background: var(--azul-texto-claro);
+  font-size: 12.5px;
   font-weight: 800;
 }
 
-@media (max-width: 560px) {
-  .app-nav {
-    order: 3;
-    width: 100%;
+/* O nome some antes do cabeçalho quebrar; o link mantém o rótulo acessível. */
+@media (max-width: 1500px) {
+  .app-profile-button span:last-child {
+    display: none;
   }
 }
+
+@media (max-width: 1100px) {
+  .app-nav {
+    order: 3;
+    width: calc(100% + 2 * clamp(20px, 4vw, 40px));
+    margin: 0 calc(-1 * clamp(20px, 4vw, 40px));
+    padding: 0 clamp(20px, 4vw, 40px);
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .app-nav-link,
+  .app-nav-item {
+    min-height: 40px;
+    white-space: nowrap;
+  }
+}
+

@@ -69,7 +69,6 @@ export function MeusAnunciosPage() {
     <main className="meus-anuncios-main">
       <div className="meus-anuncios-cabecalho">
         <div>
-          <span className="step-label">Sua vitrine</span>
           <h1>Meus anúncios</h1>
           <p>
             {carregando

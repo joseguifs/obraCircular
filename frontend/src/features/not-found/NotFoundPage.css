@@ -18,9 +18,9 @@
   margin: auto;
   padding: 52px;
   border: 1px solid var(--cinza-borda);
-  border-radius: 24px;
+  border-radius: 10px;
   background: #fff;
-  box-shadow: 0 24px 60px rgba(12, 30, 54, 0.1);
+  box-shadow: 0 24px 60px rgba(27, 36, 48, 0.1);
   text-align: center;
 }
 
@@ -41,7 +41,7 @@
   min-height: 48px;
   align-items: center;
   padding: 0 22px;
-  border-radius: 12px;
+  border-radius: 8px;
   color: #fff;
   background: var(--azul-marinho);
   font-weight: 800;

@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { mensagemApiErro } from '../../lib/api'
 import { formatarMoeda } from '../../lib/formatarTempo'
 import { listarPedidos } from './pagamentoApi'
-import { STATUS_PEDIDO } from './pedidoApresentacao'
+import { STATUS_PEDIDO, tomDoStatus } from './pedidoApresentacao'
 import type { Pedido } from './types'
 
 export function PedidosPage() {
@@ -28,11 +28,10 @@ export function PedidosPage() {
   }, [revisao])
 
   return (
-    <main className="payment-page">
+    <main className="payment-page payment-page--larga">
       <section className="payment-card">
-        <span className="step-label">Minhas compras</span>
         <h1>Meus pedidos</h1>
-        <p>Acompanhe seus pagamentos, entregas, reembolsos e contestações nos detalhes de cada pedido.</p>
+        <p>Abra um pedido para acompanhar pagamento, entrega, reembolso ou contestação.</p>
         {carregando && <p role="status">Carregando pedidos...</p>}
         {erro && <p className="form-alert" role="alert">{erro}</p>}
         {!carregando && !erro && pedidos.length === 0 && <p>Você ainda não tem pedidos.</p>}
@@ -40,11 +39,20 @@ export function PedidosPage() {
           <ul className="payment-order-list">
             {pedidos.map((pedido) => (
               <li key={pedido.id}>
-                <Link to={`/pedidos/${pedido.id}`}>
-                  <strong>Pedido {pedido.id.slice(0, 8)}</strong>
-                  <span>{STATUS_PEDIDO[pedido.status]}</span>
-                  <span>{pedido.quantidade} unidade(s) · {formatarMoeda(pedido.valor_total)}</span>
-                  <span>Ver pedido →</span>
+                <Link
+                  to={`/pedidos/${pedido.id}`}
+                  aria-label={`Pedido ${pedido.id.slice(0, 8)}, ${STATUS_PEDIDO[pedido.status]}, ${formatarMoeda(pedido.valor_total)}. Ver pedido`}
+                >
+                  <span className="payment-order-id">
+                    <strong>Pedido {pedido.id.slice(0, 8)}</strong>
+                    <span>
+                      {pedido.quantidade} {pedido.quantidade === 1 ? 'unidade' : 'unidades'}
+                    </span>
+                  </span>
+                  <span className={`status-chip status-chip--${tomDoStatus(pedido.status)}`}>
+                    {STATUS_PEDIDO[pedido.status]}
+                  </span>
+                  <strong className="payment-order-valor">{formatarMoeda(pedido.valor_total)}</strong>
                 </Link>
               </li>
             ))}

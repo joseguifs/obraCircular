@@ -10,14 +10,13 @@
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.6px;
-  text-transform: uppercase;
 }
 
 .ad-perguntas-aviso {
   margin: 0 0 18px;
   padding: 12px 14px;
   border: 1px solid var(--azul-suave-borda);
-  border-radius: 12px;
+  border-radius: 8px;
   color: var(--azul-escuro);
   background: var(--azul-suave-bg);
   font-size: 13px;
@@ -54,7 +53,7 @@
   padding: 13px 14px;
   resize: vertical;
   border: 1px solid var(--cinza-borda);
-  border-radius: 11px;
+  border-radius: 8px;
   color: var(--azul-marinho);
   background: var(--cinza-fundo-input);
   font-size: 14px;
@@ -154,7 +153,7 @@
 
 .ad-pergunta-selo {
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: 10px;
   color: var(--azul-escuro);
   background: var(--azul-suave-bg);
   font-size: 11px;

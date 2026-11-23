@@ -18,7 +18,6 @@ export function ContestacaoPage() {
         ← Voltar ao pedido
       </Link>
       <section className="payment-card">
-        <span className="step-label">Minhas compras</span>
         <h1>Contestação do pedido</h1>
         <p>Teve um problema com os materiais? Informe o motivo, descreva o que aconteceu e acompanhe sua solicitação.</p>
         <p className="dispute-note">

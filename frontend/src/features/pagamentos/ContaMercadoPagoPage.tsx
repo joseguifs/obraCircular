@@ -46,7 +46,6 @@ export function ContaMercadoPagoPage() {
         ← Voltar ao perfil
       </Link>
       <section className="payment-card">
-        <span className="step-label">Recebimentos</span>
         <h1>Conta Mercado Pago</h1>
         <p>
           Conecte sua conta para que seus anúncios possam receber pagamentos. O Mercado Pago

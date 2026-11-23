@@ -44,7 +44,12 @@ export function MarketplaceLayout() {
             <Link to="/home" className={naHome ? 'app-nav-link app-nav-link--ativo' : 'app-nav-link'}>
               Explorar
             </Link>
-            <span className="app-nav-item app-nav-item--futuro">Meus anúncios</span>
+            {sessao && (
+              <Link to="/anuncios/meus" className={location.pathname === '/anuncios/meus'
+                ? 'app-nav-link app-nav-link--ativo' : 'app-nav-link'}>
+                Meus anúncios
+              </Link>
+            )}
             {sessao && (
               <Link to="/pedidos" className={location.pathname.startsWith('/pedidos')
                 ? 'app-nav-link app-nav-link--ativo' : 'app-nav-link'}>

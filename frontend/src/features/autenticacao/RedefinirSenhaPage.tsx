@@ -105,7 +105,6 @@ export function RedefinirSenhaPage({
             <div className="success-icon recuperacao-icone-erro" aria-hidden="true">
               <AlertIcon />
             </div>
-            <span className="step-label">Link indisponível</span>
             <h2>Não foi possível usar este link</h2>
             <p>{motivoInvalido}</p>
             <button className="submit-button" type="button" onClick={aoSolicitarNovoLink}>
@@ -126,7 +125,6 @@ export function RedefinirSenhaPage({
             <div className="success-icon" aria-hidden="true">
               <CheckIcon />
             </div>
-            <span className="step-label">Tudo certo</span>
             <h2>Senha redefinida</h2>
             <p>Sua nova senha já está valendo. Entre na plataforma usando a nova senha.</p>
             <button className="submit-button" type="button" onClick={aoIrParaLogin}>
@@ -139,7 +137,6 @@ export function RedefinirSenhaPage({
         {etapa === 'formulario' && (
           <>
             <header className="form-heading">
-              <span className="step-label">Recuperar acesso</span>
               <h2>Crie uma nova senha</h2>
               <p>Escolha uma senha forte, que você não use em outros sites.</p>
             </header>

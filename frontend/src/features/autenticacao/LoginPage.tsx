@@ -63,7 +63,6 @@ export function LoginPage({ aoAutenticar, aoCadastrar, aoRecuperarSenha }: Login
     <AuthLayout>
       <div className="form-card login-card">
         <header className="form-heading">
-          <span className="step-label">Acesse sua conta</span>
           <h2>Bem-vindo de volta</h2>
           <p>Entre para continuar comprando, vendendo e reaproveitando materiais.</p>
         </header>
