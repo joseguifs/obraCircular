@@ -4,8 +4,8 @@ import { Paginacao } from '../admin/Paginacao'
 import { mensagemApiErro, resolverUrlDaApi } from '../../lib/api'
 import { formatarDataHora, formatarMoeda, formatarTempoRelativo } from '../../lib/formatarTempo'
 import { listarMeusAnuncios } from './anuncioApi'
-import { consultarPrecoDestaque, iniciarCheckoutDestaque } from './destaqueApi'
-import type { Anuncio, DestaquePreco } from './types'
+import { DestaqueOferta, SeloDestaque } from './DestaqueOferta'
+import type { Anuncio } from './types'
 
 const POR_PAGINA = 10
 
@@ -64,32 +64,6 @@ export function MeusAnunciosPage() {
   }
 
   const [destacando, setDestacando] = useState<string | null>(null)
-  const [preco, setPreco] = useState<DestaquePreco | null>(null)
-  const [iniciandoDestaque, setIniciandoDestaque] = useState(false)
-  const [erroDestaque, setErroDestaque] = useState('')
-
-  async function abrirDestaque(anuncioId: string) {
-    setDestacando(anuncioId)
-    setErroDestaque('')
-    if (preco) return
-    try {
-      setPreco(await consultarPrecoDestaque())
-    } catch (falha) {
-      setErroDestaque(mensagemApiErro(falha, 'Não foi possível consultar o preço do destaque.'))
-    }
-  }
-
-  async function pagarDestaque(anuncioId: string) {
-    setIniciandoDestaque(true)
-    setErroDestaque('')
-    try {
-      const checkout = await iniciarCheckoutDestaque(anuncioId)
-      window.location.assign(checkout.init_point)
-    } catch (falha) {
-      setErroDestaque(mensagemApiErro(falha, 'Não foi possível iniciar o pagamento do destaque.'))
-      setIniciandoDestaque(false)
-    }
-  }
 
   return (
     <main className="meus-anuncios-main">
@@ -171,61 +145,42 @@ export function MeusAnunciosPage() {
                       >
                         {ROTULO_STATUS[anuncio.status]}
                       </span>
-                      {anuncio.em_destaque && (
-                        <span className="meus-anuncios-status meus-anuncios-status--destaque">
-                          Em destaque
-                        </span>
-                      )}
+                      {anuncio.em_destaque && <SeloDestaque />}
                     </div>
                   </div>
                 </Link>
-                {anuncio.status === 'ATIVO' && (
-                  <div className="meus-anuncios-destaque">
-                    {destacando === anuncio.id ? (
-                      <div className="meus-anuncios-destaque-painel" role="group" aria-label="Destacar anúncio">
-                        <p>
-                          {preco
-                            ? `Destaque por ${formatarMoeda(preco.valor)} durante ${preco.duracao_dias} dias. Seu anúncio aparece antes dos demais nas listagens.`
-                            : 'Consultando o preço do destaque…'}
-                        </p>
-                        {erroDestaque && <p className="meus-anuncios-destaque-erro" role="alert">{erroDestaque}</p>}
-                        <div className="meus-anuncios-destaque-acoes">
-                          <button
-                            type="button"
-                            className="meus-anuncios-destaque-pagar"
-                            disabled={!preco || iniciandoDestaque}
-                            onClick={() => void pagarDestaque(anuncio.id)}
-                          >
-                            {iniciandoDestaque ? 'Abrindo Mercado Pago…' : 'Pagar com Mercado Pago'}
-                          </button>
-                          <button
-                            type="button"
-                            className="meus-anuncios-destaque-cancelar"
-                            disabled={iniciandoDestaque}
-                            onClick={() => setDestacando(null)}
-                          >
-                            Cancelar
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <span>
-                          {anuncio.em_destaque && anuncio.destaque_ate
-                            ? `Em destaque até ${formatarDataHora(anuncio.destaque_ate)}`
-                            : 'Apareça primeiro nas buscas.'}
-                        </span>
-                        <button
-                          type="button"
-                          className="meus-anuncios-destaque-abrir"
-                          onClick={() => void abrirDestaque(anuncio.id)}
-                        >
-                          {anuncio.em_destaque ? 'Estender destaque' : 'Destacar anúncio'}
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
+                {anuncio.status === 'ATIVO' &&
+                  (destacando === anuncio.id ? (
+                    <div className="meus-anuncios-destaque-painel">
+                      <DestaqueOferta
+                        anuncioId={anuncio.id}
+                        emDestaque={anuncio.em_destaque}
+                        destaqueAte={anuncio.destaque_ate}
+                        aoFechar={() => setDestacando(null)}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={
+                        anuncio.em_destaque
+                          ? 'meus-anuncios-destaque meus-anuncios-destaque--ativo'
+                          : 'meus-anuncios-destaque'
+                      }
+                    >
+                      <p>
+                        {anuncio.em_destaque && anuncio.destaque_ate
+                          ? `No topo das buscas até ${formatarDataHora(anuncio.destaque_ate)}.`
+                          : 'Quer vender mais rápido? Coloque este anúncio no topo das buscas.'}
+                      </p>
+                      <button
+                        type="button"
+                        className="destaque-abrir"
+                        onClick={() => setDestacando(anuncio.id)}
+                      >
+                        {anuncio.em_destaque ? 'Estender destaque' : 'Destacar anúncio'}
+                      </button>
+                    </div>
+                  ))}
               </li>
             )
           })}

@@ -131,7 +131,8 @@ describe('MeusAnunciosPage', () => {
     expect(screen.getAllByRole('button', { name: 'Destacar anúncio' })).toHaveLength(1)
 
     await user.click(screen.getByRole('button', { name: 'Destacar anúncio' }))
-    expect(await screen.findByText(/R\$\s?10,00 durante 7 dias/)).toBeInTheDocument()
+    expect(await screen.findByText('7 dias no topo das buscas')).toBeInTheDocument()
+    expect(screen.getByText(/R\$\s?10,00/)).toBeInTheDocument()
     expect(fetchMock.mock.calls[1][0]).toContain('/featured-ads/pricing')
 
     await user.click(screen.getByRole('button', { name: 'Pagar com Mercado Pago' }))

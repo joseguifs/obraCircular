@@ -1,0 +1,246 @@
+/* Destaque pago: linguagem de fita de sinalização de obra. */
+:root {
+  --sinal-amarelo: #f5b800;
+  --sinal-grafite: #1b2430;
+  --sinal-papel: #fff7db;
+  --sinal-texto: #3a2a00;
+  --sinal-fita: repeating-linear-gradient(
+    -45deg,
+    var(--sinal-amarelo) 0 10px,
+    var(--sinal-grafite) 10px 20px
+  );
+}
+
+.destaque-fita {
+  height: 8px;
+  background: var(--sinal-fita);
+}
+
+.destaque-selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 999px;
+  background: var(--sinal-amarelo);
+  color: var(--sinal-texto);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.destaque-selo::before {
+  content: '';
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--sinal-fita);
+  box-shadow: inset 0 0 0 2px var(--sinal-amarelo);
+}
+
+/* Painel de compra */
+.destaque-oferta {
+  overflow: hidden;
+  border: 1px solid #e9d38c;
+  border-radius: 14px;
+  background: var(--sinal-papel);
+  animation: destaque-abrir 220ms ease-out;
+}
+
+.destaque-oferta-corpo {
+  display: grid;
+  gap: 14px;
+  padding: 18px 18px 16px;
+}
+
+.destaque-oferta-preco {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.destaque-oferta-preco strong {
+  font-family: var(--fonte-titulo);
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1;
+  color: var(--sinal-grafite);
+}
+
+.destaque-oferta-preco span {
+  color: var(--sinal-texto);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.destaque-oferta-itens {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--cinza-texto-forte);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.destaque-oferta-itens li {
+  position: relative;
+  padding-left: 18px;
+}
+
+.destaque-oferta-itens li::before {
+  content: '';
+  position: absolute;
+  top: 0.55em;
+  left: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--sinal-amarelo);
+  box-shadow: 0 0 0 1px var(--sinal-grafite);
+}
+
+.destaque-oferta-erro {
+  margin: 0;
+  color: var(--vermelho);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.destaque-oferta-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.destaque-botao,
+.destaque-botao-secundario {
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.destaque-botao {
+  border: 0;
+  background: var(--sinal-grafite);
+  color: #fff;
+}
+
+.destaque-botao:hover:not(:disabled) {
+  background: #2b3746;
+}
+
+.destaque-botao-secundario {
+  border: 1px solid #e0c870;
+  background: transparent;
+  color: var(--sinal-texto);
+}
+
+.destaque-botao:disabled,
+.destaque-botao-secundario:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.destaque-botao:focus-visible,
+.destaque-botao-secundario:focus-visible,
+.destaque-abrir:focus-visible {
+  outline: 3px solid var(--azul);
+  outline-offset: 2px;
+}
+
+/* Botão que abre o painel */
+.destaque-abrir {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1.5px solid var(--sinal-grafite);
+  border-radius: 10px;
+  background: var(--sinal-amarelo);
+  color: var(--sinal-grafite);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.destaque-abrir:hover {
+  background: #ffc61a;
+}
+
+@keyframes destaque-abrir {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .destaque-oferta {
+    animation: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .destaque-oferta-preco strong {
+    font-size: 34px;
+  }
+
+  .destaque-oferta-acoes > button {
+    flex: 1 1 100%;
+  }
+}
+
+/* Retorno do pagamento do destaque */
+.destaque-retorno {
+  position: relative;
+  overflow: hidden;
+}
+
+.destaque-retorno-fita {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 10px;
+}
+
+.destaque-retorno-resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 18px 0 4px;
+}
+
+.destaque-retorno-resumo div {
+  padding: 12px 14px;
+  border: 1px solid var(--cinza-borda);
+  border-radius: 12px;
+  background: var(--cinza-fundo-input);
+}
+
+.destaque-retorno-resumo dt {
+  color: var(--cinza-texto);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.destaque-retorno-resumo dd {
+  margin: 4px 0 0;
+  color: var(--azul-marinho);
+  font-family: var(--fonte-titulo);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}

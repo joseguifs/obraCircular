@@ -88,16 +88,29 @@ export function DestaqueRetorno({ destaqueId }: { destaqueId: string }) {
   const texto = conteudo(destaque)
   return (
     <main className="payment-page">
-      <section className="payment-card">
-        <span className="step-label">Destaque do anúncio</span>
+      <section className="payment-card destaque-retorno" aria-live="polite">
+        {destaque?.status === 'ATIVO' && <div className="destaque-fita destaque-retorno-fita" aria-hidden="true" />}
         <h1>{texto.titulo}</h1>
         <p>{texto.descricao}</p>
         {erro && <p className="form-alert" role="alert">{erro}</p>}
         {aviso && <p role="status">{aviso}</p>}
         {destaque && (
-          <p className="payment-status">
-            Valor: <strong>{formatarMoeda(destaque.valor)}</strong> · {destaque.duracao_dias} dias de destaque
-          </p>
+          <dl className="destaque-retorno-resumo">
+            <div>
+              <dt>Valor pago</dt>
+              <dd>{formatarMoeda(destaque.valor)}</dd>
+            </div>
+            <div>
+              <dt>Duração</dt>
+              <dd>{destaque.duracao_dias} dias</dd>
+            </div>
+            {destaque.status === 'ATIVO' && destaque.expira_em && (
+              <div>
+                <dt>No topo até</dt>
+                <dd>{formatarDataHora(destaque.expira_em)}</dd>
+              </div>
+            )}
+          </dl>
         )}
         <div className="payment-actions">
           <button type="button" className="secondary-button" onClick={() => void atualizarRef.current()}>

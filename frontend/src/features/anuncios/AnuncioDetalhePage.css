@@ -229,3 +229,29 @@
     padding: 24px 22px;
   }
 }
+
+/* Área do dono do anúncio: destaque pago */
+.ad-detail-dono {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+
+.ad-detail-dono > .payment-status {
+  margin: 0;
+}
+
+.ad-detail-dono-destaque {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--sinal-texto);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ad-detail-dono .destaque-oferta {
+  justify-self: stretch;
+}
