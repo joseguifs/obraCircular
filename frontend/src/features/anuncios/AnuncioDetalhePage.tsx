@@ -295,13 +295,6 @@ export function AnuncioDetalhePage() {
               ) : null}
             </div>
 
-            <div className="ad-detail-card ad-detail-destaque">
-              <h2>Reaproveitar compensa</h2>
-              <p>
-                Materiais reaproveitados costumam sair abaixo do preço de loja e evitam
-                descarte em caçamba.
-              </p>
-            </div>
           </div>
         </div>
       )}

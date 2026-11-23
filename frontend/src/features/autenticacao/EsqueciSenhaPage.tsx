@@ -56,7 +56,6 @@ export function EsqueciSenhaPage({ aoVoltarParaLogin }: EsqueciSenhaPageProps) {
             <div className="success-icon" aria-hidden="true">
               <MailIcon />
             </div>
-            <span className="step-label">Verifique seu e-mail</span>
             <h2>Link enviado</h2>
             <p>
               Se existir uma conta com o e-mail <strong>{emailEnviado}</strong>, você receberá
@@ -87,7 +86,6 @@ export function EsqueciSenhaPage({ aoVoltarParaLogin }: EsqueciSenhaPageProps) {
             </button>
 
             <header className="form-heading">
-              <span className="step-label">Recuperar acesso</span>
               <h2>Esqueceu sua senha?</h2>
               <p>
                 Informe o e-mail da sua conta. Enviaremos um link para você criar uma nova

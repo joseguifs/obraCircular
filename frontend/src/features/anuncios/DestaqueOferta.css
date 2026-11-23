@@ -21,7 +21,7 @@
   align-items: center;
   gap: 7px;
   padding: 4px 10px 4px 4px;
-  border-radius: 999px;
+  border-radius: 10px;
   background: var(--sinal-amarelo);
   color: var(--sinal-texto);
   font-size: 12px;
@@ -34,7 +34,7 @@
   content: '';
   width: 18px;
   height: 18px;
-  border-radius: 999px;
+  border-radius: 10px;
   background: var(--sinal-fita);
   box-shadow: inset 0 0 0 2px var(--sinal-amarelo);
 }
@@ -43,7 +43,7 @@
 .destaque-oferta {
   overflow: hidden;
   border: 1px solid #e9d38c;
-  border-radius: 14px;
+  border-radius: 10px;
   background: var(--sinal-papel);
   animation: destaque-abrir 220ms ease-out;
 }
@@ -121,7 +121,7 @@
 .destaque-botao-secundario {
   min-height: 42px;
   padding: 0 18px;
-  border-radius: 10px;
+  border-radius: 8px;
   font: inherit;
   font-size: 14px;
   font-weight: 800;
@@ -164,7 +164,7 @@
   min-height: 38px;
   padding: 0 16px;
   border: 1.5px solid var(--sinal-grafite);
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--sinal-amarelo);
   color: var(--sinal-grafite);
   font: inherit;
@@ -226,7 +226,7 @@
 .destaque-retorno-resumo div {
   padding: 12px 14px;
   border: 1px solid var(--cinza-borda);
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--cinza-fundo-input);
 }
 
@@ -243,4 +243,150 @@
   font-size: 22px;
   font-weight: 700;
   line-height: 1.2;
+}
+
+/* Janela de destaque (Home) */
+.destaque-dialog-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(27, 36, 48, 0.55);
+}
+
+.destaque-dialog {
+  display: grid;
+  gap: 16px;
+  width: min(100%, 560px);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 22px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(27, 36, 48, 0.35);
+  animation: destaque-abrir 200ms ease-out;
+}
+
+.destaque-dialog:focus {
+  outline: none;
+}
+
+.destaque-dialog-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.destaque-dialog-cabecalho h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.destaque-dialog-fechar {
+  display: grid;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.destaque-dialog-fechar:hover {
+  background: var(--concreto-claro);
+}
+
+.destaque-dialog-fechar svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--grafite);
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+
+.destaque-dialog-lista {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  border-top: 1.5px solid var(--grafite);
+  list-style: none;
+}
+
+.destaque-dialog-lista li {
+  border-bottom: 1px solid var(--cinza-linha);
+}
+
+.destaque-dialog-lista button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  align-items: center;
+  width: 100%;
+  padding: 14px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--grafite);
+  cursor: pointer;
+  text-align: left;
+}
+
+.destaque-dialog-lista button:hover {
+  background: var(--concreto-claro);
+}
+
+.destaque-dialog-lista button:hover .destaque-dialog-item-titulo {
+  color: var(--planta);
+  text-decoration: underline;
+}
+
+.destaque-dialog-lista .destaque-selo {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+}
+
+.destaque-dialog-item-titulo,
+.destaque-dialog-item-meta {
+  grid-column: 1;
+}
+
+.destaque-dialog-item-titulo {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.destaque-dialog-item-meta {
+  color: var(--cinza-texto);
+  font-size: 13.5px;
+}
+
+.destaque-dialog-trocar {
+  justify-self: start;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--planta);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.destaque-dialog-vazio {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.destaque-dialog-vazio p {
+  margin: 0;
+  color: var(--cinza-texto-forte);
 }

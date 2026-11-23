@@ -12,6 +12,16 @@ export const STATUS_PEDIDO: Record<Pedido['status'], string> = {
   REEMBOLSADO: 'Reembolsado',
 }
 
+/** Agrupa a situação do pedido em um tom visual: andamento, concluído ou atenção. */
+export function tomDoStatus(status: Pedido['status']): 'andamento' | 'ok' | 'atencao' | 'neutro' {
+  if (status === 'CONCLUIDO' || status === 'ENTREGUE') return 'ok'
+  if (status === 'EM_CONTESTACAO' || status === 'CANCELADO' || status === 'REEMBOLSADO') {
+    return 'atencao'
+  }
+  if (status === 'AGUARDANDO_PAGAMENTO') return 'neutro'
+  return 'andamento'
+}
+
 export function reembolsoPendente(pedido: Pedido): boolean {
   return pedido.reembolso?.status === 'SOLICITADO' || pedido.reembolso?.status === 'PROCESSANDO'
 }

@@ -75,7 +75,6 @@ export function VendasPage() {
   return (
     <main className="payment-page">
       <section className="payment-card">
-        <span className="step-label">Área do vendedor</span>
         <h1>Minhas vendas</h1>
         <p>Após o comprador conferir o material, peça o PIN para confirmar a entrega ou retirada.</p>
         {carregando && <p role="status">Atualizando vendas...</p>}

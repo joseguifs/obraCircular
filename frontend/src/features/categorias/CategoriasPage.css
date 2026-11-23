@@ -17,7 +17,7 @@
 
 .cat-form-title {
   margin: 0 0 22px;
-  font-family: Arial, sans-serif;
+  font-family: var(--fonte-corpo);
   font-size: 27px;
 }
 
@@ -41,7 +41,7 @@
   margin-bottom: 18px;
   padding: 14px 16px;
   border: 1px solid var(--azul-suave-borda);
-  border-radius: 12px;
+  border-radius: 8px;
   color: var(--azul-escuro);
   background: var(--azul-suave-bg);
   font-size: 13px;
@@ -88,7 +88,7 @@
 .cat-item-title h2 {
   margin: 0;
   color: var(--azul-marinho);
-  font-family: Arial, sans-serif;
+  font-family: var(--fonte-corpo);
   font-size: 20px;
 }
 
@@ -107,7 +107,7 @@
 
 .cat-badge {
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: 10px;
   font-size: 11px;
   font-weight: 800;
 }

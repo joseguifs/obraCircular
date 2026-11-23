@@ -11,11 +11,10 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         <Logo />
 
         <div className="brand-copy">
-          <span className="eyebrow">Construir também é reaproveitar</span>
-          <h1>Materiais com história. Obras com futuro.</h1>
+          <h1>A sobra da sua obra é o material de outra.</h1>
           <p>
-            Compre e venda excedentes de obra com segurança, reduzindo custos e evitando
-            desperdícios.
+            Compre e venda materiais de construção que sobraram, perto de você, com pagamento
+            protegido pelo Mercado Pago.
           </p>
         </div>
 
@@ -23,15 +22,15 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           <li>
             <LeafIcon />
             <span>
-              <strong>Economia circular</strong>
-              Cada material reaproveitado deixa de virar descarte.
+              <strong>Menos entulho</strong>
+              Cada material revendido deixa de virar descarte.
             </span>
           </li>
           <li>
             <ShieldIcon />
             <span>
-              <strong>Negociações mais seguras</strong>
-              Uma comunidade feita para quem compra, vende e constrói.
+              <strong>Entrega confirmada com PIN</strong>
+              O vendedor só recebe depois que você confere o material em mãos.
             </span>
           </li>
         </ul>

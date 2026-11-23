@@ -52,7 +52,6 @@ export function EnderecosPage() {
         </Link>
       </nav>
       <header className="account-heading">
-        <span className="step-label">Minha conta</span>
         <h1>Meus endereços</h1>
         <p>Visualize e edite os endereços cadastrados na sua conta.</p>
       </header>

@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -111,5 +111,67 @@ describe('HomePage', () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4))
     const ultimaChamada = fetchMock.mock.calls[3][0] as string
     expect(ultimaChamada).toContain(`category_id=${categoriaEstrutura.id}`)
+  })
+
+  describe('destaque pago', () => {
+    const meuAnuncio = {
+      ...anuncio,
+      id: 'a1a1a1a1-c0df-414d-b82f-b5fe97b284b2',
+      titulo: 'Caixa d’água 500 L',
+      vendedor_id: usuarioId,
+    }
+
+    function apiPorUrl() {
+      return vi.fn(async (url: string) => {
+        if (url.includes('/categories')) return respostaJson({ items: [categoriaEstrutura], total: 1 })
+        if (url.includes(`/users/${usuarioId}/ads`)) return respostaJson({ items: [], total: 1 })
+        if (url.includes('/ads/mine')) return respostaJson({ items: [meuAnuncio], total: 1 })
+        if (url.includes('/featured-ads/pricing')) {
+          return respostaJson({ valor: '10.00', duracao_dias: 7, moeda: 'BRL' })
+        }
+        if (url.includes('/ads')) return respostaJson({ items: [anuncio, meuAnuncio], total: 2 })
+        return respostaJson({})
+      })
+    }
+
+    it('mostra o botão de destacar apenas nos anúncios do próprio usuário', async () => {
+      vi.stubGlobal('fetch', apiPorUrl())
+      const user = userEvent.setup()
+
+      renderPagina()
+      const botao = await screen.findByRole('button', { name: `Destacar ${meuAnuncio.titulo}` })
+      expect(screen.queryByRole('button', { name: `Destacar ${anuncio.titulo}` })).not.toBeInTheDocument()
+
+      await user.click(botao)
+
+      expect(await screen.findByRole('dialog')).toBeInTheDocument()
+      expect(await screen.findByText('7 dias no topo das buscas')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Pagar com Mercado Pago' })).toBeEnabled()
+    })
+
+    it('abre a escolha do anúncio pela chamada da página inicial e fecha com Esc', async () => {
+      const fetchMock = apiPorUrl()
+      vi.stubGlobal('fetch', fetchMock)
+      const user = userEvent.setup()
+
+      renderPagina()
+      await user.click(await screen.findByRole('button', { name: 'Destacar um anúncio' }))
+
+      expect(
+        await screen.findByRole('heading', { name: 'Qual anúncio você quer destacar?' }),
+      ).toBeInTheDocument()
+      expect(fetchMock.mock.calls.some(([url]) => String(url).includes('/ads/mine?status=ATIVO'))).toBe(true)
+      expect(screen.getByRole('link', { name: 'Gerenciar em Meus anúncios' })).toHaveAttribute(
+        'href',
+        '/anuncios/meus',
+      )
+
+      const janela = screen.getByRole('dialog')
+      await user.click(await within(janela).findByRole('button', { name: /Caixa d’água 500 L/ }))
+      expect(await screen.findByText('7 dias no topo das buscas')).toBeInTheDocument()
+
+      await user.keyboard('{Escape}')
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    })
   })
 })

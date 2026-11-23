@@ -9,7 +9,6 @@ export function AnuncioPublicadoPage() {
     <main className="published-page">
       <div className="published-card">
         <div className="published-icon" aria-hidden="true">✓</div>
-        <span className="step-label">Anúncio publicado</span>
         <h1>Seu material já está no marketplace</h1>
         <p>
           {estado?.titulo ? <><strong>{estado.titulo}</strong> foi publicado com sucesso.</> : 'O anúncio foi publicado com sucesso.'}

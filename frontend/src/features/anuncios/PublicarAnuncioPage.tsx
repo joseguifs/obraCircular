@@ -192,7 +192,6 @@ export function PublicarAnuncioPage() {
         <button type="button" className="back-button" onClick={() => navegar('/home')}>
           ← Voltar
         </button>
-        <span className="step-label">Reaproveitar materiais</span>
         <h1>Publique seu anúncio</h1>
         <p>Conte o que sobrou da sua obra e ajude esse material a encontrar um novo destino.</p>
       </header>
@@ -205,7 +204,6 @@ export function PublicarAnuncioPage() {
       )}
       {contaPagamento?.status !== 'ATIVA' ? (
         <section className="publish-payment-gate" aria-labelledby="mercado-pago-title">
-          <span className="step-label">Recebimentos</span>
           <h2 id="mercado-pago-title">Cadastre onde você receberá suas vendas</h2>
           <p>
             Qualquer usuário pode anunciar. Antes da primeira publicação, conecte uma conta

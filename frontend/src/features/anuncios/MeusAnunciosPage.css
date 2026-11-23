@@ -19,8 +19,7 @@
   color: var(--azul);
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
+  letter-spacing: 0;
 }
 
 .meus-anuncios-cabecalho h1 {
@@ -44,7 +43,7 @@
   align-items: center;
   height: 44px;
   padding: 0 20px;
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--azul);
   color: #fff;
   font-size: 14px;
@@ -69,7 +68,7 @@
 
 .meus-anuncios-item {
   border: 1px solid var(--cinza-borda);
-  border-radius: 16px;
+  border-radius: 10px;
   background: #fff;
   overflow: hidden;
 }
@@ -89,7 +88,7 @@
   place-items: center;
   width: 112px;
   height: 88px;
-  border-radius: 12px;
+  border-radius: 8px;
   background: #eef1f4;
   overflow: hidden;
   color: var(--cinza-texto);
@@ -133,7 +132,7 @@
 
 .meus-anuncios-status {
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: 10px;
   font-size: 12px;
   font-weight: 700;
 }

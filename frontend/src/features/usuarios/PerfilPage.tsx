@@ -241,7 +241,6 @@ export function PerfilPage() {
             </div>
           </section>
           <aside className="account-aside">
-            <span className="step-label">Seus locais</span>
             <h2>Meus endereços</h2>
             <p>
               Mantenha os dados de seus endereços atualizados para suas próximas
