@@ -1,0 +1,107 @@
+.minhas-perguntas-main {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 36px clamp(20px, 4vw, 40px) 64px;
+}
+
+.minhas-perguntas-erro {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.minhas-perguntas-lista {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 22px;
+  padding: 0;
+  list-style: none;
+}
+
+.minhas-perguntas-item {
+  border: 1px solid var(--cinza-borda);
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.minhas-perguntas-anuncio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 10px 14px;
+  border-bottom: 1px dashed var(--cinza-borda);
+  color: inherit;
+  text-decoration: none;
+}
+
+.minhas-perguntas-anuncio:hover .minhas-perguntas-anuncio-titulo {
+  text-decoration: underline;
+}
+
+.minhas-perguntas-foto {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 48px;
+  height: 40px;
+  border-radius: 6px;
+  background: #eef1f4;
+  overflow: hidden;
+  color: var(--cinza-texto);
+  font-size: 9px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.minhas-perguntas-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.minhas-perguntas-anuncio-titulo {
+  flex: 1 1 200px;
+  min-width: 0;
+  color: var(--cinza-texto-forte);
+  font-size: 14px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.minhas-perguntas-selo {
+  padding: 4px 10px;
+  border-radius: 10px;
+  color: var(--azul-escuro);
+  background: var(--azul-suave-bg);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.minhas-perguntas-conteudo {
+  padding: 14px 16px 16px;
+}
+
+.minhas-perguntas-conteudo textarea {
+  width: 100%;
+  min-height: 52px;
+  padding: 13px 14px;
+  resize: vertical;
+  border: 1px solid var(--cinza-borda);
+  border-radius: 8px;
+  color: var(--azul-marinho);
+  background: var(--cinza-fundo-input);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.minhas-perguntas-conteudo textarea:focus {
+  border-color: var(--azul);
+  background: #fff;
+}
+
+.minhas-perguntas-conteudo textarea[aria-invalid='true'] {
+  border-color: var(--vermelho);
+}

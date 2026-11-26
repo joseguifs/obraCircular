@@ -25,6 +25,7 @@ import { PagamentoRetornoPage } from '../features/pagamentos/PagamentoRetornoPag
 import { PedidosPage } from '../features/pagamentos/PedidosPage'
 import { VendasPage } from '../features/pagamentos/VendasPage'
 import { NotFoundPage } from '../features/not-found/NotFoundPage'
+import { MinhasPerguntasPage } from '../features/perguntas/MinhasPerguntasPage'
 import { CadastroUsuarioPage } from '../features/usuarios/CadastroUsuarioPage'
 import type { Usuario } from '../features/usuarios/types'
 import { PerfilPage } from '../features/usuarios/PerfilPage'
@@ -70,6 +71,7 @@ export function AppRouter() {
             <Route path="/anuncios/meus" element={<MeusAnunciosPage />} />
             <Route path="/anuncios/:anuncioId/publicado" element={<AnuncioPublicadoPage />} />
             <Route path="/anuncios/:anuncioId" element={<AnuncioDetalhePage />} />
+            <Route path="/perguntas" element={<MinhasPerguntasPage />} />
             <Route path="/categorias" element={<Navigate to="/admin/categorias" replace />} />
 
             <Route element={<AdminRoute />}>
@@ -170,6 +172,7 @@ function AtualizarTitulo() {
     else if (pathname === '/pagamento/retorno') document.title = 'Pagamento | Obra Circular'
     else if (pathname === '/pedidos') document.title = 'Meus pedidos | Obra Circular'
     else if (pathname === '/vendas') document.title = 'Minhas vendas | Obra Circular'
+    else if (pathname === '/perguntas') document.title = 'Perguntas | Obra Circular'
     else if (pathname === '/testes/contestacao') document.title = 'Testar contestação | Obra Circular'
     else if (/^\/pedidos\/[^/]+\/contestacoes$/.test(pathname)) document.title = 'Contestação do pedido | Obra Circular'
     else if (pathname.startsWith('/pedidos/')) document.title = 'Pedido | Obra Circular'
