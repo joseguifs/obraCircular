@@ -177,3 +177,65 @@ async def test_listar_perguntas_de_anuncio_inexistente_retorna_404(
     resposta = await client.get(f"/api/v1/ads/{uuid4()}/questions")
     assert resposta.status_code == 404
     assert resposta.json()["code"] == "AD_NOT_FOUND"
+
+
+async def test_minhas_perguntas_separa_feitas_e_recebidas_e_oculta_indisponiveis(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    _, vendedor = await _cadastrar_e_entrar(client, "vendedor-minhas@example.com")
+    _, comprador = await _cadastrar_e_entrar(client, "comprador-minhas@example.com")
+    disponivel = await _criar_anuncio(client, db_session, vendedor)
+    encerrado = await _criar_anuncio(client, db_session, vendedor)
+    excluido = await _criar_anuncio(client, db_session, vendedor)
+
+    for anuncio_id in (disponivel, encerrado, excluido):
+        criada = await client.post(
+            f"/api/v1/ads/{anuncio_id}/questions",
+            headers=comprador,
+            json={"pergunta": f"Ainda tem o lote {anuncio_id[:4]}?"},
+        )
+        assert criada.status_code == 201, criada.text
+
+    encerrar = await client.patch(
+        f"/api/v1/ads/{encerrado}", headers=vendedor, json={"status": "ENCERRADO"}
+    )
+    assert encerrar.status_code == 200, encerrar.text
+    excluir = await client.delete(f"/api/v1/ads/{excluido}", headers=vendedor)
+    assert excluir.status_code == 204, excluir.text
+
+    url = "/api/v1/users/me/questions"
+    feitas = await client.get(url, headers=comprador, params={"tipo": "FEITAS"})
+    assert feitas.status_code == 200, feitas.text
+    corpo = feitas.json()
+    assert corpo["total"] == 1
+    assert [item["anuncio_id"] for item in corpo["items"]] == [disponivel]
+    assert corpo["items"][0]["anuncio"] == {
+        "id": disponivel,
+        "titulo": "Telhas cerâmicas",
+        "status": "ATIVO",
+        "imagem_capa_url": None,
+    }
+
+    recebidas = await client.get(url, headers=vendedor, params={"tipo": "RECEBIDAS"})
+    assert recebidas.status_code == 200, recebidas.text
+    assert recebidas.json()["total"] == 1
+    assert recebidas.json()["items"][0]["anuncio_id"] == disponivel
+
+    # Cada recorte só traz o próprio papel do usuário.
+    vendedor_feitas = await client.get(url, headers=vendedor, params={"tipo": "FEITAS"})
+    assert vendedor_feitas.json()["total"] == 0
+    comprador_recebidas = await client.get(url, headers=comprador, params={"tipo": "RECEBIDAS"})
+    assert comprador_recebidas.json()["total"] == 0
+
+
+async def test_minhas_perguntas_exige_login_e_tipo(client: AsyncClient) -> None:
+    sem_login = await client.get("/api/v1/users/me/questions", params={"tipo": "FEITAS"})
+    assert sem_login.status_code == 401
+
+    _, usuario = await _cadastrar_e_entrar(client, "sem-tipo-minhas@example.com")
+    sem_tipo = await client.get("/api/v1/users/me/questions", headers=usuario)
+    assert sem_tipo.status_code == 422
+    tipo_invalido = await client.get(
+        "/api/v1/users/me/questions", headers=usuario, params={"tipo": "TODAS"}
+    )
+    assert tipo_invalido.status_code == 422

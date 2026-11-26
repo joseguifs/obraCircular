@@ -21,6 +21,12 @@ Perguntas públicas feitas por usuários ao vendedor de um anúncio, no estilo
 - A exclusão física do anúncio remove as perguntas em cascata. A exclusão lógica
   esconde o anúncio e, com ele, as perguntas.
 - A listagem é ordenada da pergunta mais recente para a mais antiga.
+- O usuário autenticado pode listar as próprias perguntas em dois recortes, sempre
+  um por vez: `FEITAS` (perguntas que ele fez em anúncios de outros) e `RECEBIDAS`
+  (perguntas feitas nos anúncios dele). O parâmetro `tipo` é obrigatório.
+- Essa listagem esconde perguntas de anúncios indisponíveis: excluídos ou
+  `ENCERRADO`. Anúncios `ESGOTADO` continuam aparecendo, pois ainda recebem perguntas.
+- Cada item traz um resumo do anúncio (`id`, `titulo`, `status` e `imagem_capa_url`).
 
 ## Endpoints
 
@@ -29,6 +35,7 @@ Perguntas públicas feitas por usuários ao vendedor de um anúncio, no estilo
 | `GET` | `/api/v1/ads/{anuncio_id}/questions?offset=0&limit=20` | Não |
 | `POST` | `/api/v1/ads/{anuncio_id}/questions` | Sim |
 | `POST` | `/api/v1/ads/{anuncio_id}/questions/{pergunta_id}/answer` | Sim (vendedor) |
+| `GET` | `/api/v1/users/me/questions?tipo=FEITAS\|RECEBIDAS&offset=0&limit=20` | Sim |
 
 ## Códigos de erro
 

@@ -8,6 +8,7 @@ from app.models.anuncio import Anuncio
 from app.models.anuncio_pergunta import AnuncioPergunta
 from app.models.enums import AnuncioStatus, UsuarioStatus
 from app.repositories.anuncio import AnuncioRepository
+from app.repositories.anuncio_imagem import AnuncioImagemRepository
 from app.repositories.anuncio_pergunta import AnuncioPerguntaRepository
 from app.schemas.anuncio_pergunta import (
     AnuncioPerguntaCreate,
@@ -15,7 +16,12 @@ from app.schemas.anuncio_pergunta import (
     AnuncioPerguntaListResponse,
     AnuncioPerguntaResponse,
     AnuncioRespostaCreate,
+    AnuncioResumoPergunta,
+    PerguntaUsuarioFilters,
+    PerguntaUsuarioListResponse,
+    PerguntaUsuarioResponse,
 )
+from app.services.armazenamento import ArmazenamentoLocal
 
 
 class AnuncioPerguntaService:
@@ -24,10 +30,12 @@ class AnuncioPerguntaService:
         session: AsyncSession,
         repository: AnuncioPerguntaRepository | None = None,
         anuncio_repository: AnuncioRepository | None = None,
+        imagem_repository: AnuncioImagemRepository | None = None,
     ) -> None:
         self.session = session
         self.repository = repository or AnuncioPerguntaRepository(session)
         self.anuncio_repository = anuncio_repository or AnuncioRepository(session)
+        self.imagem_repository = imagem_repository or AnuncioImagemRepository(session)
 
     async def perguntar(
         self,
@@ -115,6 +123,46 @@ class AnuncioPerguntaService:
         )
         return AnuncioPerguntaListResponse(
             items=[AnuncioPerguntaResponse.model_validate(item) for item in perguntas],
+            total=total,
+            offset=filtros.offset,
+            limit=filtros.limit,
+        )
+
+    async def listar_do_usuario(
+        self,
+        usuario_id: UUID,
+        filtros: PerguntaUsuarioFilters,
+    ) -> PerguntaUsuarioListResponse:
+        linhas, total = await self.repository.listar_do_usuario(
+            usuario_id,
+            tipo=filtros.tipo,
+            offset=filtros.offset,
+            limit=filtros.limit,
+        )
+        capas = await self.imagem_repository.listar_capas(
+            list({anuncio.id for _, anuncio in linhas})
+        )
+        itens = []
+        for pergunta, anuncio in linhas:
+            chave_capa = capas.get(anuncio.id)
+            resumo = AnuncioResumoPergunta(
+                id=anuncio.id,
+                titulo=anuncio.titulo,
+                status=anuncio.status,
+                imagem_capa_url=(
+                    ArmazenamentoLocal.url_publica(chave_capa)
+                    if chave_capa is not None
+                    else anuncio.imagem_url
+                ),
+            )
+            itens.append(
+                PerguntaUsuarioResponse(
+                    **AnuncioPerguntaResponse.model_validate(pergunta).model_dump(),
+                    anuncio=resumo,
+                )
+            )
+        return PerguntaUsuarioListResponse(
+            items=itens,
             total=total,
             offset=filtros.offset,
             limit=filtros.limit,

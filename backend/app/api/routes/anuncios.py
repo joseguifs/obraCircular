@@ -18,6 +18,8 @@ from app.schemas.anuncio_pergunta import (
     AnuncioPerguntaListResponse,
     AnuncioPerguntaResponse,
     AnuncioRespostaCreate,
+    PerguntaUsuarioFilters,
+    PerguntaUsuarioListResponse,
 )
 from app.services.anuncio import AnuncioService
 from app.services.anuncio_imagem import AnuncioImagemService
@@ -25,6 +27,7 @@ from app.services.anuncio_pergunta import AnuncioPerguntaService
 
 router = APIRouter(prefix="/ads", tags=["anúncios"])
 user_router = APIRouter(prefix="/users", tags=["anúncios"])
+minhas_perguntas_router = APIRouter(prefix="/users/me/questions", tags=["anúncios"])
 
 
 @router.post(
@@ -191,3 +194,16 @@ async def listar_anuncios_do_vendedor(
     filtros: Annotated[AnuncioFilters, Query()],
 ) -> AnuncioListResponse:
     return await AnuncioService(session).listar(filtros, vendedor_id=vendedor_id)
+
+
+@minhas_perguntas_router.get(
+    "",
+    response_model=PerguntaUsuarioListResponse,
+    summary="Lista as perguntas feitas pelo usuário ou recebidas nos anúncios dele",
+)
+async def listar_minhas_perguntas(
+    session: DatabaseSession,
+    usuario: CurrentUser,
+    filtros: Annotated[PerguntaUsuarioFilters, Query()],
+) -> PerguntaUsuarioListResponse:
+    return await AnuncioPerguntaService(session).listar_do_usuario(usuario.id, filtros)
