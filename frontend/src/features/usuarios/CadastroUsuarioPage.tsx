@@ -17,16 +17,17 @@ const TEXTO_FORCA = ['', 'Fraca', 'Média', 'Forte'] as const
 
 interface CadastroUsuarioPageProps {
   aoEntrar?: () => void
+  /** Chamado com o usuário recém-criado; a rota usa para levar à tela de login. */
+  aoCadastrar?: (usuario: Usuario) => void
 }
 
-export function CadastroUsuarioPage({ aoEntrar }: CadastroUsuarioPageProps) {
+export function CadastroUsuarioPage({ aoEntrar, aoCadastrar }: CadastroUsuarioPageProps) {
   const [formulario, setFormulario] = useState(formularioInicial)
   const [termos, setTermos] = useState(false)
   const [erros, setErros] = useState<ErrosCadastro>({})
   const [erroGeral, setErroGeral] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [mostrarSenha, setMostrarSenha] = useState(false)
-  const [usuarioCriado, setUsuarioCriado] = useState<Usuario | null>(null)
 
   function atualizarCampo(evento: ChangeEvent<HTMLInputElement>) {
     const campo = evento.target.name as CampoCadastro
@@ -61,9 +62,7 @@ export function CadastroUsuarioPage({ aoEntrar }: CadastroUsuarioPageProps) {
         senha: formulario.senha,
         ...(telefone ? { telefone } : {}),
       })
-      setUsuarioCriado(usuario)
-      setFormulario(formularioInicial)
-      setTermos(false)
+      aoCadastrar?.(usuario)
     } catch (erro) {
       setErroGeral(
         erro instanceof ApiError
@@ -75,196 +74,184 @@ export function CadastroUsuarioPage({ aoEntrar }: CadastroUsuarioPageProps) {
     }
   }
 
-  function iniciarNovoCadastro() {
-    setUsuarioCriado(null)
-    setErros({})
-    setErroGeral('')
-  }
-
   const forca = forcaDaSenha(formulario.senha)
   const emailValido = !!formulario.email && emailEhValido(formulario.email)
 
   return (
     <AuthLayout>
       <div className="form-card">
-          {usuarioCriado ? (
-            <CadastroConcluido usuario={usuarioCriado} aoReiniciar={iniciarNovoCadastro} />
-          ) : (
-            <>
-              <header className="form-heading">
-                <h2>Crie sua conta</h2>
-                <p>Leva menos de dois minutos. Comece a comprar, vender e reaproveitar materiais.</p>
-              </header>
+        <header className="form-heading">
+          <h2>Crie sua conta</h2>
+          <p>Leva menos de dois minutos. Comece a comprar, vender e reaproveitar materiais.</p>
+        </header>
 
-              <form
-                className="signup-form"
-                onSubmit={enviarFormulario}
-                aria-busy={enviando}
-                noValidate
-              >
-                <CampoTexto
-                  id="nome"
-                  label="Nome completo"
-                  name="nome"
-                  autoComplete="name"
-                  placeholder="Como devemos chamar você?"
-                  value={formulario.nome}
-                  error={erros.nome}
-                  onChange={atualizarCampo}
-                  maxLength={150}
-                  icon={<UserIcon />}
-                />
+        <form
+          className="signup-form"
+          onSubmit={enviarFormulario}
+          aria-busy={enviando}
+          noValidate
+        >
+          <CampoTexto
+            id="nome"
+            label="Nome completo"
+            name="nome"
+            autoComplete="name"
+            placeholder="Como devemos chamar você?"
+            value={formulario.nome}
+            error={erros.nome}
+            onChange={atualizarCampo}
+            maxLength={150}
+            icon={<UserIcon />}
+          />
 
-                <CampoTexto
-                  id="email"
-                  label="E-mail"
-                  name="email"
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  placeholder="voce@exemplo.com"
-                  value={formulario.email}
-                  error={erros.email}
-                  onChange={atualizarCampo}
-                  icon={<MailIcon />}
-                  adorno={emailValido ? <CheckIcon /> : null}
-                />
+          <CampoTexto
+            id="email"
+            label="E-mail"
+            name="email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="voce@exemplo.com"
+            value={formulario.email}
+            error={erros.email}
+            onChange={atualizarCampo}
+            icon={<MailIcon />}
+            adorno={emailValido ? <CheckIcon /> : null}
+          />
 
-                <CampoTexto
-                  id="telefone"
-                  label="Telefone"
-                  optional
-                  name="telefone"
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  placeholder="(11) 98765-4321"
-                  value={formulario.telefone}
-                  error={erros.telefone}
-                  onChange={atualizarCampo}
-                  maxLength={20}
-                  icon={<PhoneIcon />}
-                />
+          <CampoTexto
+            id="telefone"
+            label="Telefone"
+            optional
+            name="telefone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="(11) 98765-4321"
+            value={formulario.telefone}
+            error={erros.telefone}
+            onChange={atualizarCampo}
+            maxLength={20}
+            icon={<PhoneIcon />}
+          />
 
-                <div className="password-grid">
-                  <CampoTexto
-                    id="senha"
-                    label="Senha"
-                    name="senha"
-                    type={mostrarSenha ? 'text' : 'password'}
-                    autoComplete="new-password"
-                    placeholder="Mínimo de 8 caracteres"
-                    value={formulario.senha}
-                    error={erros.senha}
-                    onChange={atualizarCampo}
-                    maxLength={72}
-                  />
+          <div className="password-grid">
+            <CampoTexto
+              id="senha"
+              label="Senha"
+              name="senha"
+              type={mostrarSenha ? 'text' : 'password'}
+              autoComplete="new-password"
+              placeholder="Mínimo de 8 caracteres"
+              value={formulario.senha}
+              error={erros.senha}
+              onChange={atualizarCampo}
+              maxLength={72}
+            />
 
-                  <CampoTexto
-                    id="confirmarSenha"
-                    label="Confirmar senha"
-                    name="confirmarSenha"
-                    type={mostrarSenha ? 'text' : 'password'}
-                    autoComplete="new-password"
-                    placeholder="Digite novamente"
-                    value={formulario.confirmarSenha}
-                    error={erros.confirmarSenha}
-                    onChange={atualizarCampo}
-                    maxLength={72}
-                  />
-                </div>
+            <CampoTexto
+              id="confirmarSenha"
+              label="Confirmar senha"
+              name="confirmarSenha"
+              type={mostrarSenha ? 'text' : 'password'}
+              autoComplete="new-password"
+              placeholder="Digite novamente"
+              value={formulario.confirmarSenha}
+              error={erros.confirmarSenha}
+              onChange={atualizarCampo}
+              maxLength={72}
+            />
+          </div>
 
-                {formulario.senha && (
-                  <div className="password-strength">
-                    <div className="password-strength-bars">
-                      {[1, 2, 3].map((nivel) => (
-                        <div
-                          key={nivel}
-                          className={`password-strength-bar ${
-                            forca >= nivel ? `password-strength-bar--${forca}` : ''
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span>{TEXTO_FORCA[forca]}</span>
-                  </div>
-                )}
-
-                <div className="check-option">
-                  <button
-                    type="button"
-                    role="checkbox"
-                    aria-checked={mostrarSenha}
-                    aria-label="Mostrar senhas"
-                    className={`check-toggle ${mostrarSenha ? 'check-toggle--marcado' : ''}`}
-                    onClick={() => setMostrarSenha((atual) => !atual)}
-                  >
-                    <CheckIcon />
-                  </button>
-                  <span>Mostrar senhas</span>
-                </div>
-
-                <div className="check-option check-option--termos">
-                  <button
-                    type="button"
-                    role="checkbox"
-                    aria-checked={termos}
-                    aria-label="Aceitar termos de uso"
-                    aria-describedby={erros.termos ? 'termos-error' : undefined}
-                    className={`check-toggle ${termos ? 'check-toggle--marcado' : ''} ${
-                      erros.termos ? 'check-toggle--erro' : ''
+          {formulario.senha && (
+            <div className="password-strength">
+              <div className="password-strength-bars">
+                {[1, 2, 3].map((nivel) => (
+                  <div
+                    key={nivel}
+                    className={`password-strength-bar ${
+                      forca >= nivel ? `password-strength-bar--${forca}` : ''
                     }`}
-                    onClick={alternarTermos}
-                  >
-                    <CheckIcon />
-                  </button>
-                  <p>
-                    Li e aceito os <a href="#">Termos de Uso</a> e a{' '}
-                    <a href="#">Política de Privacidade</a>.
-                  </p>
-                </div>
-                {erros.termos && (
-                  <p className="field-error field-error--termos" id="termos-error">
-                    {erros.termos}
-                  </p>
-                )}
-
-                {erroGeral && (
-                  <div className="form-alert" role="alert">
-                    <AlertIcon />
-                    <span>{erroGeral}</span>
-                  </div>
-                )}
-
-                <button className="submit-button" type="submit" disabled={enviando}>
-                  {enviando ? (
-                    <>
-                      <span className="spinner" aria-hidden="true" />
-                      Criando sua conta...
-                    </>
-                  ) : (
-                    <>
-                      Criar minha conta
-                      <ArrowIcon />
-                    </>
-                  )}
-                </button>
-
-                <p className="privacy-note">
-                  Ao continuar, você concorda em usar a plataforma de forma responsável e
-                  manter seus dados atualizados.
-                </p>
-              </form>
-
-              <div className="form-divider" />
-              <p className="login-hint">
-                Já possui uma conta?{' '}
-                <button type="button" onClick={aoEntrar}>
-                  Entrar
-                </button>
-              </p>
-            </>
+                  />
+                ))}
+              </div>
+              <span>{TEXTO_FORCA[forca]}</span>
+            </div>
           )}
+
+          <div className="check-option">
+            <button
+              type="button"
+              role="checkbox"
+              aria-checked={mostrarSenha}
+              aria-label="Mostrar senhas"
+              className={`check-toggle ${mostrarSenha ? 'check-toggle--marcado' : ''}`}
+              onClick={() => setMostrarSenha((atual) => !atual)}
+            >
+              <CheckIcon />
+            </button>
+            <span>Mostrar senhas</span>
+          </div>
+
+          <div className="check-option check-option--termos">
+            <button
+              type="button"
+              role="checkbox"
+              aria-checked={termos}
+              aria-label="Aceitar termos de uso"
+              aria-describedby={erros.termos ? 'termos-error' : undefined}
+              className={`check-toggle ${termos ? 'check-toggle--marcado' : ''} ${
+                erros.termos ? 'check-toggle--erro' : ''
+              }`}
+              onClick={alternarTermos}
+            >
+              <CheckIcon />
+            </button>
+            <p>
+              Li e aceito os <a href="#">Termos de Uso</a> e a{' '}
+              <a href="#">Política de Privacidade</a>.
+            </p>
+          </div>
+          {erros.termos && (
+            <p className="field-error field-error--termos" id="termos-error">
+              {erros.termos}
+            </p>
+          )}
+
+          {erroGeral && (
+            <div className="form-alert" role="alert">
+              <AlertIcon />
+              <span>{erroGeral}</span>
+            </div>
+          )}
+
+          <button className="submit-button" type="submit" disabled={enviando}>
+            {enviando ? (
+              <>
+                <span className="spinner" aria-hidden="true" />
+                Criando sua conta...
+              </>
+            ) : (
+              <>
+                Criar minha conta
+                <ArrowIcon />
+              </>
+            )}
+          </button>
+
+          <p className="privacy-note">
+            Ao continuar, você concorda em usar a plataforma de forma responsável e
+            manter seus dados atualizados.
+          </p>
+        </form>
+
+        <div className="form-divider" />
+        <p className="login-hint">
+          Já possui uma conta?{' '}
+          <button type="button" onClick={aoEntrar}>
+            Entrar
+          </button>
+        </p>
       </div>
     </AuthLayout>
   )
@@ -311,31 +298,6 @@ function CampoTexto({ label, error, optional, icon, adorno, ...inputProps }: Cam
           {error}
         </p>
       )}
-    </div>
-  )
-}
-
-function CadastroConcluido({
-  usuario,
-  aoReiniciar,
-}: {
-  usuario: Usuario
-  aoReiniciar: () => void
-}) {
-  return (
-    <div className="success-state" role="status">
-      <div className="success-icon" aria-hidden="true">
-        <CheckIcon />
-      </div>
-      <h2>Boas-vindas, {usuario.nome.split(' ')[0]}!</h2>
-      <p>
-        Sua conta foi criada com o e-mail <strong>{usuario.email}</strong>. Agora você já faz
-        parte da comunidade Obra Circular.
-      </p>
-      <button className="submit-button" type="button" onClick={aoReiniciar}>
-        Cadastrar outra pessoa
-        <ArrowIcon />
-      </button>
     </div>
   )
 }

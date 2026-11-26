@@ -4,57 +4,52 @@ interface AuthLayoutProps {
   children: ReactNode
 }
 
+/**
+ * Moldura das telas públicas (login, cadastro e recuperação de senha).
+ * Segue a estrutura da home: cabeçalho grafite no topo e conteúdo sobre o concreto,
+ * com a mesma largura máxima e o mesmo estilo de título.
+ */
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <main className="signup-shell">
-      <section className="brand-panel" aria-label="Sobre a Obra Circular">
-        <Logo />
+    <div className="app-shell auth-shell">
+      <header className="app-header">
+        <div className="app-header-bar">
+          <div className="app-logo">
+            <Logo />
+          </div>
+        </div>
+      </header>
 
-        <div className="brand-copy">
+      <main className="auth-main">
+        <section className="auth-intro" aria-label="Sobre a Obra Circular">
           <h1>A sobra da sua obra é o material de outra.</h1>
           <p>
             Compre e venda materiais de construção que sobraram, perto de você, com pagamento
             protegido pelo Mercado Pago.
           </p>
-        </div>
 
-        <ul className="benefit-list" aria-label="Benefícios da plataforma">
-          <li>
-            <LeafIcon />
-            <span>
+          <ul className="auth-beneficios" aria-label="Benefícios da plataforma">
+            <li>
               <strong>Menos entulho</strong>
-              Cada material revendido deixa de virar descarte.
-            </span>
-          </li>
-          <li>
-            <ShieldIcon />
-            <span>
+              <span>Cada material revendido deixa de virar descarte.</span>
+            </li>
+            <li>
               <strong>Entrega confirmada com PIN</strong>
-              O vendedor só recebe depois que você confere o material em mãos.
-            </span>
-          </li>
-        </ul>
-      </section>
+              <span>O vendedor só recebe depois que você confere o material em mãos.</span>
+            </li>
+          </ul>
+        </section>
 
-      <section className="form-panel">
-        <div className="mobile-logo">
-          <Logo />
-        </div>
-        {children}
-      </section>
-    </main>
+        <section className="auth-formulario">{children}</section>
+      </main>
+    </div>
   )
 }
 
 export function Logo() {
   return (
     <div className="brand-logo" aria-label="Obra Circular">
-      <svg className="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
-        <circle cx="16" cy="16" r="4.4" />
-        <ellipse cx="16" cy="16" rx="13" ry="6" transform="rotate(30 16 16)" />
-        <ellipse cx="16" cy="16" rx="13" ry="6" transform="rotate(90 16 16)" />
-        <ellipse cx="16" cy="16" rx="13" ry="6" transform="rotate(150 16 16)" />
-      </svg>
+      <LogoMarca />
       <span className="logo-type">
         Obra <strong>Circular</strong>
       </span>
@@ -62,20 +57,17 @@ export function Logo() {
   )
 }
 
-function LeafIcon() {
+/** Tijolos assentados dentro de uma seta circular: material de obra que volta a circular. */
+function LogoMarca() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M20 4.5C12.5 4.5 6 8.1 6 14.1c0 2.9 2.1 5.4 5.4 5.4 5.8 0 8.6-6.4 8.6-15Z" />
-      <path d="M4 20c2.5-4.4 6.2-7.5 11.2-9.4" />
-    </svg>
-  )
-}
-
-function ShieldIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 3 4.8 6v5.2c0 4.7 2.9 8.2 7.2 9.8 4.3-1.6 7.2-5.1 7.2-9.8V6L12 3Z" />
-      <path d="m8.8 12.1 2.1 2.1 4.5-4.7" />
+    <svg className="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
+      <path className="logo-mark-seta" d="M26.2 12.4A10.6 10.6 0 1 0 26.6 19" />
+      <path className="logo-mark-seta" d="M27.2 6.6v6h-6" />
+      <g className="logo-mark-tijolos">
+        <rect x="13.2" y="11.8" width="5.6" height="3.8" rx="0.7" />
+        <rect x="10" y="16.4" width="5.6" height="3.8" rx="0.7" />
+        <rect x="16.4" y="16.4" width="5.6" height="3.8" rx="0.7" />
+      </g>
     </svg>
   )
 }

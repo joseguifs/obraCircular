@@ -13,6 +13,11 @@
   color: var(--azul-marinho);
 }
 
+/* Sobre o fundo claro a seta usa o azul de planta, que mantém o contraste. */
+.not-found-page .logo-mark-seta {
+  stroke: var(--planta);
+}
+
 .not-found-card {
   width: min(100%, 620px);
   margin: auto;
