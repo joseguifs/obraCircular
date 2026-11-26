@@ -7,6 +7,7 @@ from uuid import uuid4
 
 import pytest
 from fastapi import UploadFile
+from PIL import Image
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AppError
@@ -16,6 +17,39 @@ from app.repositories.anuncio import AnuncioRepository
 from app.repositories.anuncio_imagem import AnuncioImagemRepository
 from app.services.anuncio_imagem import AnuncioImagemService
 from app.services.armazenamento import ArmazenamentoLocal, ArquivoArmazenado
+
+
+def imagem_bytes(largura: int, altura: int, formato: str = "PNG") -> bytes:
+    buffer = BytesIO()
+    Image.new("RGB", (largura, altura), (120, 90, 60)).save(buffer, format=formato)
+    return buffer.getvalue()
+
+
+def preparar_upload(
+    repository: AsyncMock,
+    anuncio_repository: AsyncMock,
+    armazenamento: AsyncMock,
+    anuncio_id: object,
+    vendedor_id: object,
+) -> None:
+    anuncio_repository.buscar_por_id.return_value = SimpleNamespace(
+        vendedor_id=vendedor_id,
+        status=AnuncioStatus.ATIVO,
+    )
+    repository.proxima_ordem.return_value = 0
+    armazenamento.salvar_imagem.side_effect = lambda _, conteudo, mime: ArquivoArmazenado(
+        chave_objeto=f"anuncios/{anuncio_id}/{uuid4()}.img",
+        mime_type=mime,
+        tamanho_bytes=len(conteudo),
+    )
+
+    async def preencher_campos(imagens: list[AnuncioImagem]) -> list[AnuncioImagem]:
+        for imagem in imagens:
+            imagem.id = uuid4()
+            imagem.criado_em = datetime.now(UTC)
+        return imagens
+
+    repository.criar_varias.side_effect = preencher_campos
 
 
 class FakeTransaction:
@@ -73,11 +107,12 @@ async def test_adiciona_imagem_valida_com_ordem_sequencial() -> None:
         return imagens
 
     repository.criar_varias.side_effect = preencher_campos
-    arquivo = UploadFile(filename="material.png", file=BytesIO(b"\x89PNG\r\n\x1a\nfoto"))
+    arquivo = UploadFile(filename="material.png", file=BytesIO(imagem_bytes(1600, 1200)))
 
     resposta = await service.adicionar(anuncio_id, vendedor_id, [arquivo])
 
     assert len(resposta.items) == 1
+    assert resposta.avisos == []
     assert resposta.items[0].ordem == 1
     assert resposta.items[0].url.endswith("/imagem.png")
     armazenamento.salvar_imagem.assert_awaited_once()
@@ -100,6 +135,48 @@ async def test_rejeita_arquivo_que_nao_e_imagem() -> None:
 
     assert error.value.code == "AD_IMAGE_INVALID_TYPE"
     armazenamento.salvar_imagem.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_rejeita_imagem_corrompida_mesmo_com_assinatura_valida() -> None:
+    service, repository, anuncio_repository, armazenamento = criar_servico()
+    anuncio_id, vendedor_id = uuid4(), uuid4()
+    preparar_upload(repository, anuncio_repository, armazenamento, anuncio_id, vendedor_id)
+    arquivo = UploadFile(filename="material.png", file=BytesIO(b"\x89PNG\r\n\x1a\nfoto"))
+
+    with pytest.raises(AppError) as error:
+        await service.adicionar(anuncio_id, vendedor_id, [arquivo])
+
+    assert error.value.code == "AD_IMAGE_INVALID_TYPE"
+    armazenamento.salvar_imagem.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_aceita_fotos_fora_do_padrao_e_devolve_avisos() -> None:
+    service, repository, anuncio_repository, armazenamento = criar_servico()
+    anuncio_id, vendedor_id = uuid4(), uuid4()
+    preparar_upload(repository, anuncio_repository, armazenamento, anuncio_id, vendedor_id)
+    arquivos = [
+        UploadFile(filename="boa.jpg", file=BytesIO(imagem_bytes(1600, 1200, "JPEG"))),
+        UploadFile(filename="pequena.png", file=BytesIO(imagem_bytes(500, 300))),
+        UploadFile(filename="vertical.webp", file=BytesIO(imagem_bytes(900, 1600, "WEBP"))),
+    ]
+
+    resposta = await service.adicionar(anuncio_id, vendedor_id, arquivos)
+
+    # Todas são publicadas; as fora do padrão só recebem orientação.
+    assert len(resposta.items) == 3
+    assert [(aviso.nome_original, aviso.codigo) for aviso in resposta.avisos] == [
+        ("pequena.png", "AD_IMAGE_BELOW_MINIMUM"),
+        ("vertical.webp", "AD_IMAGE_PORTRAIT"),
+    ]
+    assert resposta.avisos[0].imagem_id == resposta.items[1].id
+    assert (resposta.avisos[0].largura, resposta.avisos[0].altura) == (500, 300)
+    assert [item.mime_type for item in resposta.items] == [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+    ]
 
 
 @pytest.mark.asyncio

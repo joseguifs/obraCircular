@@ -163,7 +163,15 @@ export function AnuncioDetalhePage() {
                 <span className="ad-detail-status">{STATUS_LABEL[anuncio.status]}</span>
               )}
               {imagemAtiva ? (
-                <img src={imagemAtiva} alt={`Foto do anúncio ${anuncio.titulo}`} />
+                <>
+                  {/* Fundo desfocado preenche as sobras quando a foto não é 4:3. */}
+                  <img src={imagemAtiva} alt="" aria-hidden="true" className="ad-detail-foto-fundo" />
+                  <img
+                    src={imagemAtiva}
+                    alt={`Foto do anúncio ${anuncio.titulo}`}
+                    className="ad-detail-foto-imagem"
+                  />
+                </>
               ) : (
                 <span className="ad-detail-sem-foto">Sem foto disponível</span>
               )}

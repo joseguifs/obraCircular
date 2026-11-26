@@ -211,16 +211,60 @@
   font-weight: 600;
 }
 
-.image-previews {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 18px;
+/* Orientação do formato: moldura 4:3 desenhada no tamanho real da proporção. */
+.foto-orientacao {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: -6px 0 16px;
 }
 
+.foto-orientacao-moldura {
+  display: grid;
+  width: 72px;
+  aspect-ratio: 4 / 3;
+  flex: none;
+  place-items: center;
+  border: 2px solid var(--grafite);
+  border-radius: 4px;
+  color: var(--grafite);
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--cinza-fundo-input) 0 6px,
+    var(--cinza-linha) 6px 7px
+  );
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.foto-orientacao p {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--cinza-texto);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.foto-orientacao .foto-orientacao-titulo {
+  margin-bottom: 2px;
+  color: var(--grafite);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.image-previews {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px 12px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Mesmo formato 4:3 da página inicial e do anúncio: o vendedor vê o recorte final. */
 .image-previews figure {
   position: relative;
-  aspect-ratio: 1;
+  aspect-ratio: 4 / 3;
   margin: 0;
   overflow: hidden;
   border-radius: 8px;
@@ -228,9 +272,26 @@
 }
 
 .image-previews img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.image-preview-medida {
+  margin: 6px 0 0;
+  color: var(--cinza-texto);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.image-preview-aviso {
+  margin: 4px 0 0;
+  padding-left: 8px;
+  border-left: 3px solid #d08a00;
+  color: #6b4700;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .image-previews figcaption {
@@ -413,6 +474,42 @@
   overflow-wrap: anywhere;
 }
 
+/* Fotos aceitas fora do padrão 4:3: orientação, não erro. */
+.published-avisos {
+  margin: 24px 0 0;
+  padding: 16px 18px;
+  border-left: 4px solid #d08a00;
+  border-radius: 6px;
+  background: #fff8e6;
+  text-align: left;
+}
+
+.published-card .published-avisos h2 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.published-card .published-avisos p {
+  margin: 0 0 8px;
+  color: var(--cinza-texto-forte);
+  font-size: 14px;
+}
+
+.published-avisos ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  color: #5c3d00;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.published-avisos strong {
+  overflow-wrap: anywhere;
+}
+
 .published-icon {
   display: grid;
   width: 70px;
@@ -445,7 +542,15 @@
   }
 
   .image-previews {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .foto-orientacao {
+    align-items: flex-start;
+  }
+
+  .foto-orientacao-moldura {
+    width: 56px;
   }
 
   .publish-actions,
