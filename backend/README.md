@@ -117,7 +117,7 @@ python -m alembic current
 O resultado esperado do segundo comando é:
 
 ```text
-20261031_0010 (head)
+20261123_0011 (head)
 ```
 
 Para verificar se os models e o banco continuam sincronizados:
