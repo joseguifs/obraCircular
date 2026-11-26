@@ -30,11 +30,15 @@
   background: #fff;
 }
 
+/* Mesmo formato 4:3 orientado na publicação. A foto aparece inteira (sem corte),
+   e um fundo desfocado da própria foto ocupa as sobras quando ela foge do padrão. */
 .ad-detail-foto {
   position: relative;
   display: flex;
-  height: 380px;
+  aspect-ratio: 4 / 3;
+  max-height: 620px;
   align-items: flex-start;
+  gap: 8px;
   padding: 18px;
   overflow: hidden;
   background: linear-gradient(140deg, #3e4854, #222a33);
@@ -46,7 +50,16 @@
   z-index: 0;
   width: 100%;
   height: 100%;
+}
+
+.ad-detail-foto .ad-detail-foto-fundo {
   object-fit: cover;
+  filter: blur(24px) brightness(0.7);
+  transform: scale(1.15);
+}
+
+.ad-detail-foto .ad-detail-foto-imagem {
+  object-fit: contain;
 }
 
 .ad-detail-sem-foto {
@@ -69,7 +82,7 @@
 
 .ad-detail-miniatura {
   width: 72px;
-  height: 56px;
+  aspect-ratio: 4 / 3;
   flex: none;
   padding: 0;
   overflow: hidden;
@@ -212,10 +225,6 @@
 }
 
 @media (max-width: 720px) {
-  .ad-detail-foto {
-    height: 260px;
-  }
-
   .ad-detail-corpo {
     padding: 22px 20px;
   }

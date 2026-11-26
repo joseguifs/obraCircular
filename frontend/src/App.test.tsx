@@ -84,7 +84,9 @@ it('redireciona para a home após o login e permite encerrar a sessão', async (
   await user.type(screen.getByLabelText('Senha'), 'senha-forte-123')
   await user.click(screen.getByRole('button', { name: 'Entrar na plataforma' }))
 
-  expect(await screen.findByText('Olá, Ana')).toBeInTheDocument()
+  expect(
+    await screen.findByRole('heading', { level: 1, name: 'Materiais disponíveis' }),
+  ).toBeInTheDocument()
   expect(window.location.pathname).toBe('/home')
 
   await user.click(screen.getByRole('link', { name: 'Ver meu perfil' }))
@@ -126,7 +128,9 @@ it('redireciona usuário autenticado para fora das rotas públicas', async () =>
 
   renderAplicacao()
 
-  expect(await screen.findByText('Olá, Ana')).toBeInTheDocument()
+  expect(
+    await screen.findByRole('heading', { level: 1, name: 'Materiais disponíveis' }),
+  ).toBeInTheDocument()
   expect(window.location.pathname).toBe('/home')
 })
 

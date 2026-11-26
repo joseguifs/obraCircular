@@ -191,12 +191,6 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-.app-profile-button span:last-child {
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-}
-
 .app-avatar {
   display: flex;
   width: 32px;
@@ -210,28 +204,65 @@
   font-weight: 800;
 }
 
-/* O nome some antes do cabeçalho quebrar; o link mantém o rótulo acessível. */
-@media (max-width: 1500px) {
-  .app-profile-button span:last-child {
-    display: none;
-  }
+/* Quando tudo não cabe numa linha, o menu desce e rola na horizontal. A decisão
+   vem de useCabecalhoCompacto, que mede o conteúdo real em vez de usar uma largura fixa. */
+.app-header-bar[data-compacto] .app-nav {
+  order: 3;
+  width: calc(100% + 2 * clamp(20px, 4vw, 40px));
+  margin: 0 calc(-1 * clamp(20px, 4vw, 40px));
+  padding: 0 clamp(20px, 4vw, 40px);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-@media (max-width: 1100px) {
-  .app-nav {
-    order: 3;
-    width: calc(100% + 2 * clamp(20px, 4vw, 40px));
-    margin: 0 calc(-1 * clamp(20px, 4vw, 40px));
-    padding: 0 clamp(20px, 4vw, 40px);
+.app-header-bar[data-compacto] .app-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.app-header-bar[data-compacto] .app-nav-link,
+.app-header-bar[data-compacto] .app-nav-item {
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+/* Com o menu na segunda linha, a busca aproveita o espaço livre da primeira. */
+.app-header-bar[data-compacto] .app-search {
+  max-width: 560px;
+}
+
+/* Celular: ações na linha do logo e busca em largura total logo abaixo, para o
+   cabeçalho fixo ocupar menos altura. */
+@media (max-width: 640px) {
+  .app-header-actions {
+    order: 1;
     flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
+    gap: 4px;
   }
 
-  .app-nav-link,
-  .app-nav-item {
-    min-height: 40px;
+  .app-search {
+    order: 2;
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .app-header-bar[data-compacto] .app-search {
+    max-width: none;
+  }
+
+  .app-button-primary {
+    width: 42px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  /* O texto continua como nome acessível do link. */
+  .app-button-primary span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
     white-space: nowrap;
   }
 }
-

@@ -91,7 +91,9 @@ it('salva o próprio perfil, remove telefone e sincroniza a sessão e o cabeçal
     telefone: null,
   })
   expect(obterSessaoArmazenada()?.usuario.nome).toBe('Ana Maria')
-  expect(screen.getAllByText('Ana Maria')).toHaveLength(2)
+  expect(screen.getByText('Ana Maria')).toBeInTheDocument()
+  // O cabeçalho mostra as iniciais do nome atualizado (Ana Silva -> Ana Maria).
+  expect(screen.getByRole('link', { name: 'Ver meu perfil' })).toHaveTextContent('AM')
 })
 
 it('informa e-mail duplicado, preserva o formulário e não altera a sessão', async () => {

@@ -10,7 +10,12 @@ from app.models.anuncio_imagem import AnuncioImagem
 from app.models.enums import AnuncioStatus
 from app.repositories.anuncio import AnuncioRepository
 from app.repositories.anuncio_imagem import AnuncioImagemRepository
-from app.schemas.anuncio_imagem import AnuncioImagemListResponse, AnuncioImagemResponse
+from app.schemas.anuncio_imagem import (
+    AnuncioImagemListResponse,
+    AnuncioImagemResponse,
+    AvisoImagemResponse,
+)
+from app.services.analise_imagem import AvisoDimensao, analisar_imagem, aviso_de_dimensao
 from app.services.armazenamento import ArmazenamentoLocal
 
 
@@ -69,6 +74,8 @@ class AnuncioImagemService:
                     )
 
                 imagens: list[AnuncioImagem] = []
+                # Avisos ficam ligados à posição da imagem; o id só existe após salvar.
+                avisos: list[tuple[int, int, int, AvisoDimensao]] = []
                 for deslocamento, arquivo in enumerate(arquivos):
                     conteudo = await arquivo.read(self.max_tamanho + 1)
                     if len(conteudo) > self.max_tamanho:
@@ -77,17 +84,26 @@ class AnuncioImagemService:
                             "AD_IMAGE_TOO_LARGE",
                         )
 
-                    mime_type = self._detectar_tipo(conteudo)
-                    if mime_type is None:
+                    analisada = (
+                        analisar_imagem(conteudo)
+                        if self._detectar_tipo(conteudo) is not None
+                        else None
+                    )
+                    if analisada is None:
                         raise self._erro_arquivo(
                             "Envie imagens JPEG, PNG ou WebP válidas.",
                             "AD_IMAGE_INVALID_TYPE",
+                        )
+                    aviso = aviso_de_dimensao(analisada.largura, analisada.altura)
+                    if aviso is not None:
+                        avisos.append(
+                            (deslocamento, analisada.largura, analisada.altura, aviso)
                         )
 
                     armazenado = await self.armazenamento.salvar_imagem(
                         anuncio_id,
                         conteudo,
-                        mime_type,
+                        analisada.mime_type,
                     )
                     chaves_salvas.append(armazenado.chave_objeto)
                     nome_original = Path(arquivo.filename or "imagem").name[:255]
@@ -105,7 +121,18 @@ class AnuncioImagemService:
                 imagens = await self.repository.criar_varias(imagens)
 
             return AnuncioImagemListResponse(
-                items=[self._resposta(imagem) for imagem in imagens]
+                items=[self._resposta(imagem) for imagem in imagens],
+                avisos=[
+                    AvisoImagemResponse(
+                        imagem_id=imagens[indice].id,
+                        nome_original=imagens[indice].nome_original,
+                        largura=largura,
+                        altura=altura,
+                        codigo=aviso.codigo,
+                        mensagem=aviso.mensagem,
+                    )
+                    for indice, largura, altura, aviso in avisos
+                ],
             )
         except Exception:
             for chave in chaves_salvas:

@@ -25,6 +25,18 @@
   automaticamente pela reposição de estoque.
 - A exclusão é lógica por meio de `deletado_em`.
 - Um anúncio pode ter até cinco imagens JPEG, PNG ou WebP; a imagem de ordem zero é a capa.
+- Cada imagem precisa ser um arquivo JPEG, PNG ou WebP íntegro (lido pela biblioteca
+  Pillow); arquivos corrompidos são recusados com `AD_IMAGE_INVALID_TYPE`.
+- As fotos são exibidas no formato 4:3 na horizontal. O recomendado é 1200 × 900 px ou
+  mais, e o mínimo é 640 × 480 px (lado maior × lado menor, em qualquer orientação),
+  considerando a rotação gravada no EXIF pelo celular.
+- Fotos fora do padrão **são aceitas**, porque o vendedor pode não ter outra melhor. O
+  envio devolve, em `avisos`, uma orientação por foto com o código:
+  - `AD_IMAGE_BELOW_MINIMUM`: abaixo de 640 × 480 px; pode aparecer borrada.
+  - `AD_IMAGE_PORTRAIT`: foto na vertical; a página inicial mostra só a parte central.
+  - `AD_IMAGE_TOO_WIDE`: proporção acima de 1,9:1; as laterais ficam cortadas.
+  - `AD_IMAGE_BELOW_RECOMMENDED`: abaixo de 1200 × 900 px; pode perder nitidez ao ampliar.
+- As dimensões não são gravadas no banco; os avisos existem só na resposta do envio.
 - O banco armazena apenas a chave e os metadados da imagem. O arquivo fica no serviço de
   armazenamento configurado pela aplicação.
 - O vendedor pode pagar um destaque para o anúncio aparecer primeiro nas listagens.

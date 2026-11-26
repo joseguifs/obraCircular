@@ -6,7 +6,7 @@ import { listarCategoriasAtivas } from '../categorias/categoriaApi'
 import type { Categoria } from '../categorias/types'
 import { ApiError, resolverUrlDaApi } from '../../lib/api'
 import { formatarMoeda, formatarTempoRelativo } from '../../lib/formatarTempo'
-import { primeiroNome } from '../../lib/texto'
+import { useRolagemHorizontal } from '../../lib/useRolagemHorizontal'
 import { useAuth } from '../autenticacao/useAuth'
 import { DestaqueDialog } from '../anuncios/DestaqueDialog'
 import { SeloDestaque } from '../anuncios/DestaqueOferta'
@@ -41,12 +41,14 @@ export function HomePage() {
   const [buscaAtiva, setBuscaAtiva] = useState(buscaUrl)
   const [anuncios, setAnuncios] = useState<Anuncio[]>([])
   const [totalDisponiveis, setTotalDisponiveis] = useState(0)
-  const [totalMeusAnuncios, setTotalMeusAnuncios] = useState<number | null>(null)
+  // Só quem tem anúncio disponível vê o convite para destacar.
+  const [totalMeusAtivos, setTotalMeusAtivos] = useState(0)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
   // undefined = janela fechada; null = escolher na lista; Anuncio = já escolhido.
   const [destacar, setDestacar] = useState<Anuncio | null | undefined>(undefined)
   const fecharDestaque = useCallback(() => setDestacar(undefined), [])
+  const { ref: filtrosRef, atributos: filtrosRolagem } = useRolagemHorizontal<HTMLDivElement>()
 
   useEffect(() => {
     const temporizador = window.setTimeout(() => setBuscaAtiva(buscaUrl), 350)
@@ -60,9 +62,9 @@ export function HomePage() {
   }, [])
 
   useEffect(() => {
-    listarAnunciosDoVendedor(usuario.id, { limit: 1 })
-      .then((resposta) => setTotalMeusAnuncios(resposta.total))
-      .catch(() => setTotalMeusAnuncios(null))
+    listarAnunciosDoVendedor(usuario.id, { status: 'ATIVO', limit: 1 })
+      .then((resposta) => setTotalMeusAtivos(resposta.total))
+      .catch(() => setTotalMeusAtivos(0))
   }, [usuario.id])
 
   useEffect(() => {
@@ -101,143 +103,145 @@ export function HomePage() {
     [categorias],
   )
 
+  const filtrando = Boolean(buscaAtiva || categoriaId)
   const resumoBusca = carregando
     ? 'Carregando anúncios…'
     : totalDisponiveis === 0
       ? 'Nada encontrado com esses filtros.'
-      : `${totalDisponiveis} ${totalDisponiveis === 1 ? 'anúncio disponível' : 'anúncios disponíveis'} na sua região agora.`
+      : `${totalDisponiveis} ${totalDisponiveis === 1 ? 'anúncio' : 'anúncios'} ${
+          filtrando
+            ? totalDisponiveis === 1 ? 'encontrado' : 'encontrados'
+            : 'à venda agora'
+        }.`
 
   return (
     <main className="home-main">
-      <div className="home-intro">
-        <div>
-          <h1>Olá, {primeiroNome(usuario.nome)}</h1>
-          <p>{resumoBusca}</p>
-        </div>
-        <div className="home-stats">
-          <Link to="/anuncios/meus" className="home-stat">
-            <strong>{totalMeusAnuncios ?? '—'}</strong>
-            <span>anunciados por você</span>
-          </Link>
-          <div className="home-stat">
-            <strong>{totalDisponiveis}</strong>
-            <span>disponíveis agora</span>
-          </div>
-        </div>
-      </div>
-
-      <section className="home-destaque-chamada" aria-label="Destaque pago">
-        <div className="destaque-fita" aria-hidden="true" />
-        <div className="home-destaque-chamada-corpo">
-          <p>
-            <strong>Apareça primeiro nas buscas.</strong> Destaque um anúncio seu e ele fica no
-            topo da página inicial, com o selo Em destaque.
-          </p>
-          <div className="home-destaque-chamada-acoes">
-            <button type="button" className="destaque-abrir" onClick={() => setDestacar(null)}>
-              Destacar um anúncio
+      <nav className="home-lateral" aria-labelledby="home-categorias-titulo">
+        <h2 id="home-categorias-titulo" className="home-lateral-titulo">Categorias</h2>
+        <div
+          ref={filtrosRef}
+          className="home-filtros rolagem-horizontal"
+          role="group"
+          aria-label="Filtrar por categoria"
+          {...filtrosRolagem}
+        >
+          <button
+            type="button"
+            className="home-filtro"
+            aria-pressed={categoriaId === null}
+            onClick={() => setCategoriaId(null)}
+          >
+            Todas
+          </button>
+          {categorias.map((categoria) => (
+            <button
+              key={categoria.id}
+              type="button"
+              className="home-filtro"
+              aria-pressed={categoriaId === categoria.id}
+              onClick={() => setCategoriaId(categoria.id)}
+            >
+              {categoria.nome}
             </button>
-            <Link to="/anuncios/meus" className="home-destaque-chamada-link">
-              Gerenciar em Meus anúncios
-            </Link>
-          </div>
+          ))}
         </div>
+      </nav>
+
+      <section className="home-resultados" aria-labelledby="home-resultados-titulo">
+        <header className="home-resultados-cabecalho">
+          <h1 id="home-resultados-titulo">
+            {buscaAtiva ? `Resultados para “${buscaAtiva}”` : 'Materiais disponíveis'}
+          </h1>
+          <p aria-live="polite">{resumoBusca}</p>
+        </header>
+
+        {erro && <div className="home-alert" role="alert">{erro}</div>}
+
+        {!erro && !carregando && anuncios.length === 0 && (
+          <div className="home-vazio">
+            <p className="home-vazio-titulo">Nenhum anúncio encontrado</p>
+            <p>Ajuste a busca ou escolha outra categoria.</p>
+          </div>
+        )}
+
+        <ul className="home-lista">
+          {anuncios.map((anuncio) => {
+            const meu = anuncio.vendedor_id === usuario.id && anuncio.status === 'ATIVO'
+            const capa = imagemCapa(anuncio)
+            const categoria = categoriasPorId.get(anuncio.categoria_id)
+            const classes = ['home-item']
+            if (anuncio.em_destaque) classes.push('home-item--destaque')
+            if (meu) classes.push('home-item--meu')
+            return (
+              <li key={anuncio.id} className={classes.join(' ')}>
+                <Link
+                  to={`/anuncios/${anuncio.id}`}
+                  className="home-item-link"
+                  aria-label={`Ver anúncio ${anuncio.titulo}${anuncio.em_destaque ? ' (em destaque)' : ''}`}
+                >
+                  <div className="home-item-foto" style={{ background: corPlaceholder(anuncio.id) }}>
+                    {capa ? (
+                      <img src={capa} alt={`Foto de ${anuncio.titulo}`} className="home-item-imagem" />
+                    ) : (
+                      <span className="home-item-foto-legenda">Sem foto ainda</span>
+                    )}
+                    {anuncio.em_destaque && <SeloDestaque className="home-item-selo" />}
+                  </div>
+                  <div className="home-item-info">
+                    <h3>{anuncio.titulo}</h3>
+                    <p className="home-item-preco">
+                      {formatarMoeda(anuncio.preco)}
+                      <span> por unidade</span>
+                    </p>
+                    <p className="home-item-quantidade">
+                      {anuncio.quantidade} {anuncio.quantidade === 1 ? 'unidade disponível' : 'unidades disponíveis'}
+                    </p>
+                    <p className="home-item-rodape">
+                      {categoria && <span>{categoria}</span>}
+                      <span>Publicado {formatarTempoRelativo(anuncio.postado_em)}</span>
+                    </p>
+                  </div>
+                </Link>
+                {meu && (
+                  <div className="home-item-acoes">
+                    <span>Seu anúncio</span>
+                    <button
+                      type="button"
+                      className="home-botao-contorno"
+                      onClick={() => setDestacar(anuncio)}
+                      aria-label={`${anuncio.em_destaque ? 'Estender destaque de' : 'Destacar'} ${anuncio.titulo}`}
+                    >
+                      {anuncio.em_destaque ? 'Estender destaque' : 'Destacar'}
+                    </button>
+                  </div>
+                )}
+              </li>
+            )
+          })}
+        </ul>
       </section>
 
-      <div className="home-filtros" role="group" aria-label="Filtrar por categoria">
-        <button
-          type="button"
-          className={categoriaId === null ? 'home-filtro home-filtro--ativo' : 'home-filtro'}
-          onClick={() => setCategoriaId(null)}
-        >
-          Todos
-        </button>
-        {categorias.map((categoria) => (
-          <button
-            key={categoria.id}
-            type="button"
-            className={categoriaId === categoria.id ? 'home-filtro home-filtro--ativo' : 'home-filtro'}
-            onClick={() => setCategoriaId(categoria.id)}
-          >
-            {categoria.nome}
-          </button>
-        ))}
-      </div>
-
-      <h2 className="home-secao-titulo">Materiais perto de você</h2>
-
-      {erro && <div className="home-alert" role="alert">{erro}</div>}
-
-      {!erro && !carregando && anuncios.length === 0 && (
-        <div className="home-vazio">
-          <p className="home-vazio-titulo">Nenhum anúncio encontrado</p>
-          <p>Ajuste a busca ou escolha outra categoria.</p>
-        </div>
-      )}
-
-      <div className="home-grid">
-        {anuncios.map((anuncio) => {
-          const meu = anuncio.vendedor_id === usuario.id
-          return (
-          <article
-            key={anuncio.id}
-            className={anuncio.em_destaque ? 'home-card home-card--destaque' : 'home-card'}
-          >
-          <Link
-            to={`/anuncios/${anuncio.id}`}
-            className="home-card-link"
-            aria-label={`Ver anúncio ${anuncio.titulo}${anuncio.em_destaque ? ' (em destaque)' : ''}`}
-          >
-            <div className="home-card-foto" style={{ background: corPlaceholder(anuncio.id) }}>
-              {categoriasPorId.get(anuncio.categoria_id) && (
-                <span className="home-card-categoria">{categoriasPorId.get(anuncio.categoria_id)}</span>
-              )}
-              {anuncio.em_destaque && <SeloDestaque className="home-card-destaque" />}
-              <span className="home-card-foto-legenda">
-                {imagemCapa(anuncio) ? 'Foto do anúncio' : 'Sem foto ainda'}
-              </span>
-              {imagemCapa(anuncio) && (
-                <img
-                  src={imagemCapa(anuncio)!}
-                  alt={`Foto de ${anuncio.titulo}`}
-                  className="home-card-imagem"
-                />
-              )}
-            </div>
-            <div className="home-card-corpo">
-              <h3>{anuncio.titulo}</h3>
-              <p className="home-card-tempo">Publicado {formatarTempoRelativo(anuncio.postado_em)}</p>
-              <dl className="home-card-ficha">
-                <div>
-                  <dt>Preço por unidade</dt>
-                  <dd className="home-card-preco">{formatarMoeda(anuncio.preco)}</dd>
-                </div>
-                <div>
-                  <dt>Disponível</dt>
-                  <dd>{anuncio.quantidade} un.</dd>
-                </div>
-              </dl>
-            </div>
-          </Link>
-          {meu && anuncio.status === 'ATIVO' && (
-            <div className="home-card-acoes">
-              <span>Seu anúncio</span>
-              <button
-                type="button"
-                className="destaque-abrir"
-                onClick={() => setDestacar(anuncio)}
-                aria-label={`${anuncio.em_destaque ? 'Estender destaque de' : 'Destacar'} ${anuncio.titulo}`}
-              >
-                {anuncio.em_destaque ? 'Estender destaque' : 'Destacar'}
-              </button>
-            </div>
-          )}
-          </article>
-          )
-        })}
-      </div>
+      {totalMeusAtivos > 0 && <ConviteDestaque aoDestacar={() => setDestacar(null)} />}
 
       {destacar !== undefined && <DestaqueDialog anuncio={destacar} aoFechar={fecharDestaque} />}
     </main>
+  )
+}
+
+/** Convite discreto ao destaque pago: o amarelo fica reservado aos anúncios pagos. */
+function ConviteDestaque({ aoDestacar }: { aoDestacar: () => void }) {
+  return (
+    <aside className="home-destaque-chamada" aria-label="Destacar um anúncio seu">
+      <p className="home-destaque-chamada-titulo">Quer vender mais rápido?</p>
+      <p>Anúncios em destaque aparecem primeiro na página inicial e nas buscas.</p>
+      <div className="home-destaque-chamada-acoes">
+        <button type="button" className="home-botao-contorno" onClick={aoDestacar}>
+          Destacar um anúncio
+        </button>
+        <Link to="/anuncios/meus" className="home-destaque-chamada-link">
+          Gerenciar em Meus anúncios
+        </Link>
+      </div>
+    </aside>
   )
 }

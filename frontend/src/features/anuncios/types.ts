@@ -79,6 +79,20 @@ export interface AnuncioImagem {
   criado_em: string
 }
 
+/** Orientação do servidor sobre uma foto aceita que foge do padrão 4:3. */
+export interface AvisoImagem {
+  imagem_id: string
+  nome_original: string
+  largura: number
+  altura: number
+  codigo:
+    | 'AD_IMAGE_BELOW_MINIMUM'
+    | 'AD_IMAGE_PORTRAIT'
+    | 'AD_IMAGE_TOO_WIDE'
+    | 'AD_IMAGE_BELOW_RECOMMENDED'
+  mensagem: string
+}
+
 export interface AnuncioFiltros {
   category_id?: string
   status?: 'ATIVO' | 'ESGOTADO' | 'ENCERRADO'

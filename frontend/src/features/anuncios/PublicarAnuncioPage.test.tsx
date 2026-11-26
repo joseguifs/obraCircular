@@ -190,4 +190,55 @@ describe('PublicarAnuncioPage', () => {
     ).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Publicar anúncio' })).not.toBeInTheDocument()
   })
+
+  it('mostra o tamanho das fotos e avisa as fora do padrão sem recusá-las', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(respostaJson({ items: [categoria], total: 1, offset: 0, limit: 100 }))
+        .mockResolvedValueOnce(respostaJson({ items: [endereco], total: 1, offset: 0, limit: 100 }))
+        .mockResolvedValueOnce(respostaJson(contaAtiva)),
+    )
+    const medidas: Record<string, [number, number]> = {
+      'grande.jpg': [1600, 1200],
+      'vertical.jpg': [900, 1600],
+      'pequena.jpg': [500, 300],
+    }
+    vi.stubGlobal(
+      'createImageBitmap',
+      vi.fn(async (arquivo: File) => {
+        const [width, height] = medidas[arquivo.name]
+        return { width, height, close: () => {} }
+      }),
+    )
+    vi.stubGlobal('URL', Object.assign(URL, {
+      createObjectURL: vi.fn(() => 'blob:previa'),
+      revokeObjectURL: vi.fn(),
+    }))
+    const user = userEvent.setup()
+
+    const { container } = renderPagina()
+    expect(
+      await screen.findByText('Fotos na horizontal, 1200 × 900 px ou maiores'),
+    ).toBeInTheDocument()
+
+    const entrada = container.querySelector<HTMLInputElement>('input[type="file"]')!
+    await user.upload(
+      entrada,
+      Object.keys(medidas).map((nome) => new File(['x'], nome, { type: 'image/jpeg' })),
+    )
+
+    expect(await screen.findByText('1600 × 1200 px')).toBeInTheDocument()
+    expect(screen.getByText('900 × 1600 px')).toBeInTheDocument()
+    expect(
+      screen.getByText('Foto na vertical: na página inicial aparece só a parte central.'),
+    ).toBeInTheDocument()
+    // A foto pequena entra com aviso: o vendedor pode não ter outra melhor.
+    expect(screen.getByText('500 × 300 px')).toBeInTheDocument()
+    expect(screen.getByText(/Abaixo do mínimo de 640 × 480 px: pode aparecer borrada/)).toBeInTheDocument()
+    expect(screen.getAllByRole('img', { name: /Prévia/ })).toHaveLength(3)
+    expect(screen.getByText('3/5 selecionadas')).toBeInTheDocument()
+    expect(screen.queryByText(/pequena demais/)).not.toBeInTheDocument()
+  })
 })

@@ -5,6 +5,7 @@ import type {
   AnuncioImagem,
   AnuncioPayload,
   AnuncioPergunta,
+  AvisoImagem,
 } from './types'
 
 export function listarAnuncios(filtros: AnuncioFiltros = {}): Promise<ListResponse<Anuncio>> {
@@ -50,13 +51,15 @@ export function criarAnuncio(dados: AnuncioPayload): Promise<Anuncio> {
   })
 }
 
-export async function enviarImagens(anuncioId: string, imagens: File[]): Promise<void> {
+/** Envia as fotos e devolve os avisos das que fogem do padrão (todas são aceitas). */
+export async function enviarImagens(anuncioId: string, imagens: File[]): Promise<AvisoImagem[]> {
   const formulario = new FormData()
   imagens.forEach((imagem) => formulario.append('files', imagem))
-  await apiRequest(`/ads/${anuncioId}/images`, {
-    method: 'POST',
-    body: formulario,
-  })
+  const resposta = await apiRequest<{ items: AnuncioImagem[]; avisos?: AvisoImagem[] }>(
+    `/ads/${anuncioId}/images`,
+    { method: 'POST', body: formulario },
+  )
+  return resposta?.avisos ?? []
 }
 
 export function excluirAnuncio(anuncioId: string): Promise<void> {

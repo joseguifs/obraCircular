@@ -22,6 +22,14 @@ import {
 } from './anuncioApi'
 import type { ErrosAnuncio } from './types'
 import { validarAnuncio, validarImagens } from './validacaoAnuncio'
+import {
+  FOTO_MINIMA,
+  FOTO_RECOMENDADA,
+  avisoDaFoto,
+  descreverDimensoes,
+  lerDimensoes,
+  type Dimensoes,
+} from './fotosAnuncio'
 
 const enderecoInicial: EnderecoPayload = {
   cep: '',
@@ -49,6 +57,8 @@ export function PublicarAnuncioPage() {
   const [preco, setPreco] = useState('')
   const [quantidade, setQuantidade] = useState('1')
   const [imagens, setImagens] = useState<File[]>([])
+  // Dimensões lidas de cada foto; null quando o navegador não conseguiu ler.
+  const [dimensoes, setDimensoes] = useState<Map<File, Dimensoes | null>>(new Map())
   const [mostrarEndereco, setMostrarEndereco] = useState(false)
   const [novoEndereco, setNovoEndereco] = useState(enderecoInicial)
   const [salvandoEndereco, setSalvandoEndereco] = useState(false)
@@ -123,10 +133,10 @@ export function PublicarAnuncioPage() {
     try {
       const anuncio = await criarAnuncio(dados)
       anuncioId = anuncio.id
-      if (imagens.length > 0) await enviarImagens(anuncio.id, imagens)
+      const avisosImagens = imagens.length > 0 ? await enviarImagens(anuncio.id, imagens) : []
       navegar(`/anuncios/${anuncio.id}/publicado`, {
         replace: true,
-        state: { titulo: anuncio.titulo, quantidadeImagens: imagens.length },
+        state: { titulo: anuncio.titulo, quantidadeImagens: imagens.length, avisosImagens },
       })
     } catch (erro) {
       if (anuncioId) {
@@ -171,12 +181,21 @@ export function PublicarAnuncioPage() {
     }
   }
 
-  function selecionarImagens(evento: ChangeEvent<HTMLInputElement>) {
+  async function selecionarImagens(evento: ChangeEvent<HTMLInputElement>) {
     const selecionadas = Array.from(evento.target.files ?? [])
-    const erro = validarImagens(selecionadas)
-    setImagens(erro ? [] : selecionadas)
-    setErros((atuais) => ({ ...atuais, imagens: erro }))
     evento.target.value = ''
+    const erro = validarImagens(selecionadas)
+    if (erro) {
+      setImagens([])
+      setErros((atuais) => ({ ...atuais, imagens: erro }))
+      return
+    }
+
+    // Fotos fora do padrão são aceitas; cada prévia mostra o aviso correspondente.
+    const lidas = await Promise.all(selecionadas.map(lerDimensoes))
+    setImagens(selecionadas)
+    setDimensoes(new Map(selecionadas.map((arquivo, indice) => [arquivo, lidas[indice]])))
+    setErros((atuais) => ({ ...atuais, imagens: undefined }))
   }
 
   function removerImagem(indice: number) {
@@ -258,7 +277,22 @@ export function PublicarAnuncioPage() {
 
         <section className="publish-card">
           <CabecalhoSecao numero="2" titulo="Fotos" />
-          <p className="section-hint">Adicione até 5 imagens JPEG, PNG ou WebP de no máximo 5 MB. A primeira será a capa.</p>
+          <div className="foto-orientacao">
+            <div className="foto-orientacao-moldura" aria-hidden="true">
+              <span>4:3</span>
+            </div>
+            <div>
+              <p className="foto-orientacao-titulo">
+                Fotos na horizontal, {FOTO_RECOMENDADA.largura} × {FOTO_RECOMENDADA.altura} px ou maiores
+              </p>
+              <p>
+                A página inicial e o anúncio mostram as fotos no formato 4:3, como na moldura ao
+                lado. Fotos menores que {FOTO_MINIMA.largura} × {FOTO_MINIMA.altura} px são aceitas,
+                mas podem aparecer borradas. Até 5 imagens JPEG, PNG ou WebP de no máximo 5 MB; a
+                primeira será a capa.
+              </p>
+            </div>
+          </div>
           <label className="image-picker">
             <input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={selecionarImagens} />
             <span>Selecionar imagens</span>
@@ -266,15 +300,23 @@ export function PublicarAnuncioPage() {
           </label>
           {erros.imagens && <p className="publish-field-error">{erros.imagens}</p>}
           {previews.length > 0 && (
-            <div className="image-previews">
-              {previews.map((preview, indice) => (
-                <figure key={`${preview.arquivo.name}-${indice}`}>
-                  <img src={preview.url} alt={`Prévia ${indice + 1}`} />
-                  {indice === 0 && <figcaption>Capa</figcaption>}
-                  <button type="button" onClick={() => removerImagem(indice)} aria-label={`Remover ${preview.arquivo.name}`}>×</button>
-                </figure>
-              ))}
-            </div>
+            <ul className="image-previews" aria-label="Fotos selecionadas">
+              {previews.map((preview, indice) => {
+                const medida = dimensoes.get(preview.arquivo)
+                const aviso = medida ? avisoDaFoto(medida) : undefined
+                return (
+                  <li key={`${preview.arquivo.name}-${indice}`}>
+                    <figure>
+                      <img src={preview.url} alt={`Prévia ${indice + 1}`} />
+                      {indice === 0 && <figcaption>Capa</figcaption>}
+                      <button type="button" onClick={() => removerImagem(indice)} aria-label={`Remover ${preview.arquivo.name}`}>×</button>
+                    </figure>
+                    {medida && <p className="image-preview-medida">{descreverDimensoes(medida)}</p>}
+                    {aviso && <p className="image-preview-aviso">{aviso}</p>}
+                  </li>
+                )
+              })}
+            </ul>
           )}
         </section>
 
