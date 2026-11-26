@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation, useNavigate, useSearchParams } from 'react-r
 import { Logo } from '../features/autenticacao/AuthLayout'
 import { useAuth } from '../features/autenticacao/useAuth'
 import { obterIniciais } from '../lib/texto'
+import { useRolagemHorizontal } from '../lib/useRolagemHorizontal'
 
 export function MarketplaceLayout() {
   const { sessao } = useAuth()
@@ -12,6 +13,7 @@ export function MarketplaceLayout() {
   const naHome = location.pathname === '/home'
   const naAdministracao = location.pathname === '/admin' || location.pathname.startsWith('/admin/')
   const [buscaDigitada, setBuscaDigitada] = useState('')
+  const { ref: navRef, atributos: navRolagem } = useRolagemHorizontal<HTMLElement>()
   const busca = naHome ? searchParams.get('q') ?? '' : buscaDigitada
 
   function alterarBusca(valor: string) {
@@ -40,7 +42,12 @@ export function MarketplaceLayout() {
             <Logo />
           </Link>
 
-          <nav className="app-nav" aria-label="Navegação principal">
+          <nav
+            ref={navRef}
+            className="app-nav rolagem-horizontal"
+            aria-label="Navegação principal"
+            {...navRolagem}
+          >
             <Link to="/home" className={naHome ? 'app-nav-link app-nav-link--ativo' : 'app-nav-link'}>
               Explorar
             </Link>

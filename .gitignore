@@ -38,3 +38,6 @@ backend/storage/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Capturas do navegador automatizado (Playwright MCP)
+.playwright-mcp/

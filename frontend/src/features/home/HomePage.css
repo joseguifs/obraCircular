@@ -4,74 +4,40 @@
   padding: 40px clamp(20px, 4vw, 40px) 72px;
 }
 
+/* Saudação e resumo numa linha só: os anúncios começam logo abaixo. */
 .home-intro {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px 32px;
-  margin-bottom: 28px;
+  align-items: baseline;
+  gap: 2px 16px;
+  margin-bottom: 18px;
 }
 
 .home-intro h1 {
-  margin: 0 0 6px;
-  font-size: clamp(40px, 5vw, 60px);
+  margin: 0;
+  font-size: 32px;
   font-weight: 800;
   font-variation-settings: 'wdth' 72;
-  letter-spacing: -0.5px;
-  line-height: 0.95;
+  letter-spacing: -0.3px;
+  line-height: 1.1;
 }
 
 .home-intro p {
-  max-width: 56ch;
   margin: 0;
   color: var(--cinza-texto);
-  font-size: 16px;
-  line-height: 1.55;
-}
-
-/* Contadores como leitura de painel, sem caixas. */
-.home-stats {
-  display: flex;
-  gap: 28px;
-}
-
-.home-stat {
-  display: grid;
-  gap: 2px;
-  padding-left: 14px;
-  border-left: 3px solid var(--grafite);
-  color: inherit;
-  text-decoration: none;
-}
-
-a.home-stat:hover strong {
-  color: var(--planta);
-}
-
-.home-stat strong {
-  font-size: 30px;
-  font-weight: 800;
-  font-variation-settings: 'wdth' 80;
-  line-height: 1;
-}
-
-.home-stat span {
-  color: var(--cinza-texto);
-  font-size: 13.5px;
-  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
 .home-filtros {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 36px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--prumo);
+  margin-bottom: 24px;
 }
 
 .home-filtro {
+  flex: none;
   height: 38px;
   padding: 0 16px;
   border: 1.5px solid var(--prumo);
@@ -96,8 +62,8 @@ a.home-stat:hover strong {
 }
 
 .home-secao-titulo {
-  margin: 0 0 18px;
-  font-size: 24px;
+  margin: 0 0 14px;
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.2px;
 }
@@ -187,39 +153,35 @@ a.home-stat:hover strong {
   font-weight: 600;
 }
 
-.home-card-acoes .destaque-abrir {
+.home-card-acoes .home-botao-contorno {
   min-height: 34px;
   padding: 0 12px;
   font-size: 13px;
 }
 
-/* Chamada do destaque pago, abaixo da saudação. */
+/* Convite ao destaque: neutro, para o amarelo ficar só nos anúncios pagos. */
 .home-destaque-chamada {
-  overflow: hidden;
-  margin-bottom: 28px;
-  border-radius: 8px;
-  background: var(--sinal-papel);
-}
-
-.home-destaque-chamada .destaque-fita {
-  height: 6px;
-}
-
-.home-destaque-chamada-corpo {
   display: flex;
   flex-wrap: wrap;
+  grid-column: 1 / -1;
   align-items: center;
   justify-content: space-between;
   gap: 12px 24px;
   padding: 14px 18px;
+  border: 1.5px dashed var(--prumo);
+  border-radius: 8px;
 }
 
 .home-destaque-chamada p {
   max-width: 62ch;
   margin: 0;
-  color: var(--sinal-texto);
-  font-size: 15px;
+  color: var(--cinza-texto-forte);
+  font-size: 14.5px;
   line-height: 1.5;
+}
+
+.home-destaque-chamada strong {
+  color: var(--grafite);
 }
 
 .home-destaque-chamada-acoes {
@@ -230,10 +192,29 @@ a.home-stat:hover strong {
 }
 
 .home-destaque-chamada-link {
-  color: var(--sinal-texto);
+  color: var(--grafite);
   font-size: 14px;
   font-weight: 700;
   text-underline-offset: 3px;
+}
+
+.home-botao-contorno {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1.5px solid var(--grafite);
+  border-radius: 8px;
+  color: var(--grafite);
+  background: #fff;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.home-botao-contorno:hover {
+  color: #fff;
+  background: var(--grafite);
 }
 
 .home-card-foto {
@@ -295,10 +276,6 @@ a.home-stat:hover strong {
   font-weight: 600;
 }
 
-.home-card--destaque .home-card-foto-legenda {
-  display: none;
-}
-
 .home-card-corpo {
   display: flex;
   flex: 1;
@@ -306,8 +283,19 @@ a.home-stat:hover strong {
   padding: 16px 16px 14px;
 }
 
+/* Reserva espaço para título de duas linhas + data: a ficha de preço fica na mesma
+   altura em todos os cards da fileira, e a sobra cai abaixo da data. */
+.home-card-cabecalho {
+  min-height: calc(2 * 18px * 1.2 + 4px + 13px * 1.5 + 14px);
+}
+
 .home-card-corpo h3 {
+  display: -webkit-box;
   margin: 0 0 4px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   font-size: 18px;
   font-weight: 700;
   font-variation-settings: 'wdth' 90;
@@ -325,7 +313,7 @@ a.home-stat:hover strong {
 .home-card-ficha {
   display: grid;
   gap: 0;
-  margin: auto 0 0;
+  margin: 0;
   border-top: 1.5px dashed var(--prumo);
 }
 
@@ -359,12 +347,37 @@ a.home-stat:hover strong {
   font-variation-settings: 'wdth' 85;
 }
 
+@media (max-width: 720px) {
+  .home-filtros {
+    flex-wrap: nowrap;
+    /* Encosta nas bordas da tela, acompanhando o recuo de .home-main. */
+    margin-inline: calc(-1 * clamp(20px, 4vw, 40px));
+    padding-inline: clamp(20px, 4vw, 40px);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .home-filtros::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @media (max-width: 560px) {
   .home-main {
     padding-inline: 16px;
   }
 
-  .home-stats {
-    gap: 20px;
+  .home-intro h1 {
+    font-size: 28px;
+  }
+
+  .home-filtros {
+    margin-inline: -16px;
+    padding-inline: 16px;
+  }
+
+  /* Com uma coluna só não há fileira para alinhar. */
+  .home-card-cabecalho {
+    min-height: 0;
   }
 }

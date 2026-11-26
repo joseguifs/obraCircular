@@ -84,11 +84,32 @@ describe('HomePage', () => {
       'src',
       expect.stringContaining('/uploads/anuncios/'),
     )
-    expect(screen.getByText('3')).toBeInTheDocument()
+    expect(screen.getByText('1 anúncio à venda agora.')).toBeInTheDocument()
+    // Com foto, a legenda de "sem foto" não aparece por cima da imagem.
+    expect(screen.queryByText('Sem foto ainda')).not.toBeInTheDocument()
+    expect(fetchMock.mock.calls[1][0]).toContain(`/users/${usuarioId}/ads?status=ATIVO`)
     expect(screen.getByRole('button', { name: 'Estrutura' })).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: `Ver anúncio ${anuncio.titulo}` }),
     ).toHaveAttribute('href', `/anuncios/${anuncio.id}`)
+  })
+
+  it('só convida para destacar quem tem anúncio disponível', async () => {
+    const semFoto = { ...anuncio, imagem_capa_url: null }
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        respostaJson({ items: [categoriaEstrutura], total: 1, offset: 0, limit: 100 }),
+      )
+      .mockResolvedValueOnce(respostaJson({ items: [], total: 0, offset: 0, limit: 1 }))
+      .mockResolvedValueOnce(respostaJson({ items: [semFoto], total: 1, offset: 0, limit: 24 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderPagina()
+
+    expect(await screen.findByText('Perfis metálicos para drywall')).toBeInTheDocument()
+    expect(screen.getByText('Sem foto ainda')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Destacar um anúncio' })).not.toBeInTheDocument()
   })
 
   it('refaz a busca ao selecionar uma categoria', async () => {
