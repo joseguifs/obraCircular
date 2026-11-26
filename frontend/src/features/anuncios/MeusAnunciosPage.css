@@ -58,6 +58,48 @@
   margin-bottom: 22px;
 }
 
+/* Fora da lateral da Home o filtro fica sobre o fundo concreto da página;
+   a caixa branca com borda dá contraste para o hover e para a seleção. */
+.meus-anuncios-filtros .home-filtro {
+  width: auto;
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1.5px solid var(--prumo);
+  border-radius: 10px;
+  color: var(--cinza-texto-forte);
+  background: #fff;
+  box-shadow: none;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.meus-anuncios-filtros .home-filtro:hover {
+  border-color: var(--grafite);
+  color: var(--grafite);
+  background: var(--concreto-claro);
+}
+
+.meus-anuncios-filtros .home-filtro:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
+}
+
+.meus-anuncios-filtros .home-filtro[aria-pressed='true'] {
+  border-color: var(--grafite);
+  color: #fff;
+  background: var(--grafite);
+  box-shadow: none;
+  font-weight: 700;
+}
+
+.meus-anuncios-filtros .home-filtro[aria-pressed='true']:hover {
+  background: var(--grafite-suave);
+}
+
 .meus-anuncios-lista {
   display: grid;
   gap: 12px;
