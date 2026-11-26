@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { listarAnuncios, listarAnunciosDoVendedor } from '../anuncios/anuncioApi'
 import type { Anuncio } from '../anuncios/types'
@@ -6,7 +6,6 @@ import { listarCategoriasAtivas } from '../categorias/categoriaApi'
 import type { Categoria } from '../categorias/types'
 import { ApiError, resolverUrlDaApi } from '../../lib/api'
 import { formatarMoeda, formatarTempoRelativo } from '../../lib/formatarTempo'
-import { primeiroNome } from '../../lib/texto'
 import { useRolagemHorizontal } from '../../lib/useRolagemHorizontal'
 import { useAuth } from '../autenticacao/useAuth'
 import { DestaqueDialog } from '../anuncios/DestaqueDialog'
@@ -50,20 +49,6 @@ export function HomePage() {
   const [destacar, setDestacar] = useState<Anuncio | null | undefined>(undefined)
   const fecharDestaque = useCallback(() => setDestacar(undefined), [])
   const { ref: filtrosRef, atributos: filtrosRolagem } = useRolagemHorizontal<HTMLDivElement>()
-  const gradeRef = useRef<HTMLDivElement>(null)
-  const [colunas, setColunas] = useState(4)
-
-  // O convite de destaque entra logo após a primeira fileira, que varia com a largura.
-  useEffect(() => {
-    const grade = gradeRef.current
-    if (!grade || typeof ResizeObserver === 'undefined') return
-    const observador = new ResizeObserver(() => {
-      const trilhas = getComputedStyle(grade).gridTemplateColumns.split(' ').filter(Boolean)
-      setColunas(Math.max(1, trilhas.length))
-    })
-    observador.observe(grade)
-    return () => observador.disconnect()
-  }, [])
 
   useEffect(() => {
     const temporizador = window.setTimeout(() => setBuscaAtiva(buscaUrl), 350)
@@ -128,125 +113,115 @@ export function HomePage() {
             ? totalDisponiveis === 1 ? 'encontrado' : 'encontrados'
             : 'à venda agora'
         }.`
-  const posicaoConvite =
-    totalMeusAtivos > 0 && anuncios.length > 0 ? Math.min(colunas, anuncios.length) : null
 
   return (
     <main className="home-main">
-      <div className="home-intro">
-        <h1>Olá, {primeiroNome(usuario.nome)}</h1>
-        <p>{resumoBusca}</p>
-      </div>
-
-      <div
-        ref={filtrosRef}
-        className="home-filtros rolagem-horizontal"
-        role="group"
-        aria-label="Filtrar por categoria"
-        {...filtrosRolagem}
-      >
-        <button
-          type="button"
-          className={categoriaId === null ? 'home-filtro home-filtro--ativo' : 'home-filtro'}
-          onClick={() => setCategoriaId(null)}
+      <nav className="home-lateral" aria-labelledby="home-categorias-titulo">
+        <h2 id="home-categorias-titulo" className="home-lateral-titulo">Categorias</h2>
+        <div
+          ref={filtrosRef}
+          className="home-filtros rolagem-horizontal"
+          role="group"
+          aria-label="Filtrar por categoria"
+          {...filtrosRolagem}
         >
-          Todos
-        </button>
-        {categorias.map((categoria) => (
           <button
-            key={categoria.id}
             type="button"
-            className={categoriaId === categoria.id ? 'home-filtro home-filtro--ativo' : 'home-filtro'}
-            onClick={() => setCategoriaId(categoria.id)}
+            className="home-filtro"
+            aria-pressed={categoriaId === null}
+            onClick={() => setCategoriaId(null)}
           >
-            {categoria.nome}
+            Todas
           </button>
-        ))}
-      </div>
-
-      <h2 className="home-secao-titulo">
-        {buscaAtiva ? `Resultados para “${buscaAtiva}”` : 'Materiais disponíveis'}
-      </h2>
-
-      {erro && <div className="home-alert" role="alert">{erro}</div>}
-
-      {!erro && !carregando && anuncios.length === 0 && (
-        <div className="home-vazio">
-          <p className="home-vazio-titulo">Nenhum anúncio encontrado</p>
-          <p>Ajuste a busca ou escolha outra categoria.</p>
+          {categorias.map((categoria) => (
+            <button
+              key={categoria.id}
+              type="button"
+              className="home-filtro"
+              aria-pressed={categoriaId === categoria.id}
+              onClick={() => setCategoriaId(categoria.id)}
+            >
+              {categoria.nome}
+            </button>
+          ))}
         </div>
-      )}
+      </nav>
 
-      <div className="home-grid" ref={gradeRef}>
-        {anuncios.map((anuncio, indice) => {
-          const meu = anuncio.vendedor_id === usuario.id
-          const capa = imagemCapa(anuncio)
-          return (
-          <Fragment key={anuncio.id}>
-          {indice === posicaoConvite && (
-            <ConviteDestaque aoDestacar={() => setDestacar(null)} />
-          )}
-          <article
-            className={anuncio.em_destaque ? 'home-card home-card--destaque' : 'home-card'}
-          >
-          <Link
-            to={`/anuncios/${anuncio.id}`}
-            className="home-card-link"
-            aria-label={`Ver anúncio ${anuncio.titulo}${anuncio.em_destaque ? ' (em destaque)' : ''}`}
-          >
-            <div className="home-card-foto" style={{ background: corPlaceholder(anuncio.id) }}>
-              {categoriasPorId.get(anuncio.categoria_id) && (
-                <span className="home-card-categoria">{categoriasPorId.get(anuncio.categoria_id)}</span>
-              )}
-              {anuncio.em_destaque && <SeloDestaque className="home-card-destaque" />}
-              {capa ? (
-                <img
-                  src={capa}
-                  alt={`Foto de ${anuncio.titulo}`}
-                  className="home-card-imagem"
-                />
-              ) : (
-                <span className="home-card-foto-legenda">Sem foto ainda</span>
-              )}
-            </div>
-            <div className="home-card-corpo">
-              <div className="home-card-cabecalho">
-                <h3>{anuncio.titulo}</h3>
-                <p className="home-card-tempo">Publicado {formatarTempoRelativo(anuncio.postado_em)}</p>
-              </div>
-              <dl className="home-card-ficha">
-                <div>
-                  <dt>Preço por unidade</dt>
-                  <dd className="home-card-preco">{formatarMoeda(anuncio.preco)}</dd>
-                </div>
-                <div>
-                  <dt>Disponível</dt>
-                  <dd>{anuncio.quantidade} un.</dd>
-                </div>
-              </dl>
-            </div>
-          </Link>
-          {meu && anuncio.status === 'ATIVO' && (
-            <div className="home-card-acoes">
-              <span>Seu anúncio</span>
-              <button
-                type="button"
-                className="home-botao-contorno"
-                onClick={() => setDestacar(anuncio)}
-                aria-label={`${anuncio.em_destaque ? 'Estender destaque de' : 'Destacar'} ${anuncio.titulo}`}
-              >
-                {anuncio.em_destaque ? 'Estender destaque' : 'Destacar'}
-              </button>
-            </div>
-          )}
-          </article>
-          </Fragment>
-          )
-        })}
-        {posicaoConvite === anuncios.length && posicaoConvite > 0 && (
-          <ConviteDestaque aoDestacar={() => setDestacar(null)} />
+      <section className="home-resultados" aria-labelledby="home-resultados-titulo">
+        <header className="home-resultados-cabecalho">
+          <h1 id="home-resultados-titulo">
+            {buscaAtiva ? `Resultados para “${buscaAtiva}”` : 'Materiais disponíveis'}
+          </h1>
+          <p aria-live="polite">{resumoBusca}</p>
+        </header>
+
+        {erro && <div className="home-alert" role="alert">{erro}</div>}
+
+        {!erro && !carregando && anuncios.length === 0 && (
+          <div className="home-vazio">
+            <p className="home-vazio-titulo">Nenhum anúncio encontrado</p>
+            <p>Ajuste a busca ou escolha outra categoria.</p>
+          </div>
         )}
-      </div>
+
+        <ul className="home-lista">
+          {anuncios.map((anuncio) => {
+            const meu = anuncio.vendedor_id === usuario.id && anuncio.status === 'ATIVO'
+            const capa = imagemCapa(anuncio)
+            const categoria = categoriasPorId.get(anuncio.categoria_id)
+            const classes = ['home-item']
+            if (anuncio.em_destaque) classes.push('home-item--destaque')
+            if (meu) classes.push('home-item--meu')
+            return (
+              <li key={anuncio.id} className={classes.join(' ')}>
+                <Link
+                  to={`/anuncios/${anuncio.id}`}
+                  className="home-item-link"
+                  aria-label={`Ver anúncio ${anuncio.titulo}${anuncio.em_destaque ? ' (em destaque)' : ''}`}
+                >
+                  <div className="home-item-foto" style={{ background: corPlaceholder(anuncio.id) }}>
+                    {capa ? (
+                      <img src={capa} alt={`Foto de ${anuncio.titulo}`} className="home-item-imagem" />
+                    ) : (
+                      <span className="home-item-foto-legenda">Sem foto ainda</span>
+                    )}
+                    {anuncio.em_destaque && <SeloDestaque className="home-item-selo" />}
+                  </div>
+                  <div className="home-item-info">
+                    <h3>{anuncio.titulo}</h3>
+                    <p className="home-item-preco">
+                      {formatarMoeda(anuncio.preco)}
+                      <span> por unidade</span>
+                    </p>
+                    <p className="home-item-quantidade">
+                      {anuncio.quantidade} {anuncio.quantidade === 1 ? 'unidade disponível' : 'unidades disponíveis'}
+                    </p>
+                    <p className="home-item-rodape">
+                      {categoria && <span>{categoria}</span>}
+                      <span>Publicado {formatarTempoRelativo(anuncio.postado_em)}</span>
+                    </p>
+                  </div>
+                </Link>
+                {meu && (
+                  <div className="home-item-acoes">
+                    <span>Seu anúncio</span>
+                    <button
+                      type="button"
+                      className="home-botao-contorno"
+                      onClick={() => setDestacar(anuncio)}
+                      aria-label={`${anuncio.em_destaque ? 'Estender destaque de' : 'Destacar'} ${anuncio.titulo}`}
+                    >
+                      {anuncio.em_destaque ? 'Estender destaque' : 'Destacar'}
+                    </button>
+                  </div>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      </section>
+
+      {totalMeusAtivos > 0 && <ConviteDestaque aoDestacar={() => setDestacar(null)} />}
 
       {destacar !== undefined && <DestaqueDialog anuncio={destacar} aoFechar={fecharDestaque} />}
     </main>
@@ -256,11 +231,9 @@ export function HomePage() {
 /** Convite discreto ao destaque pago: o amarelo fica reservado aos anúncios pagos. */
 function ConviteDestaque({ aoDestacar }: { aoDestacar: () => void }) {
   return (
-    <section className="home-destaque-chamada" aria-label="Destacar um anúncio seu">
-      <p>
-        <strong>Quer vender mais rápido?</strong> Destaque um anúncio seu para ele aparecer
-        primeiro na página inicial e nas buscas.
-      </p>
+    <aside className="home-destaque-chamada" aria-label="Destacar um anúncio seu">
+      <p className="home-destaque-chamada-titulo">Quer vender mais rápido?</p>
+      <p>Anúncios em destaque aparecem primeiro na página inicial e nas buscas.</p>
       <div className="home-destaque-chamada-acoes">
         <button type="button" className="home-botao-contorno" onClick={aoDestacar}>
           Destacar um anúncio
@@ -269,6 +242,6 @@ function ConviteDestaque({ aoDestacar }: { aoDestacar: () => void }) {
           Gerenciar em Meus anúncios
         </Link>
       </div>
-    </section>
+    </aside>
   )
 }

@@ -1,71 +1,153 @@
+/* Estrutura de marketplace: filtros numa coluna à esquerda, resultados em linhas à
+   direita. No celular tudo vira uma coluna só, na ordem do HTML. */
 .home-main {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  gap: 20px 32px;
+  align-items: start;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 40px clamp(20px, 4vw, 40px) 72px;
+  padding: 32px clamp(20px, 4vw, 40px) 72px;
 }
 
-/* Saudação e resumo numa linha só: os anúncios começam logo abaixo. */
-.home-intro {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px 16px;
-  margin-bottom: 18px;
+/* ---------- Coluna lateral ---------- */
+
+.home-lateral {
+  grid-column: 1;
+  grid-row: 1;
+  padding: 16px 10px 10px;
+  border-radius: 8px;
+  background: #fff;
 }
 
-.home-intro h1 {
-  margin: 0;
-  font-size: 32px;
-  font-weight: 800;
-  font-variation-settings: 'wdth' 72;
-  letter-spacing: -0.3px;
-  line-height: 1.1;
-}
-
-.home-intro p {
-  margin: 0;
-  color: var(--cinza-texto);
+.home-lateral-titulo {
+  margin: 0 0 8px;
+  padding: 0 10px;
   font-size: 15px;
-  line-height: 1.5;
+  font-weight: 800;
 }
 
 .home-filtros {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 24px;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .home-filtro {
-  flex: none;
-  height: 38px;
-  padding: 0 16px;
-  border: 1.5px solid var(--prumo);
-  border-radius: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
   color: var(--cinza-texto-forte);
   background: transparent;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: left;
 }
 
 .home-filtro:hover {
-  border-color: var(--grafite);
   color: var(--grafite);
+  background: var(--concreto-claro);
 }
 
-.home-filtro--ativo,
-.home-filtro--ativo:hover {
-  border-color: var(--grafite);
+.home-filtro[aria-pressed='true'] {
+  color: var(--grafite);
+  background: var(--concreto-claro);
+  box-shadow: inset 3px 0 0 var(--grafite);
+  font-weight: 800;
+}
+
+/* Convite ao destaque: neutro, para o amarelo ficar só nos anúncios pagos. */
+.home-destaque-chamada {
+  grid-column: 1;
+  grid-row: 2;
+  padding: 16px;
+  border: 1.5px dashed var(--prumo);
+  border-radius: 8px;
+}
+
+.home-destaque-chamada p {
+  margin: 0 0 14px;
+  color: var(--cinza-texto-forte);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.home-destaque-chamada .home-destaque-chamada-titulo {
+  margin-bottom: 4px;
+  color: var(--grafite);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.home-destaque-chamada-acoes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.home-destaque-chamada-link {
+  color: var(--grafite);
+  font-size: 14px;
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
+.home-botao-contorno {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1.5px solid var(--grafite);
+  border-radius: 8px;
+  color: var(--grafite);
+  background: #fff;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.home-botao-contorno:hover {
   color: #fff;
   background: var(--grafite);
 }
 
-.home-secao-titulo {
-  margin: 0 0 14px;
-  font-size: 20px;
+/* ---------- Resultados ---------- */
+
+.home-resultados {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  min-width: 0;
+}
+
+.home-resultados-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-bottom: 14px;
+}
+
+.home-resultados-cabecalho h1 {
+  margin: 0;
+  font-size: 26px;
   font-weight: 800;
+  font-variation-settings: 'wdth' 72;
   letter-spacing: -0.2px;
+  line-height: 1.15;
+}
+
+.home-resultados-cabecalho p {
+  margin: 0;
+  color: var(--cinza-texto);
+  font-size: 14.5px;
 }
 
 .home-alert {
@@ -93,205 +175,113 @@
   font-size: 14.5px;
 }
 
-.home-vazio-titulo {
-  margin: 0 0 6px !important;
-  color: var(--grafite) !important;
-  font-size: 18px !important;
+.home-vazio .home-vazio-titulo {
+  margin-bottom: 6px;
+  color: var(--grafite);
+  font-size: 18px;
   font-weight: 800;
 }
 
-.home-grid {
+.home-lista {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 22px;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-/* Etiqueta de lote: ficha branca com o canto superior direito recortado. */
-.home-card {
-  --corte: 22px;
+/* Cada anúncio é uma linha: foto à esquerda, dados à direita. O canto recortado
+   lembra a etiqueta de lote do restante do sistema. */
+.home-item {
+  --corte: 18px;
   position: relative;
-  display: flex;
-  flex-direction: column;
+  overflow: hidden;
+  border-radius: 8px;
   background: #fff;
   clip-path: polygon(0 0, calc(100% - var(--corte)) 0, 100% var(--corte), 100% 100%, 0 100%);
-  border-radius: 6px;
 }
 
-.home-card-link {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
+.home-item--destaque {
+  background: var(--sinal-papel);
+}
+
+.home-item-link {
+  display: grid;
+  /* 232 × 174 = 4:3, o mesmo formato orientado na publicação. */
+  grid-template-columns: 232px minmax(0, 1fr);
+  min-height: 174px;
   color: inherit;
   text-decoration: none;
 }
 
 /* O recorte cortaria o contorno externo; o foco é desenhado por dentro. */
-.home-card-link:focus-visible {
+.home-item-link:focus-visible {
   outline-offset: -4px;
 }
 
-.home-card-link:hover h3 {
+.home-item-link:hover h3 {
   color: var(--planta);
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
 }
 
-/* Ações do dono, fora do link do card. */
-.home-card-acoes {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 16px 14px;
-  border-top: 1px solid var(--cinza-linha);
-}
-
-.home-card-acoes span {
-  color: var(--cinza-texto);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.home-card-acoes .home-botao-contorno {
-  min-height: 34px;
-  padding: 0 12px;
-  font-size: 13px;
-}
-
-/* Convite ao destaque: neutro, para o amarelo ficar só nos anúncios pagos. */
-.home-destaque-chamada {
-  display: flex;
-  flex-wrap: wrap;
-  grid-column: 1 / -1;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px 24px;
-  padding: 14px 18px;
-  border: 1.5px dashed var(--prumo);
-  border-radius: 8px;
-}
-
-.home-destaque-chamada p {
-  max-width: 62ch;
-  margin: 0;
-  color: var(--cinza-texto-forte);
-  font-size: 14.5px;
-  line-height: 1.5;
-}
-
-.home-destaque-chamada strong {
-  color: var(--grafite);
-}
-
-.home-destaque-chamada-acoes {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 18px;
-}
-
-.home-destaque-chamada-link {
-  color: var(--grafite);
-  font-size: 14px;
-  font-weight: 700;
-  text-underline-offset: 3px;
-}
-
-.home-botao-contorno {
-  display: inline-flex;
-  align-items: center;
-  min-height: 38px;
-  padding: 0 14px;
-  border: 1.5px solid var(--grafite);
-  border-radius: 8px;
-  color: var(--grafite);
-  background: #fff;
-  cursor: pointer;
-  font-size: 13.5px;
-  font-weight: 800;
-}
-
-.home-botao-contorno:hover {
-  color: #fff;
-  background: var(--grafite);
-}
-
-.home-card-foto {
+.home-item-foto {
   position: relative;
   display: flex;
-  height: 168px;
   align-items: flex-end;
-  padding: 12px;
+  padding: 10px 12px;
   overflow: hidden;
 }
 
-.home-card-imagem {
+.home-item-imagem {
   position: absolute;
   inset: 0;
-  z-index: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.home-card-categoria {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 1;
-  padding: 4px 9px;
-  border-radius: 4px;
-  color: var(--grafite);
-  background: #fff;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.home-card-destaque {
-  position: absolute;
-  bottom: 18px;
-  left: 12px;
-  z-index: 2;
-}
-
-.home-card--destaque {
-  background: var(--sinal-papel);
-}
-
-.home-card--destaque .home-card-foto::after {
-  content: '';
-  position: absolute;
-  inset: auto 0 0;
-  z-index: 1;
-  height: 8px;
-  background: var(--sinal-fita);
-}
-
-.home-card-foto-legenda {
+.home-item-foto-legenda {
   position: relative;
-  z-index: 1;
   color: rgba(255, 255, 255, 0.8);
   font-size: 12px;
   font-weight: 600;
 }
 
-.home-card-corpo {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  padding: 16px 16px 14px;
+.home-item-selo {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
 }
 
-/* Reserva espaço para título de duas linhas + data: a ficha de preço fica na mesma
-   altura em todos os cards da fileira, e a sobra cai abaixo da data. */
-.home-card-cabecalho {
-  min-height: calc(2 * 18px * 1.2 + 4px + 13px * 1.5 + 14px);
+/* Fita de sinalização na base da foto dos anúncios pagos. */
+.home-item--destaque .home-item-foto::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  height: 6px;
+  background: var(--sinal-fita);
 }
 
-.home-card-corpo h3 {
+.home-item-info {
+  display: grid;
+  grid-template-areas:
+    'titulo preco'
+    'quantidade preco'
+    'rodape rodape';
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto 1fr;
+  column-gap: 24px;
+  padding: 16px 24px 14px 20px;
+}
+
+.home-item-info h3 {
   display: -webkit-box;
-  margin: 0 0 4px;
+  grid-area: titulo;
+  margin: 0;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -299,57 +289,112 @@
   font-size: 18px;
   font-weight: 700;
   font-variation-settings: 'wdth' 90;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
-.home-card-tempo {
-  margin: 0 0 14px;
-  color: var(--cinza-icone);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-/* Linhas de especificação da etiqueta, com régua tracejada. */
-.home-card-ficha {
-  display: grid;
-  gap: 0;
+.home-item-preco {
+  grid-area: preco;
   margin: 0;
-  border-top: 1.5px dashed var(--prumo);
-}
-
-.home-card-ficha div {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 0;
-}
-
-.home-card-ficha div + div {
-  border-top: 1px solid var(--cinza-linha);
-}
-
-.home-card-ficha dt {
-  color: var(--cinza-texto);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.home-card-ficha dd {
-  margin: 0;
-  font-size: 14.5px;
-  font-weight: 700;
-}
-
-.home-card-ficha .home-card-preco {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
   font-variation-settings: 'wdth' 85;
+  line-height: 1.15;
+  text-align: right;
+  white-space: nowrap;
 }
 
-@media (max-width: 720px) {
+.home-item-preco span {
+  display: block;
+  color: var(--cinza-texto);
+  font-size: 12.5px;
+  font-weight: 500;
+  font-variation-settings: normal;
+}
+
+.home-item-quantidade {
+  grid-area: quantidade;
+  margin: 6px 0 0;
+  color: var(--cinza-texto-forte);
+  font-size: 14px;
+}
+
+/* Rodapé com categoria e data. A altura mínima acomoda o botão "Destacar" do dono,
+   posicionado sobre a mesma faixa. */
+.home-item-rodape {
+  display: flex;
+  flex-wrap: wrap;
+  grid-area: rodape;
+  align-items: center;
+  align-self: end;
+  gap: 4px 20px;
+  min-height: 45px;
+  margin: 14px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--cinza-linha);
+  color: var(--cinza-icone);
+  font-size: 13px;
+}
+
+.home-item--destaque .home-item-rodape {
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+
+.home-item--meu .home-item-rodape {
+  padding-right: 260px;
+}
+
+/* Ações do dono ficam fora do link, alinhadas ao rodapé. */
+.home-item-acoes {
+  position: absolute;
+  right: 24px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.home-item-acoes span {
+  color: var(--cinza-texto);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.home-item-acoes .home-botao-contorno {
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+/* ---------- Tablet e celular: uma coluna ---------- */
+
+@media (max-width: 900px) {
+  .home-main {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding-top: 20px;
+  }
+
+  .home-lateral {
+    margin-bottom: 18px;
+    padding: 0;
+    background: transparent;
+  }
+
+  /* O título "Categorias" segue para leitores de tela; os chips já se explicam. */
+  .home-lateral-titulo {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   .home-filtros {
-    flex-wrap: nowrap;
+    flex-direction: row;
+    gap: 8px;
     /* Encosta nas bordas da tela, acompanhando o recuo de .home-main. */
     margin-inline: calc(-1 * clamp(20px, 4vw, 40px));
     padding-inline: clamp(20px, 4vw, 40px);
@@ -360,15 +405,60 @@
   .home-filtros::-webkit-scrollbar {
     display: none;
   }
-}
 
-@media (max-width: 560px) {
-  .home-main {
-    padding-inline: 16px;
+  .home-filtro {
+    flex: none;
+    width: auto;
+    min-height: 38px;
+    padding: 0 16px;
+    border: 1.5px solid var(--prumo);
+    border-radius: 10px;
+    font-weight: 600;
+    white-space: nowrap;
   }
 
-  .home-intro h1 {
-    font-size: 28px;
+  .home-filtro:hover {
+    border-color: var(--grafite);
+    background: transparent;
+  }
+
+  .home-filtro[aria-pressed='true'] {
+    border-color: var(--grafite);
+    color: #fff;
+    background: var(--grafite);
+    box-shadow: none;
+  }
+
+  .home-destaque-chamada {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin-top: 20px;
+  }
+
+  .home-destaque-chamada > p:not(.home-destaque-chamada-titulo) {
+    flex: 1 1 100%;
+    margin: 0;
+  }
+
+  .home-destaque-chamada .home-destaque-chamada-titulo {
+    flex: 1 1 100%;
+    margin: 0 0 -8px;
+  }
+
+  .home-destaque-chamada-acoes {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-main {
+    padding-inline: 16px;
   }
 
   .home-filtros {
@@ -376,8 +466,86 @@
     padding-inline: 16px;
   }
 
-  /* Com uma coluna só não há fileira para alinhar. */
-  .home-card-cabecalho {
+  .home-resultados-cabecalho h1 {
+    font-size: 23px;
+  }
+
+  .home-item-link {
+    grid-template-columns: 116px minmax(0, 1fr);
+    min-height: 132px;
+  }
+
+  .home-item-foto {
+    padding: 8px;
+  }
+
+  .home-item-foto-legenda {
+    font-size: 11px;
+  }
+
+  /* Selo compacto para caber na foto estreita. */
+  .home-item .home-item-selo {
+    top: 6px;
+    left: 6px;
+    gap: 5px;
+    padding: 3px 7px 3px 3px;
+    font-size: 11px;
+  }
+
+  .home-item .home-item-selo::before {
+    width: 14px;
+    height: 14px;
+  }
+
+  .home-item-info {
+    grid-template-areas:
+      'titulo'
+      'preco'
+      'quantidade'
+      'rodape';
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto 1fr;
+    padding: 12px 14px 10px;
+  }
+
+  .home-item-info h3 {
+    font-size: 15.5px;
+  }
+
+  .home-item-preco {
+    margin-top: 6px;
+    font-size: 19px;
+    text-align: left;
+  }
+
+  .home-item-preco span {
+    display: inline;
+    margin-left: 4px;
+  }
+
+  .home-item-quantidade {
+    margin-top: 2px;
+    font-size: 13px;
+  }
+
+  .home-item-rodape {
+    gap: 2px 12px;
     min-height: 0;
+    margin-top: 8px;
+    padding-top: 0;
+    border-top: 0;
+    font-size: 12px;
+  }
+
+  .home-item--meu .home-item-rodape {
+    padding-right: 0;
+  }
+
+  /* Sem espaço lateral: as ações viram uma faixa abaixo da linha. */
+  .home-item-acoes {
+    position: static;
+    justify-content: space-between;
+    padding: 8px 14px 10px;
+    border-top: 1px solid var(--cinza-linha);
   }
 }

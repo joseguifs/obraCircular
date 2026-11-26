@@ -77,7 +77,7 @@ describe('HomePage', () => {
 
     renderPagina()
 
-    expect(await screen.findByText('Olá, Ana')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Materiais disponíveis' })).toBeInTheDocument()
     expect(await screen.findByText('Perfis metálicos para drywall')).toBeInTheDocument()
     expect(screen.getByText(/R\$\s*420,00/)).toBeInTheDocument()
     expect(screen.getByRole('img', { name: `Foto de ${anuncio.titulo}` })).toHaveAttribute(
