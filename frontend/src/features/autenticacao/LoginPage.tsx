@@ -9,6 +9,10 @@ interface LoginPageProps {
   aoAutenticar: (sessao: Sessao) => void
   aoCadastrar: () => void
   aoRecuperarSenha: () => void
+  /** E-mail já preenchido, por exemplo o da conta recém-criada. */
+  emailInicial?: string
+  /** Mensagem de sucesso exibida no topo do formulário (ex.: conta criada). */
+  aviso?: string
 }
 
 interface ErrosLogin {
@@ -16,8 +20,14 @@ interface ErrosLogin {
   senha?: string
 }
 
-export function LoginPage({ aoAutenticar, aoCadastrar, aoRecuperarSenha }: LoginPageProps) {
-  const [email, setEmail] = useState('')
+export function LoginPage({
+  aoAutenticar,
+  aoCadastrar,
+  aoRecuperarSenha,
+  emailInicial = '',
+  aviso,
+}: LoginPageProps) {
+  const [email, setEmail] = useState(emailInicial)
   const [senha, setSenha] = useState('')
   const [mostrarSenha, setMostrarSenha] = useState(false)
   const [erros, setErros] = useState<ErrosLogin>({})
@@ -61,11 +71,18 @@ export function LoginPage({ aoAutenticar, aoCadastrar, aoRecuperarSenha }: Login
 
   return (
     <AuthLayout>
-      <div className="form-card login-card">
+      <div className="form-card">
         <header className="form-heading">
           <h2>Bem-vindo de volta</h2>
           <p>Entre para continuar comprando, vendendo e reaproveitando materiais.</p>
         </header>
+
+        {aviso && (
+          <div className="form-alert form-alert--sucesso login-aviso" role="status">
+            <CheckIcon />
+            <span>{aviso}</span>
+          </div>
+        )}
 
         <form className="login-form" onSubmit={enviarFormulario} aria-busy={enviando} noValidate>
           <div className="field-group">
@@ -112,6 +129,7 @@ export function LoginPage({ aoAutenticar, aoCadastrar, aoRecuperarSenha }: Login
                 maxLength={72}
                 aria-invalid={Boolean(erros.senha)}
                 aria-describedby={erros.senha ? 'login-senha-error' : undefined}
+                autoFocus={Boolean(emailInicial)}
                 required
               />
             </div>

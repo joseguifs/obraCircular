@@ -74,6 +74,29 @@ describe('LoginPage', () => {
     expect(sessionStorage.getItem('obra-circular:sessao')).toContain('access-token')
   })
 
+  it('exibe o aviso e o e-mail recebidos, como após criar a conta', () => {
+    render(
+      <LoginPage
+        aoAutenticar={vi.fn()}
+        aoCadastrar={vi.fn()}
+        aoRecuperarSenha={vi.fn()}
+        emailInicial="ana@example.com"
+        aviso="Conta criada com sucesso!"
+      />,
+    )
+
+    expect(screen.getByRole('status')).toHaveTextContent('Conta criada com sucesso!')
+    expect(screen.getByLabelText('E-mail')).toHaveValue('ana@example.com')
+    expect(screen.getByLabelText('Senha')).toHaveFocus()
+  })
+
+  it('não exibe aviso quando nenhum é informado', () => {
+    render(<LoginPage aoAutenticar={vi.fn()} aoCadastrar={vi.fn()} aoRecuperarSenha={vi.fn()} />)
+
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('E-mail')).toHaveValue('')
+  })
+
   it('exibe a mensagem de credenciais inválidas devolvida pela API', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,

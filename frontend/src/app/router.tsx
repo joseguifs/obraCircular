@@ -26,11 +26,18 @@ import { PedidosPage } from '../features/pagamentos/PedidosPage'
 import { VendasPage } from '../features/pagamentos/VendasPage'
 import { NotFoundPage } from '../features/not-found/NotFoundPage'
 import { CadastroUsuarioPage } from '../features/usuarios/CadastroUsuarioPage'
+import type { Usuario } from '../features/usuarios/types'
 import { PerfilPage } from '../features/usuarios/PerfilPage'
 import { MarketplaceLayout } from '../layouts/MarketplaceLayout'
 import { AdminRoute } from '../routes/AdminRoute'
 import { ProtectedRoute } from '../routes/ProtectedRoute'
 import { PublicOnlyRoute } from '../routes/PublicOnlyRoute'
+
+/** Estado de navegação aceito pela rota /login. */
+interface EstadoLogin {
+  origem?: string
+  emailCadastrado?: string
+}
 
 export function AppRouter() {
   return (
@@ -88,7 +95,7 @@ function LoginRoute() {
   const { iniciarSessao } = useAuth()
   const navegar = useNavigate()
   const localizacao = useLocation()
-  const estado = localizacao.state as { origem?: string } | null
+  const estado = localizacao.state as EstadoLogin | null
 
   function concluirLogin(sessao: Sessao) {
     iniciarSessao(sessao)
@@ -97,6 +104,12 @@ function LoginRoute() {
 
   return (
     <LoginPage
+      emailInicial={estado?.emailCadastrado}
+      aviso={
+        estado?.emailCadastrado
+          ? 'Conta criada com sucesso! Entre com seu e-mail e senha para continuar.'
+          : undefined
+      }
       aoAutenticar={concluirLogin}
       aoCadastrar={() => navegar('/cadastro')}
       aoRecuperarSenha={() => navegar('/esqueci-senha')}
@@ -106,7 +119,16 @@ function LoginRoute() {
 
 function CadastroRoute() {
   const navegar = useNavigate()
-  return <CadastroUsuarioPage aoEntrar={() => navegar('/login')} />
+
+  function concluirCadastro(usuario: Usuario) {
+    const estado: EstadoLogin = { emailCadastrado: usuario.email }
+    // replace: voltar no navegador não deve reabrir o formulário já enviado.
+    navegar('/login', { replace: true, state: estado })
+  }
+
+  return (
+    <CadastroUsuarioPage aoEntrar={() => navegar('/login')} aoCadastrar={concluirCadastro} />
+  )
 }
 
 function EsqueciSenhaRoute() {

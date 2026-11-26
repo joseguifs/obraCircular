@@ -15,6 +15,15 @@ O mesmo usuário pode atuar como comprador e vendedor.
 - A exclusão é lógica por meio de `deletado_em`.
 - Desativação, bloqueio ou exclusão não removem pedidos e registros financeiros.
 
+## Cadastro
+
+- `POST /users` é público e cria o usuário já como `ATIVO`; o status não pode ser escolhido.
+- O cadastro não inicia sessão: a resposta (`201`) traz apenas os dados públicos do
+  usuário, sem tokens. Para entrar, o usuário se autentica em `POST /auth/login`.
+- Logo após o cadastro, o frontend leva o usuário à tela de login (`/login`) com o
+  e-mail da conta já preenchido; a conta recém-criada deve conseguir autenticar
+  imediatamente.
+
 ## Recuperação de senha
 
 - O usuário informa o e-mail em `POST /auth/forgot-password` e recebe um link

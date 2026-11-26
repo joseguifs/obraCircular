@@ -47,6 +47,33 @@ async def test_criar_usuario_normaliza_email_telefone_e_omite_senha_hash(
     assert "deletado_em" not in usuario
 
 
+async def test_cadastro_nao_inicia_sessao_e_conta_pode_entrar_em_seguida(
+    client: AsyncClient,
+) -> None:
+    usuario = await _criar_usuario(client)
+
+    # O cadastro não devolve tokens: o usuário é levado à tela de login.
+    assert "access_token" not in usuario
+    assert "refresh_token" not in usuario
+
+    # A conta recém-criada autentica imediatamente com o e-mail devolvido no cadastro.
+    login = await client.post(
+        "/api/v1/auth/login",
+        json={"email": usuario["email"], "senha": USUARIO_PADRAO["senha"]},
+    )
+    assert login.status_code == 200, login.text
+    tokens = login.json()
+    assert tokens["access_token"]
+    assert tokens["refresh_token"]
+
+    me = await client.get(
+        "/api/v1/auth/me",
+        headers={"Authorization": f"Bearer {tokens['access_token']}"},
+    )
+    assert me.status_code == 200, me.text
+    assert me.json()["id"] == usuario["id"]
+
+
 async def test_criar_usuario_nome_vazio_e_rejeitado(client: AsyncClient) -> None:
     resposta = await client.post("/api/v1/users", json={**USUARIO_PADRAO, "nome": "   "})
     assert resposta.status_code == 422

@@ -1,6 +1,9 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { BrowserRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { AppRouter } from '../../app/router'
+import { AuthProvider } from '../autenticacao/AuthProvider'
 import { CadastroUsuarioPage } from './CadastroUsuarioPage'
 
 const usuarioCriado = {
@@ -34,20 +37,21 @@ describe('CadastroUsuarioPage', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('envia os dados válidos para o endpoint de usuários', async () => {
+  it('envia os dados válidos para o endpoint de usuários e avisa a rota', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
       json: async () => usuarioCriado,
     })
     vi.stubGlobal('fetch', fetchMock)
+    const aoCadastrar = vi.fn()
     const user = userEvent.setup()
-    render(<CadastroUsuarioPage />)
+    render(<CadastroUsuarioPage aoCadastrar={aoCadastrar} />)
 
     await preencherFormulario(user)
     await user.click(screen.getByRole('button', { name: 'Criar minha conta' }))
 
-    expect(await screen.findByText('Boas-vindas, Ana!')).toBeInTheDocument()
+    await waitFor(() => expect(aoCadastrar).toHaveBeenCalledWith(usuarioCriado))
     expect(fetchMock).toHaveBeenCalledOnce()
     const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit]
     expect(url).toBe('http://localhost:8000/api/v1/users')
@@ -76,6 +80,35 @@ describe('CadastroUsuarioPage', () => {
     expect(
       await screen.findByText('Já existe um usuário cadastrado com este e-mail.'),
     ).toBeInTheDocument()
+  })
+
+  it('redireciona para o login com o e-mail preenchido depois de criar a conta', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: async () => usuarioCriado,
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    window.history.replaceState({}, '', '/cadastro')
+    const user = userEvent.setup()
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRouter />
+        </AuthProvider>
+      </BrowserRouter>,
+    )
+
+    await preencherFormulario(user)
+    await user.click(screen.getByRole('button', { name: 'Criar minha conta' }))
+
+    expect(
+      await screen.findByRole('heading', { name: 'Bem-vindo de volta' }),
+    ).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/login')
+    expect(screen.getByRole('status')).toHaveTextContent('Conta criada com sucesso!')
+    expect(screen.getByLabelText('E-mail')).toHaveValue('ana@example.com')
+    expect(screen.getByLabelText('Senha')).toHaveValue('')
   })
 })
 
