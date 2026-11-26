@@ -1,11 +1,15 @@
-.login-card {
-  width: min(100%, 480px);
-}
-
 .login-form {
   display: grid;
   margin-top: 32px;
   gap: 20px;
+}
+
+.login-aviso {
+  margin-top: 24px;
+}
+
+.login-aviso + .login-form {
+  margin-top: 20px;
 }
 
 .login-options {
@@ -23,10 +27,4 @@
   font: inherit;
   font-weight: 800;
   text-decoration: underline;
-}
-
-@media (max-width: 560px) {
-  .login-card {
-    min-height: calc(100vh - 82px);
-  }
 }
