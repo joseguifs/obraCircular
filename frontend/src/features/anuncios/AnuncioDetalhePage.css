@@ -1,7 +1,32 @@
+/* Detalhe do anúncio: galeria, ficha e perguntas à esquerda; compra fixa à direita.
+   O amarelo de sinalização aparece só quando o anúncio tem destaque pago. */
 .ad-detail-page {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 28px clamp(20px, 4vw, 40px) 72px;
+  padding: 20px clamp(20px, 4vw, 40px) 72px;
+}
+
+.ad-detail-trilha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-bottom: 16px;
+  color: var(--cinza-texto);
+  font-size: 13.5px;
+}
+
+.ad-detail-trilha a {
+  color: var(--grafite);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+.ad-detail-trilha-atual {
+  max-width: 40ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ad-detail-loading {
@@ -18,28 +43,32 @@
 
 .ad-detail-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr);
   gap: 28px;
   align-items: start;
 }
 
+.ad-detail-principal {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
 .ad-detail-card {
   overflow: hidden;
-  border: 1px solid var(--prumo);
-  border-radius: 8px;
+  border-radius: 10px;
   background: #fff;
 }
+
+/* ---------- Galeria ---------- */
 
 /* Mesmo formato 4:3 orientado na publicação. A foto aparece inteira (sem corte),
    e um fundo desfocado da própria foto ocupa as sobras quando ela foge do padrão. */
 .ad-detail-foto {
   position: relative;
-  display: flex;
   aspect-ratio: 4 / 3;
   max-height: 620px;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 18px;
   overflow: hidden;
   background: linear-gradient(140deg, #3e4854, #222a33);
 }
@@ -72,28 +101,70 @@
   font-weight: 600;
 }
 
-.ad-detail-miniaturas {
+.ad-detail-foto-selos {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 1;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  padding: 12px 16px;
-  overflow-x: auto;
-  border-bottom: 1px solid var(--cinza-linha);
+}
+
+.ad-detail-foto .ad-detail-selo {
+  padding: 6px 12px 6px 6px;
+  font-size: 13px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.ad-detail-status {
+  padding: 5px 10px;
+  border-radius: 6px;
+  color: #fff;
+  background: var(--vermelho);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.ad-detail-foto-contador {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(27, 36, 48, 0.72);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.ad-detail-miniaturas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 10px;
+  padding: 12px;
 }
 
 .ad-detail-miniatura {
-  width: 72px;
   aspect-ratio: 4 / 3;
-  flex: none;
   padding: 0;
   overflow: hidden;
-  border: 2px solid transparent;
+  border: 0;
   border-radius: 6px;
   background: var(--cinza-fundo-input);
   cursor: pointer;
+  opacity: 0.72;
+  transition: opacity 140ms ease;
 }
 
-.ad-detail-miniatura--ativa {
-  border-color: var(--grafite);
+.ad-detail-miniatura:hover {
+  opacity: 1;
+}
+
+.ad-detail-miniatura[aria-pressed='true'] {
+  box-shadow: 0 0 0 3px var(--grafite);
+  opacity: 1;
 }
 
 .ad-detail-miniatura img {
@@ -102,132 +173,391 @@
   object-fit: cover;
 }
 
-.ad-detail-categoria,
-.ad-detail-status {
-  position: relative;
-  z-index: 1;
-  padding: 5px 10px;
-  border-radius: 4px;
+/* ---------- Ficha e descrição ---------- */
+
+.ad-detail-ficha {
+  padding: 24px 28px 28px;
+}
+
+.ad-detail-ficha h2,
+.ad-detail-perguntas .ad-perguntas h2 {
+  margin: 0 0 14px;
   color: var(--grafite);
-  background: #fff;
-  font-size: 12.5px;
-  font-weight: 700;
-}
-
-.ad-detail-status {
-  margin-left: 8px;
-  color: #fff;
-  background: var(--vermelho);
-}
-
-.ad-detail-corpo {
-  padding: 28px 32px 32px;
-}
-
-.ad-detail-corpo h1 {
-  max-width: 24ch;
-  margin: 0 0 6px;
-  font-size: clamp(32px, 3.4vw, 44px);
+  font-size: 19px;
   font-weight: 800;
-  font-variation-settings: 'wdth' 76;
-  letter-spacing: -0.3px;
-  line-height: 1.02;
+  letter-spacing: 0;
 }
 
-.ad-detail-corpo h2 {
-  margin: 0 0 8px;
-  color: var(--grafite);
-  font-size: 18px;
-  font-weight: 800;
+.ad-detail-ficha h2 + p {
+  margin-top: -6px;
 }
 
-.ad-detail-meta {
-  margin: 0 0 20px;
+.ad-detail-ficha-lista {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 0 24px;
+  border-top: 1.5px solid var(--grafite);
+}
+
+.ad-detail-ficha-lista div {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cinza-linha);
+}
+
+.ad-detail-ficha-lista div:nth-child(even) {
+  padding-left: 20px;
+}
+
+.ad-detail-ficha-lista dt {
   color: var(--cinza-texto);
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.ad-detail-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 28px;
-}
-
-.ad-detail-tag {
-  padding: 6px 10px;
-  border: 1.5px solid var(--prumo);
-  border-radius: 4px;
-  color: var(--cinza-texto-forte);
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ad-detail-ficha-lista dd {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .ad-detail-descricao {
-  max-width: 65ch;
-  margin: 0 0 8px;
+  max-width: 68ch;
+  margin: 0;
   color: var(--cinza-texto-forte);
-  font-size: 16px;
-  line-height: 1.65;
+  font-size: 15.5px;
+  line-height: 1.6;
+  white-space: pre-line;
 }
+
+/* ---------- Perguntas ---------- */
+
+.ad-detail-perguntas {
+  padding: 24px 28px 28px;
+  scroll-margin-top: 88px;
+}
+
+.ad-detail-perguntas .ad-perguntas {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* ---------- Coluna de compra ---------- */
 
 .ad-detail-lateral {
   position: sticky;
   top: 88px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
+  min-width: 0;
 }
 
-/* Painel de compra como etiqueta de lote, com o mesmo canto recortado dos cards. */
-.ad-detail-preco-card {
-  --corte: 26px;
-  padding: 26px 26px 24px;
-  border: 0;
-  border-radius: 6px;
-  clip-path: polygon(0 0, calc(100% - var(--corte)) 0, 100% var(--corte), 100% 100%, 0 100%);
+.ad-detail-compra {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  box-shadow: 0 18px 40px -28px rgba(27, 36, 48, 0.7);
 }
 
-.ad-detail-preco-label {
-  margin: 0 0 2px;
+/* Anúncio pago: faixa amarela no topo e papel de sinalização. */
+.ad-detail-compra--destaque {
+  border-top: 6px solid var(--sinal-amarelo);
+}
+
+.ad-detail-sobretitulo {
+  margin: 0 0 -10px;
   color: var(--cinza-texto);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ad-detail-compra h1 {
+  margin: 0;
+  font-size: clamp(26px, 2.4vw, 30px);
+  font-weight: 800;
+  font-variation-settings: 'wdth' 78;
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.ad-detail-meta {
+  margin: -8px 0 0;
+  color: var(--cinza-texto);
+  font-size: 13.5px;
+}
+
+.ad-detail-preco-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+
+.ad-detail-preco {
+  margin: 0;
+  font-size: 42px;
+  font-weight: 800;
+  font-variation-settings: 'wdth' 80;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.ad-detail-preco-linha span {
+  color: var(--cinza-texto);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ad-detail-checkout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ad-detail-rotulo,
+.ad-detail-quantidade label,
+.ad-detail-campo {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ad-detail-rotulo {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.ad-detail-quantidade {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ad-detail-quantidade label span {
+  display: block;
+  color: var(--cinza-texto);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.ad-detail-passo {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1.5px solid var(--prumo);
+  border-radius: 8px;
+}
+
+.ad-detail-passo button {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  color: var(--grafite);
+  background: var(--concreto-claro);
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.ad-detail-passo button:hover:not(:disabled) {
+  background: var(--concreto);
+}
+
+.ad-detail-passo button:disabled {
+  color: var(--cinza-acinzentado-2);
+  cursor: not-allowed;
+}
+
+.ad-detail-passo input {
+  width: 60px;
+  height: 44px;
+  border: 0;
+  color: var(--grafite);
+  background: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  text-align: center;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.ad-detail-passo input::-webkit-outer-spin-button,
+.ad-detail-passo input::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.ad-detail-recebimento {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ad-detail-recebimento button {
+  display: grid;
+  gap: 2px;
+  min-height: 56px;
+  padding: 8px 12px;
+  border: 1.5px solid var(--prumo);
+  border-radius: 8px;
+  color: var(--grafite);
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ad-detail-recebimento button:hover {
+  border-color: var(--grafite);
+}
+
+.ad-detail-recebimento button[aria-pressed='true'] {
+  border-color: var(--grafite);
+  background: var(--concreto-claro);
+  box-shadow: inset 0 0 0 1px var(--grafite);
+}
+
+.ad-detail-recebimento strong {
+  font-size: 14.5px;
+}
+
+.ad-detail-recebimento span {
+  color: var(--cinza-texto);
+  font-size: 12.5px;
+}
+
+.ad-detail-campo {
+  display: grid;
+  gap: 6px;
+}
+
+.ad-detail-campo select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1.5px solid var(--prumo);
+  border-radius: 8px;
+  color: var(--grafite);
+  background: var(--cinza-fundo-input);
+  font-size: 14.5px;
+}
+
+.ad-detail-sem-endereco {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--azul-suave-borda);
+  border-radius: 8px;
+  color: var(--azul-escuro);
+  background: var(--azul-suave-bg);
   font-size: 13.5px;
   font-weight: 600;
 }
 
-.ad-detail-preco {
-  margin: 0 0 14px;
-  padding-bottom: 16px;
-  border-bottom: 1.5px dashed var(--prumo);
-  font-size: 48px;
+.ad-detail-sem-endereco a {
+  color: inherit;
   font-weight: 800;
-  font-variation-settings: 'wdth' 78;
-  letter-spacing: -0.5px;
-  line-height: 1;
 }
 
-.ad-detail-preco-nota {
+.ad-detail-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
   margin: 0;
-  color: var(--cinza-texto);
+  padding-top: 14px;
+  border-top: 1px dashed var(--prumo);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ad-detail-total strong {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.ad-detail-compra .form-alert {
+  margin: 0;
+}
+
+.ad-detail-comprar {
+  min-height: 52px;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--grafite);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.ad-detail-comprar:hover:not(:disabled) {
+  background: var(--grafite-suave);
+}
+
+.ad-detail-comprar:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.ad-detail-duvida {
+  align-self: center;
+  color: var(--grafite);
+  font-size: 14px;
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
+.ad-detail-indisponivel {
+  margin: 0;
+  color: var(--cinza-texto-forte);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+/* Proteções: a mesma marca de conferido das garantias da página inicial. */
+.ad-detail-protecoes {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 18px 20px;
+  list-style: none;
+}
+
+.ad-detail-protecoes li {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding-left: 30px;
+}
+
+.ad-detail-protecoes li::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 100% no-repeat,
+    var(--verde-obra);
+}
+
+.ad-detail-protecoes strong {
+  font-size: 14px;
+}
+
+.ad-detail-protecoes span {
+  color: var(--cinza-texto-forte);
   font-size: 13.5px;
-  line-height: 1.55;
-}
-
-@media (max-width: 900px) {
-  .ad-detail-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .ad-detail-lateral {
-    position: static;
-  }
-}
-
-@media (max-width: 720px) {
-  .ad-detail-corpo {
-    padding: 22px 20px;
-  }
+  line-height: 1.45;
 }
 
 /* Área do dono do anúncio: destaque pago */
@@ -254,4 +584,184 @@
 
 .ad-detail-dono .destaque-oferta {
   justify-self: stretch;
+}
+
+/* ---------- Outros anúncios em destaque ---------- */
+
+.ad-detail-outros {
+  margin-top: 40px;
+  padding: 20px 20px 22px;
+  border-radius: 12px;
+  color: #fff;
+  background: var(--grafite);
+}
+
+.ad-detail-outros header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 16px;
+  margin-bottom: 14px;
+}
+
+.ad-detail-outros h2 {
+  margin: 0;
+  color: var(--sinal-amarelo);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ad-detail-outros header p {
+  margin: 0;
+  color: var(--cinza-acinzentado-1);
+  font-size: 13.5px;
+}
+
+.ad-detail-outros ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ad-detail-outros li {
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--sinal-papel);
+}
+
+.ad-detail-outros a {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: var(--grafite);
+  text-decoration: none;
+}
+
+.ad-detail-outros a:focus-visible {
+  outline-offset: -4px;
+}
+
+.ad-detail-outros a:hover .ad-detail-outros-titulo {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ad-detail-outros-foto {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.ad-detail-outros-foto img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ad-detail-outros-info {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px 14px;
+}
+
+.ad-detail-outros-titulo {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.ad-detail-outros-preco {
+  font-size: 19px;
+  font-weight: 800;
+}
+
+/* ---------- Tablet e celular ---------- */
+
+@media (max-width: 900px) {
+  .ad-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  /* No celular a compra sobe para logo depois das fotos. */
+  .ad-detail-principal {
+    display: contents;
+  }
+
+  .ad-detail-galeria {
+    order: 1;
+  }
+
+  .ad-detail-lateral {
+    position: static;
+    order: 2;
+  }
+
+  .ad-detail-ficha {
+    order: 3;
+  }
+
+  .ad-detail-perguntas {
+    order: 4;
+  }
+}
+
+@media (max-width: 640px) {
+  .ad-detail-page {
+    padding-inline: 16px;
+  }
+
+  .ad-detail-grid {
+    gap: 14px;
+  }
+
+  .ad-detail-foto-selos {
+    top: 12px;
+    left: 12px;
+  }
+
+  .ad-detail-miniaturas {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .ad-detail-miniatura {
+    flex: 0 0 72px;
+  }
+
+  .ad-detail-compra,
+  .ad-detail-ficha,
+  .ad-detail-perguntas {
+    padding: 18px;
+  }
+
+  .ad-detail-preco {
+    font-size: 34px;
+  }
+
+  .ad-detail-ficha-lista div:nth-child(even) {
+    padding-left: 14px;
+  }
+
+  .ad-detail-outros ul {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .ad-detail-outros li {
+    flex: 0 0 200px;
+  }
 }
