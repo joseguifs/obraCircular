@@ -1,130 +1,470 @@
-/* Estrutura de marketplace: filtros numa coluna à esquerda, resultados em linhas à
-   direita. No celular tudo vira uma coluna só, na ordem do HTML. */
+/* Página inicial em seções empilhadas: vitrine paga, categorias, grade de anúncios,
+   faixa para vendedores e garantias. O amarelo de sinalização fica reservado ao que
+   é pago, para o destaque ser a coisa mais visível da página. */
 .home-main {
-  display: grid;
-  grid-template-columns: 232px minmax(0, 1fr);
-  grid-template-rows: auto 1fr;
-  gap: 20px 32px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 32px clamp(20px, 4vw, 40px) 72px;
+  padding: 28px clamp(20px, 4vw, 40px) 72px;
 }
 
-/* ---------- Coluna lateral ---------- */
+.home-secao-titulo {
+  margin: 0 0 12px;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.2;
+}
 
-.home-lateral {
-  grid-column: 1;
-  grid-row: 1;
-  padding: 16px 10px 10px;
+.home-seta {
+  display: inline-block;
+  transition: transform 160ms ease;
+}
+
+/* ---------- Vitrine em destaque ---------- */
+
+.home-vitrine {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  color: #fff;
+  background: var(--grafite);
+  box-shadow: 0 18px 40px -24px rgba(27, 36, 48, 0.7);
+}
+
+.home-vitrine-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  padding: 16px 20px 14px;
+}
+
+.home-vitrine-cabecalho h2 {
+  margin: 0;
+  color: var(--sinal-amarelo);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.home-vitrine-cabecalho p {
+  flex: 1 1 240px;
+  margin: 0;
+  color: var(--cinza-acinzentado-1);
+  font-size: 13.5px;
+}
+
+.home-vitrine-convite {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1.5px solid var(--sinal-amarelo);
   border-radius: 8px;
-  background: #fff;
+  color: var(--sinal-amarelo);
+  background: transparent;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
-.home-lateral-titulo {
+.home-vitrine-convite:hover {
+  color: var(--grafite);
+  background: var(--sinal-amarelo);
+}
+
+.home-vitrine-corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 16px;
+  padding: 0 20px 20px;
+}
+
+.home-vitrine--unico .home-vitrine-corpo {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Anúncio da vez: papel amarelo, foto grande e preço em evidência. */
+.home-vitrine-principal {
+  --corte: 26px;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  min-height: 340px;
+  overflow: hidden;
+  border-radius: 10px;
+  color: var(--grafite);
+  background: var(--sinal-papel);
+  text-decoration: none;
+  clip-path: polygon(0 0, calc(100% - var(--corte)) 0, 100% var(--corte), 100% 100%, 0 100%);
+  animation: home-vitrine-entrar 320ms ease-out;
+}
+
+.home-vitrine-principal:focus-visible {
+  outline: 3px solid var(--planta);
+  outline-offset: -5px;
+}
+
+.home-vitrine-principal:hover h3 {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.home-vitrine-principal:hover .home-seta {
+  transform: translateX(4px);
+}
+
+.home-vitrine-foto {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 100%;
+  padding: 14px;
+  overflow: hidden;
+}
+
+.home-vitrine-imagem {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 400ms ease;
+}
+
+.home-vitrine-principal:hover .home-vitrine-imagem {
+  transform: scale(1.03);
+}
+
+.home-vitrine-foto-legenda {
+  position: relative;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.home-vitrine .home-vitrine-selo {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 1;
+  padding: 6px 12px 6px 6px;
+  font-size: 13px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.home-vitrine-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 28px 32px 26px 28px;
+}
+
+.home-vitrine-categoria {
   margin: 0 0 8px;
-  padding: 0 10px;
+  color: var(--sinal-texto);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.home-vitrine-info h3 {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  font-size: 30px;
+  font-weight: 800;
+  font-variation-settings: 'wdth' 78;
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+}
+
+.home-vitrine-preco {
+  margin: 18px 0 0;
+  font-size: 40px;
+  font-weight: 800;
+  font-variation-settings: 'wdth' 80;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+/* Marca-texto amarelo sob o preço. */
+.home-vitrine-preco strong {
+  font-weight: inherit;
+  background: linear-gradient(transparent 62%, var(--sinal-amarelo) 62%, var(--sinal-amarelo) 92%, transparent 92%);
+}
+
+.home-vitrine-preco span {
+  color: var(--cinza-texto);
+  font-size: 14px;
+  font-weight: 600;
+  font-variation-settings: normal;
+  letter-spacing: 0;
+}
+
+.home-vitrine-quantidade {
+  margin: 10px 0 0;
+  color: var(--cinza-texto-forte);
+  font-size: 14.5px;
+}
+
+.home-vitrine-acao {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: auto;
+  padding: 0 20px;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--grafite);
   font-size: 15px;
   font-weight: 800;
 }
 
-.home-filtros {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+/* Barra de tempo até o próximo anúncio da vitrine. */
+.home-vitrine-progresso {
+  position: absolute;
+  inset: auto 0 0;
+  height: 4px;
+  background: var(--grafite);
+  transform-origin: left;
+  animation: home-vitrine-progresso linear forwards;
 }
 
-.home-filtro {
+/* Fila com os outros pagantes, que também servem para trocar o anúncio da vez. */
+.home-vitrine-fila {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-vitrine-item {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
   width: 100%;
-  min-height: 40px;
-  padding: 8px 10px;
-  border: 0;
-  border-radius: 6px;
-  color: var(--cinza-texto-forte);
-  background: transparent;
+  padding: 8px 10px 8px 8px;
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
   cursor: pointer;
-  font-size: 14.5px;
-  font-weight: 500;
-  line-height: 1.3;
   text-align: left;
 }
 
-.home-filtro:hover {
-  color: var(--grafite);
-  background: var(--concreto-claro);
+.home-vitrine-item:hover {
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-.home-filtro[aria-pressed='true'] {
-  color: var(--grafite);
-  background: var(--concreto-claro);
-  box-shadow: inset 3px 0 0 var(--grafite);
+.home-vitrine-item[aria-current='true'] {
+  border-color: var(--sinal-amarelo);
+  background: rgba(245, 184, 0, 0.12);
+}
+
+.home-vitrine-item-foto {
+  position: relative;
+  width: 64px;
+  height: 48px;
+  overflow: hidden;
+  border-radius: 5px;
+}
+
+.home-vitrine-item-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-vitrine-item-texto {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.home-vitrine-item-titulo {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.home-vitrine-item-preco {
+  color: var(--sinal-amarelo);
+  font-size: 14px;
   font-weight: 800;
 }
 
-/* Convite ao destaque: neutro, para o amarelo ficar só nos anúncios pagos. */
-.home-destaque-chamada {
-  grid-column: 1;
-  grid-row: 2;
-  padding: 16px;
-  border: 1.5px dashed var(--prumo);
-  border-radius: 8px;
-  /* Mesmo fundo do bloco de categorias, para destacar do concreto da página. */
-  background: #fff;
+/* Reserva o espaço da vitrine enquanto os anúncios carregam. */
+.home-vitrine--carregando {
+  min-height: 420px;
+  animation: home-pulsar 1.4s ease-in-out infinite alternate;
 }
 
-.home-destaque-chamada p {
-  margin: 0 0 14px;
-  color: var(--cinza-texto-forte);
+/* Vitrine sem pagantes: boas-vindas e um convite para ocupar o espaço. */
+.home-vitrine--vazia {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+}
+
+.home-vitrine-boas-vindas {
+  align-self: center;
+  padding: 36px 32px 36px 36px;
+}
+
+.home-vitrine-sobretitulo {
+  margin: 0 0 10px;
+  color: var(--azul-texto-claro);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.home-vitrine-boas-vindas h2 {
+  margin: 0;
+  font-size: 38px;
+  font-weight: 800;
+  font-variation-settings: 'wdth' 74;
+  letter-spacing: -0.5px;
+  line-height: 1.05;
+}
+
+.home-vitrine-boas-vindas p:last-child {
+  max-width: 46ch;
+  margin: 14px 0 0;
+  color: var(--cinza-acinzentado-1);
+  font-size: 15.5px;
+  line-height: 1.5;
+}
+
+.home-vitrine-espaco {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+  margin: 24px 24px 24px 0;
+  padding: 24px;
+  border: 2px dashed rgba(245, 184, 0, 0.6);
+  border-radius: 10px;
+  background: rgba(245, 184, 0, 0.06);
+}
+
+.home-vitrine-espaco p {
+  margin: 0;
+  color: var(--cinza-acinzentado-1);
   font-size: 14px;
   line-height: 1.5;
 }
 
-.home-destaque-chamada .home-destaque-chamada-titulo {
-  margin-bottom: 4px;
-  color: var(--grafite);
-  font-size: 15px;
+.home-vitrine-espaco .home-vitrine-espaco-titulo {
+  color: #fff;
+  font-size: 20px;
   font-weight: 800;
 }
 
-.home-destaque-chamada-acoes {
+.home-vitrine-espaco .home-vitrine-convite {
+  margin-top: 6px;
+}
+
+/* ---------- Categorias ---------- */
+
+.home-categorias-lista {
   display: flex;
+  gap: 10px;
+  /* Deixa a sombra do foco aparecer dentro da área rolável. */
+  padding: 3px;
+  margin: -3px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.home-categorias-lista::-webkit-scrollbar {
+  display: none;
+}
+
+.home-categoria {
+  display: flex;
+  flex: none;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.home-destaque-chamada-link {
-  color: var(--grafite);
-  font-size: 14px;
-  font-weight: 700;
-  text-underline-offset: 3px;
-}
-
-.home-botao-contorno {
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 38px;
-  padding: 0 14px;
-  border: 1.5px solid var(--grafite);
+  gap: 8px;
+  width: 116px;
+  padding: 14px 8px 12px;
+  border: 1.5px solid transparent;
   border-radius: 8px;
-  color: var(--grafite);
+  color: var(--cinza-texto-forte);
   background: #fff;
   cursor: pointer;
-  font-size: 13.5px;
-  font-weight: 800;
 }
 
-.home-botao-contorno:hover {
+.home-categoria:hover {
+  border-color: var(--prumo);
+}
+
+.home-categoria-sigla {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1.5px solid var(--grafite);
+  border-radius: 6px;
+  color: var(--grafite);
+  background: var(--concreto-claro);
+  font-size: 17px;
+  font-weight: 800;
+  font-variation-settings: 'wdth' 72;
+}
+
+.home-categoria-nome {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.home-categoria[aria-pressed='true'] {
+  border-color: var(--grafite);
+  color: var(--grafite);
+}
+
+.home-categoria[aria-pressed='true'] .home-categoria-sigla {
   color: #fff;
   background: var(--grafite);
+}
+
+.home-categoria[aria-pressed='true'] .home-categoria-nome {
+  font-weight: 800;
 }
 
 /* ---------- Resultados ---------- */
 
 .home-resultados {
-  grid-column: 2;
-  grid-row: 1 / span 2;
   min-width: 0;
 }
 
@@ -186,32 +526,36 @@
 
 .home-lista {
   display: grid;
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-auto-flow: dense;
+  gap: 16px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* Cada anúncio é uma linha: foto à esquerda, dados à direita. O canto recortado
-   lembra a etiqueta de lote do restante do sistema. */
+/* Card vertical com o canto recortado da etiqueta de lote usada no resto do sistema. */
 .home-item {
   --corte: 18px;
   position: relative;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   border-radius: 8px;
   background: #fff;
   clip-path: polygon(0 0, calc(100% - var(--corte)) 0, 100% var(--corte), 100% 100%, 0 100%);
+  transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
-.home-item--destaque {
-  background: var(--sinal-papel);
+.home-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -16px rgba(27, 36, 48, 0.6);
 }
 
 .home-item-link {
-  display: grid;
-  /* 232 × 174 = 4:3, o mesmo formato orientado na publicação. */
-  grid-template-columns: 232px minmax(0, 1fr);
-  min-height: 174px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   color: inherit;
   text-decoration: none;
 }
@@ -232,6 +576,7 @@
   position: relative;
   display: flex;
   align-items: flex-end;
+  aspect-ratio: 4 / 3;
   padding: 10px 12px;
   overflow: hidden;
 }
@@ -258,7 +603,82 @@
   z-index: 2;
 }
 
-/* Fita de sinalização na base da foto dos anúncios pagos. */
+.home-item-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 12px 14px 12px;
+}
+
+.home-item-categoria {
+  margin: 0 0 4px;
+  color: var(--cinza-icone);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.home-item-info h3 {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  font-size: 16px;
+  font-weight: 700;
+  font-variation-settings: 'wdth' 90;
+  line-height: 1.25;
+}
+
+.home-item-preco {
+  margin: 10px 0 0;
+  font-size: 21px;
+  font-weight: 800;
+  font-variation-settings: 'wdth' 85;
+  line-height: 1.15;
+}
+
+.home-item-preco span {
+  color: var(--cinza-texto);
+  font-size: 12.5px;
+  font-weight: 500;
+  font-variation-settings: normal;
+}
+
+.home-item-quantidade {
+  margin: 4px 0 0;
+  color: var(--cinza-texto-forte);
+  font-size: 13.5px;
+}
+
+.home-item-rodape {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--cinza-linha);
+  color: var(--cinza-icone);
+  font-size: 12.5px;
+}
+
+/* Pagantes na grade (busca filtrada ou excedentes da vitrine): ocupam duas colunas,
+   em papel amarelo, com a fita de sinalização sob a foto. */
+.home-item--destaque {
+  grid-column: span 2;
+  background: var(--sinal-papel);
+  box-shadow: inset 0 0 0 2px var(--sinal-amarelo);
+}
+
+.home-item--destaque .home-item-link {
+  flex-direction: row;
+}
+
+.home-item--destaque .home-item-foto {
+  flex: 0 0 52%;
+  aspect-ratio: auto;
+  min-height: 200px;
+}
+
 .home-item--destaque .home-item-foto::after {
   content: '';
   position: absolute;
@@ -268,286 +688,438 @@
   background: var(--sinal-fita);
 }
 
-.home-item-info {
-  display: grid;
-  grid-template-areas:
-    'titulo preco'
-    'quantidade preco'
-    'rodape rodape';
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-rows: auto auto 1fr;
-  column-gap: 24px;
-  padding: 16px 24px 14px 20px;
+.home-item--destaque .home-item-info {
+  padding: 16px 18px 14px;
 }
 
-.home-item-info h3 {
-  display: -webkit-box;
-  grid-area: titulo;
-  margin: 0;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  font-size: 18px;
-  font-weight: 700;
-  font-variation-settings: 'wdth' 90;
-  line-height: 1.25;
+.home-item--destaque .home-item-categoria {
+  color: var(--sinal-texto);
 }
 
-.home-item-preco {
-  grid-area: preco;
-  margin: 0;
-  font-size: 22px;
-  font-weight: 800;
-  font-variation-settings: 'wdth' 85;
-  line-height: 1.15;
-  text-align: right;
-  white-space: nowrap;
+.home-item--destaque .home-item-info h3 {
+  font-size: 19px;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
 }
 
-.home-item-preco span {
-  display: block;
-  color: var(--cinza-texto);
-  font-size: 12.5px;
-  font-weight: 500;
-  font-variation-settings: normal;
-}
-
-.home-item-quantidade {
-  grid-area: quantidade;
-  margin: 6px 0 0;
-  color: var(--cinza-texto-forte);
-  font-size: 14px;
-}
-
-/* Rodapé com categoria e data. A altura mínima acomoda o botão "Destacar" do dono,
-   posicionado sobre a mesma faixa. */
-.home-item-rodape {
-  display: flex;
-  flex-wrap: wrap;
-  grid-area: rodape;
-  align-items: center;
-  align-self: end;
-  gap: 4px 20px;
-  min-height: 45px;
-  margin: 14px 0 0;
-  padding-top: 10px;
-  border-top: 1px solid var(--cinza-linha);
-  color: var(--cinza-icone);
-  font-size: 13px;
+.home-item--destaque .home-item-preco {
+  font-size: 26px;
 }
 
 .home-item--destaque .home-item-rodape {
+  margin-top: auto;
   border-top-color: rgba(0, 0, 0, 0.08);
 }
 
-.home-item--meu .home-item-rodape {
-  padding-right: 260px;
+.home-item--destaque .home-item-quantidade {
+  margin-bottom: 12px;
 }
 
-/* Ações do dono ficam fora do link, alinhadas ao rodapé. */
+/* Ações do dono ficam fora do link, numa faixa no pé do card. */
 .home-item-acoes {
-  position: absolute;
-  right: 24px;
-  bottom: 14px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 14px 12px;
+  border-top: 1px dashed var(--cinza-linha);
 }
 
 .home-item-acoes span {
   color: var(--cinza-texto);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
 }
 
-.home-item-acoes .home-botao-contorno {
+.home-botao-contorno {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 34px;
   padding: 0 12px;
+  border: 1.5px solid var(--grafite);
+  border-radius: 8px;
+  color: var(--grafite);
+  background: #fff;
+  cursor: pointer;
   font-size: 13px;
+  font-weight: 800;
 }
 
-/* ---------- Tablet e celular: uma coluna ---------- */
+.home-botao-contorno:hover {
+  color: #fff;
+  background: var(--grafite);
+}
+
+/* ---------- Faixa para vendedores ---------- */
+
+.home-vender {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) auto auto;
+  align-items: center;
+  gap: 20px 36px;
+  padding: 28px 32px;
+  border-radius: 12px;
+  color: #fff;
+  background: var(--grafite);
+}
+
+.home-vender-texto h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.home-vender-texto p {
+  max-width: 52ch;
+  margin: 8px 0 0;
+  color: var(--cinza-acinzentado-1);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+.home-vender-passos {
+  display: flex;
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-vender-passos li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 92px;
+  color: var(--cinza-acinzentado-1);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.home-vender-passos strong {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1.5px solid var(--azul-texto-claro);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 14px;
+}
+
+.home-vender-acoes {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  text-align: center;
+}
+
+.home-vender-destacar,
+.home-vender-anunciar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14.5px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.home-vender-destacar {
+  border: 0;
+  color: var(--grafite);
+  background: var(--sinal-amarelo);
+}
+
+.home-vender-destacar:hover {
+  background: #ffc61a;
+}
+
+.home-vender-anunciar {
+  border: 0;
+  color: var(--grafite);
+  background: #fff;
+}
+
+.home-vender-anunciar:hover {
+  background: var(--concreto);
+}
+
+.home-vender-link {
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Garantias ---------- */
+
+.home-garantias {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: -12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-garantias li {
+  position: relative;
+  display: grid;
+  gap: 3px;
+  padding: 14px 16px 14px 44px;
+  border-radius: 8px;
+  background: #fff;
+}
+
+/* Marca de conferido, como no check de recebimento de material. */
+.home-garantias li::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 100% no-repeat,
+    var(--verde-obra);
+}
+
+.home-garantias strong {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.home-garantias span {
+  color: var(--cinza-texto);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* ---------- Animações ---------- */
+
+@keyframes home-vitrine-entrar {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes home-vitrine-progresso {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes home-pulsar {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.82;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-item,
+  .home-item:hover,
+  .home-vitrine-principal:hover .home-vitrine-imagem {
+    transform: none;
+  }
+}
+
+/* ---------- Tablet ---------- */
+
+@media (max-width: 1000px) {
+  .home-vender {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .home-vender-passos {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+
+  .home-garantias {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 
 @media (max-width: 900px) {
   .home-main {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
+    gap: 28px;
     padding-top: 20px;
   }
 
-  .home-lateral {
-    margin-bottom: 18px;
-    padding: 0;
-    background: transparent;
+  .home-vitrine-corpo {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  /* O título "Categorias" segue para leitores de tela; os chips já se explicam. */
-  .home-lateral-titulo {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  .home-filtros {
+  /* A fila vira uma faixa rolável abaixo do anúncio da vez. */
+  .home-vitrine-fila {
     flex-direction: row;
-    gap: 8px;
-    /* Encosta nas bordas da tela, acompanhando o recuo de .home-main. */
-    margin-inline: calc(-1 * clamp(20px, 4vw, 40px));
-    padding-inline: clamp(20px, 4vw, 40px);
     overflow-x: auto;
     scrollbar-width: none;
   }
 
-  .home-filtros::-webkit-scrollbar {
+  .home-vitrine-fila::-webkit-scrollbar {
     display: none;
   }
 
-  .home-filtro {
-    flex: none;
-    width: auto;
-    min-height: 38px;
-    padding: 0 16px;
-    border: 1.5px solid var(--prumo);
-    border-radius: 10px;
-    font-weight: 600;
-    white-space: nowrap;
+  .home-vitrine-fila li {
+    flex: 0 0 236px;
   }
 
-  .home-filtro:hover {
-    border-color: var(--grafite);
-    background: transparent;
+  .home-vitrine--vazia {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .home-filtro[aria-pressed='true'] {
-    border-color: var(--grafite);
-    color: #fff;
-    background: var(--grafite);
-    box-shadow: none;
+  .home-vitrine-boas-vindas {
+    padding: 28px 24px 8px;
   }
 
-  .home-destaque-chamada {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px 24px;
-    margin-top: 20px;
-  }
-
-  .home-destaque-chamada > p:not(.home-destaque-chamada-titulo) {
-    flex: 1 1 100%;
-    margin: 0;
-  }
-
-  .home-destaque-chamada .home-destaque-chamada-titulo {
-    flex: 1 1 100%;
-    margin: 0 0 -8px;
-  }
-
-  .home-destaque-chamada-acoes {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 18px;
+  .home-vitrine-espaco {
+    margin: 16px 24px 24px;
   }
 }
+
+/* ---------- Celular ---------- */
 
 @media (max-width: 640px) {
   .home-main {
     padding-inline: 16px;
   }
 
-  .home-filtros {
+  .home-vitrine-cabecalho {
+    padding: 14px 14px 12px;
+  }
+
+  .home-vitrine-corpo {
+    padding: 0 12px 12px;
+  }
+
+  .home-vitrine-principal {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .home-vitrine-foto {
+    aspect-ratio: 4 / 3;
+  }
+
+  .home-vitrine-info {
+    padding: 18px 18px 20px;
+  }
+
+  .home-vitrine-info h3 {
+    font-size: 23px;
+  }
+
+  .home-vitrine-preco {
+    margin-top: 12px;
+    font-size: 31px;
+  }
+
+  .home-vitrine-acao {
+    margin-top: 16px;
+  }
+
+  .home-vitrine-boas-vindas h2 {
+    font-size: 29px;
+  }
+
+  .home-vitrine-espaco {
+    margin: 16px 14px 14px;
+    padding: 18px;
+  }
+
+  .home-categorias-lista {
     margin-inline: -16px;
     padding-inline: 16px;
+  }
+
+  .home-categoria {
+    width: 96px;
+    padding: 12px 6px 10px;
   }
 
   .home-resultados-cabecalho h1 {
     font-size: 23px;
   }
 
-  .home-item-link {
-    grid-template-columns: 116px minmax(0, 1fr);
-    min-height: 132px;
-  }
-
-  .home-item-foto {
-    padding: 8px;
-  }
-
-  .home-item-foto-legenda {
-    font-size: 11px;
-  }
-
-  /* Selo compacto para caber na foto estreita. */
-  .home-item .home-item-selo {
-    top: 6px;
-    left: 6px;
-    gap: 5px;
-    padding: 3px 7px 3px 3px;
-    font-size: 11px;
-  }
-
-  .home-item .home-item-selo::before {
-    width: 14px;
-    height: 14px;
+  .home-lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 
   .home-item-info {
-    grid-template-areas:
-      'titulo'
-      'preco'
-      'quantidade'
-      'rodape';
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto auto 1fr;
-    padding: 12px 14px 10px;
+    padding: 10px 10px 10px;
   }
 
   .home-item-info h3 {
-    font-size: 15.5px;
+    font-size: 14.5px;
   }
 
   .home-item-preco {
-    margin-top: 6px;
-    font-size: 19px;
-    text-align: left;
+    font-size: 18px;
   }
 
   .home-item-preco span {
-    display: inline;
-    margin-left: 4px;
+    display: block;
   }
 
   .home-item-quantidade {
-    margin-top: 2px;
-    font-size: 13px;
+    font-size: 12.5px;
   }
 
   .home-item-rodape {
-    gap: 2px 12px;
-    min-height: 0;
-    margin-top: 8px;
-    padding-top: 0;
-    border-top: 0;
-    font-size: 12px;
+    font-size: 11.5px;
   }
 
-  .home-item--meu .home-item-rodape {
-    padding-right: 0;
-  }
-
-  /* Sem espaço lateral: as ações viram uma faixa abaixo da linha. */
   .home-item-acoes {
-    position: static;
-    justify-content: space-between;
-    padding: 8px 14px 10px;
-    border-top: 1px solid var(--cinza-linha);
+    padding: 8px 10px 10px;
+  }
+
+  /* No celular o pagante ocupa a linha inteira, com foto em cima. */
+  .home-item--destaque .home-item-link {
+    flex-direction: column;
+  }
+
+  .home-item--destaque .home-item-foto {
+    flex: none;
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+  }
+
+  .home-item--destaque .home-item-preco span {
+    display: inline;
+  }
+
+  .home-vender {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 22px 20px;
+  }
+
+  .home-vender-passos {
+    grid-row: auto;
+    gap: 14px;
+  }
+
+  .home-garantias {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

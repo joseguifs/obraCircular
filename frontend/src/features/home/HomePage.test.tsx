@@ -195,4 +195,72 @@ describe('HomePage', () => {
       await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     })
   })
+  describe('vitrine em destaque', () => {
+    const pago = (id: string, titulo: string) => ({
+      ...anuncio,
+      id,
+      titulo,
+      em_destaque: true,
+      destaque_ate: new Date(Date.now() + 86_400_000).toISOString(),
+    })
+    const pagoA = pago('11111111-c0df-414d-b82f-b5fe97b284b2', 'Porcelanato 60x60 acetinado')
+    const pagoB = pago('22222222-c0df-414d-b82f-b5fe97b284b2', 'Telhas de fibrocimento')
+
+    function apiCom(itens: unknown[], meusAtivos = 0) {
+      return vi.fn(async (url: string) => {
+        if (url.includes('/categories')) return respostaJson({ items: [categoriaEstrutura], total: 1 })
+        if (url.includes(`/users/${usuarioId}/ads`)) return respostaJson({ items: [], total: meusAtivos })
+        if (url.includes('/ads')) return respostaJson({ items: itens, total: itens.length })
+        return respostaJson({})
+      })
+    }
+
+    it('leva os anúncios pagos para a vitrine do topo e tira da grade', async () => {
+      vi.stubGlobal('fetch', apiCom([pagoA, pagoB, anuncio]))
+      const user = userEvent.setup()
+
+      renderPagina()
+
+      const vitrine = await screen.findByRole('region', { name: 'Vitrine em destaque' })
+      expect(
+        within(vitrine).getByRole('link', { name: `Ver anúncio ${pagoA.titulo} (em destaque)` }),
+      ).toHaveAttribute('href', `/anuncios/${pagoA.id}`)
+      expect(within(vitrine).getByText('Em destaque')).toBeInTheDocument()
+
+      // Cada pagante aparece uma vez só: o da vez na vitrine, os outros na fila dela.
+      expect(screen.getAllByRole('link', { name: /Ver anúncio/ })).toHaveLength(2)
+      expect(
+        screen.getByRole('link', { name: `Ver anúncio ${anuncio.titulo}` }),
+      ).toBeInTheDocument()
+
+      await user.click(within(vitrine).getByRole('button', { name: /Mostrar Telhas de fibrocimento/ }))
+      expect(
+        within(vitrine).getByRole('link', { name: `Ver anúncio ${pagoB.titulo} (em destaque)` }),
+      ).toBeInTheDocument()
+    })
+
+    it('oferece o espaço livre da vitrine quando ninguém pagou destaque', async () => {
+      vi.stubGlobal('fetch', apiCom([anuncio], 2))
+
+      renderPagina()
+
+      const vitrine = await screen.findByRole('region', {
+        name: 'Sobra de obra de um é material bom para outro.',
+      })
+      expect(within(vitrine).getByText('Este espaço está livre')).toBeInTheDocument()
+      expect(within(vitrine).getByRole('button', { name: 'Colocar meu anúncio aqui' })).toBeInTheDocument()
+    })
+
+    it('na busca filtrada mantém os pagantes na grade, com o selo', async () => {
+      window.history.replaceState({}, '', '/home?q=telha')
+      vi.stubGlobal('fetch', apiCom([pagoB, anuncio]))
+
+      renderPagina()
+
+      expect(
+        await screen.findByRole('link', { name: `Ver anúncio ${pagoB.titulo} (em destaque)` }),
+      ).toBeInTheDocument()
+      expect(screen.queryByRole('region', { name: 'Vitrine em destaque' })).not.toBeInTheDocument()
+    })
+  })
 })
