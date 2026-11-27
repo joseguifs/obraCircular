@@ -70,11 +70,21 @@ export function LoginPage({
   }
 
   return (
-    <AuthLayout>
-      <div className="form-card">
+    <AuthLayout
+      mostrarDestaques
+      acaoCabecalho={
+        <p className="auth-header-texto">
+          Ainda não tem conta?{' '}
+          <button type="button" onClick={aoCadastrar}>
+            Criar conta
+          </button>
+        </p>
+      }
+    >
+      <div className="form-card login-card">
         <header className="form-heading">
-          <h2>Bem-vindo de volta</h2>
-          <p>Entre para continuar comprando, vendendo e reaproveitando materiais.</p>
+          <h2>Entrar</h2>
+          <p>Continue comprando, vendendo e reaproveitando materiais.</p>
         </header>
 
         {aviso && (
@@ -113,8 +123,13 @@ export function LoginPage({
           </div>
 
           <div className="field-group">
-            <label htmlFor="login-senha">Senha</label>
-            <div className={`field-box ${erros.senha ? 'field-box--erro' : ''}`}>
+            <div className="login-senha-rotulo">
+              <label htmlFor="login-senha">Senha</label>
+              <button type="button" className="login-esqueci" onClick={aoRecuperarSenha}>
+                Esqueci minha senha
+              </button>
+            </div>
+            <div className={`field-box login-senha-campo ${erros.senha ? 'field-box--erro' : ''}`}>
               <span className="field-icon">
                 <LockIcon />
               </span>
@@ -132,31 +147,21 @@ export function LoginPage({
                 autoFocus={Boolean(emailInicial)}
                 required
               />
+              <button
+                type="button"
+                className="login-olho"
+                aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                aria-pressed={mostrarSenha}
+                onClick={() => setMostrarSenha((atual) => !atual)}
+              >
+                {mostrarSenha ? <OlhoFechadoIcon /> : <OlhoIcon />}
+              </button>
             </div>
             {erros.senha && (
               <p className="field-error" id="login-senha-error">
                 {erros.senha}
               </p>
             )}
-          </div>
-
-          <div className="login-options">
-            <div className="check-option">
-              <button
-                type="button"
-                role="checkbox"
-                aria-checked={mostrarSenha}
-                aria-label="Mostrar senha"
-                className={`check-toggle ${mostrarSenha ? 'check-toggle--marcado' : ''}`}
-                onClick={() => setMostrarSenha((atual) => !atual)}
-              >
-                <CheckIcon />
-              </button>
-              <span>Mostrar senha</span>
-            </div>
-            <button type="button" className="login-esqueci" onClick={aoRecuperarSenha}>
-              Esqueci minha senha
-            </button>
           </div>
 
           {erroGeral && (
@@ -166,7 +171,7 @@ export function LoginPage({
             </div>
           )}
 
-          <button className="submit-button" type="submit" disabled={enviando}>
+          <button className="submit-button login-entrar" type="submit" disabled={enviando}>
             {enviando ? (
               <>
                 <span className="spinner" aria-hidden="true" />
@@ -181,13 +186,10 @@ export function LoginPage({
           </button>
         </form>
 
-        <div className="form-divider" />
-        <p className="login-hint">
-          Ainda não possui uma conta?{' '}
-          <button type="button" onClick={aoCadastrar}>
-            Criar conta
-          </button>
-        </p>
+        <p className="login-separador">Primeira vez na Obra Circular?</p>
+        <button type="button" className="login-criar" onClick={aoCadastrar}>
+          Criar uma conta
+        </button>
       </div>
     </AuthLayout>
   )
@@ -224,6 +226,25 @@ function CheckIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="m6.8 12.3 3.3 3.4 7.3-7.5" />
+    </svg>
+  )
+}
+
+function OlhoIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M2.5 12C3.5 10.3 7 6 12 6s8.5 4.3 9.5 6c-1 1.7-4.5 6-9.5 6s-8.5-4.3-9.5-6z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+function OlhoFechadoIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 3l18 18" />
+      <path d="M10.6 6.2A9.8 9.8 0 0 1 12 6c5 0 8.5 4.3 9.5 6-.4.7-1.3 2-2.6 3.2M6.6 7.7C4.7 9 3.2 10.9 2.5 12c1 1.7 4.5 6 9.5 6 1.6 0 3-.4 4.3-1.1" />
+      <path d="M9.9 10a3 3 0 0 0 4.1 4.1" />
     </svg>
   )
 }

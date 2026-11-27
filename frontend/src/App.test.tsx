@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import App from './App'
 import { AuthProvider } from './features/autenticacao/AuthProvider'
+import { chamadasAlemDaVitrine } from './test/chamadasApi'
 
 const usuario = {
   id: 'd68c0c92-ab56-4f8e-862e-bbc91e31eb70',
@@ -51,16 +52,18 @@ it('abre o login pela raiz sem depender da API', async () => {
 
   renderAplicacao()
 
-  expect(await screen.findByText('Bem-vindo de volta')).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeInTheDocument()
   expect(screen.getByLabelText('E-mail')).toBeInTheDocument()
   expect(screen.getByLabelText('Senha')).toBeInTheDocument()
   expect(window.location.pathname).toBe('/login')
-  expect(fetchMock).not.toHaveBeenCalled()
+  expect(chamadasAlemDaVitrine(fetchMock)).toHaveLength(0)
 })
 
 it('redireciona para a home após o login e permite encerrar a sessão', async () => {
   const fetchMock = vi
     .fn()
+    // Login: vitrine "Em destaque agora", carregada ao abrir a tela
+    .mockResolvedValueOnce(respostaListaVazia())
     .mockResolvedValueOnce(
       respostaJson({
         access_token: 'access-token',
@@ -92,7 +95,7 @@ it('redireciona para a home após o login e permite encerrar a sessão', async (
   await user.click(screen.getByRole('link', { name: 'Ver meu perfil' }))
   await user.click(await screen.findByRole('button', { name: 'Sair da conta' }))
 
-  expect(await screen.findByText('Bem-vindo de volta')).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeInTheDocument()
   expect(window.location.pathname).toBe('/login')
   expect(sessionStorage.getItem('obra-circular:sessao')).toBeNull()
 })
@@ -102,7 +105,7 @@ it('protege a home de visitantes sem sessão', async () => {
 
   renderAplicacao()
 
-  expect(await screen.findByText('Bem-vindo de volta')).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeInTheDocument()
   expect(window.location.pathname).toBe('/login')
 })
 

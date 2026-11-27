@@ -1,32 +1,44 @@
 import type { ReactNode } from 'react'
+import { DestaquesAgora } from './DestaquesAgora'
 
 interface AuthLayoutProps {
   children: ReactNode
+  /** Atalho no canto direito do cabeçalho (ex.: "Criar conta" no login). */
+  acaoCabecalho?: ReactNode
+  /** Mostra os anúncios pagos no painel de apresentação. */
+  mostrarDestaques?: boolean
 }
 
 /**
- * Moldura das telas públicas (login, cadastro e recuperação de senha).
- * Segue a estrutura da home: cabeçalho grafite no topo e conteúdo sobre o concreto,
- * com a mesma largura máxima e o mesmo estilo de título.
+ * Moldura das telas públicas (login, cadastro e recuperação de senha): cabeçalho
+ * grafite, formulário num card branco e um painel escuro de apresentação. O formulário
+ * vem primeiro no HTML, para o foco e o celular começarem por ele; no desktop o painel
+ * ocupa a coluna da esquerda.
  */
-export function AuthLayout({ children }: AuthLayoutProps) {
+export function AuthLayout({ children, acaoCabecalho, mostrarDestaques = false }: AuthLayoutProps) {
   return (
     <div className="app-shell auth-shell">
       <header className="app-header">
-        <div className="app-header-bar">
+        <div className="app-header-bar auth-header-bar">
           <div className="app-logo">
             <Logo />
           </div>
+          {acaoCabecalho && <div className="auth-header-acao">{acaoCabecalho}</div>}
         </div>
       </header>
 
       <main className="auth-main">
+        <section className="auth-formulario">{children}</section>
+
         <section className="auth-intro" aria-label="Sobre a Obra Circular">
-          <h1>A sobra da sua obra é o material de outra.</h1>
-          <p>
-            Compre e venda materiais de construção que sobraram, perto de você, com pagamento
-            protegido pelo Mercado Pago.
-          </p>
+          <div>
+            <p className="auth-sobretitulo">Marketplace de sobras de obra</p>
+            <h1>A sobra da sua obra é o material de outra.</h1>
+            <p className="auth-intro-texto">
+              Compre e venda materiais de construção que sobraram, perto de você, com pagamento
+              protegido pelo Mercado Pago.
+            </p>
+          </div>
 
           <ul className="auth-beneficios" aria-label="Benefícios da plataforma">
             <li>
@@ -34,13 +46,17 @@ export function AuthLayout({ children }: AuthLayoutProps) {
               <span>Cada material revendido deixa de virar descarte.</span>
             </li>
             <li>
-              <strong>Entrega confirmada com PIN</strong>
-              <span>O vendedor só recebe depois que você confere o material em mãos.</span>
+              <strong>Pagamento protegido</strong>
+              <span>Você paga pelo Mercado Pago, sem passar dados ao vendedor.</span>
+            </li>
+            <li>
+              <strong>Entrega com PIN</strong>
+              <span>O vendedor só recebe depois que você confere o material.</span>
             </li>
           </ul>
-        </section>
 
-        <section className="auth-formulario">{children}</section>
+          {mostrarDestaques && <DestaquesAgora />}
+        </section>
       </main>
     </div>
   )
