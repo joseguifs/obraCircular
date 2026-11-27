@@ -103,7 +103,7 @@ describe('CadastroUsuarioPage', () => {
     await user.click(screen.getByRole('button', { name: 'Criar minha conta' }))
 
     expect(
-      await screen.findByRole('heading', { name: 'Bem-vindo de volta' }),
+      await screen.findByRole('heading', { name: 'Entrar' }),
     ).toBeInTheDocument()
     expect(window.location.pathname).toBe('/login')
     expect(screen.getByRole('status')).toHaveTextContent('Conta criada com sucesso!')

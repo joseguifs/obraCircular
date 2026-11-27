@@ -196,7 +196,7 @@ describe('CategoriasPage', () => {
 
     renderApp()
 
-    expect(await screen.findByRole('heading', { name: 'Bem-vindo de volta' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeInTheDocument()
     expect(screen.queryByText('Tijolos e blocos')).not.toBeInTheDocument()
   })
 
