@@ -1,11 +1,15 @@
 import { apiRequest } from '../../lib/api'
+import { criarCacheMemoria } from '../../lib/cacheMemoria'
 import type { DestaqueCheckout, DestaqueCompra, DestaquePreco } from './types'
 
 export const REFERENCIA_DESTAQUE = 'destaque:'
 const ULTIMO_DESTAQUE_KEY = 'obraCircular:lastFeaturedId'
 
+/** O preço vem da configuração do servidor e só muda num novo deploy. */
+const cachePrecoDestaque = criarCacheMemoria<DestaquePreco>(10 * 60_000)
+
 export function consultarPrecoDestaque(): Promise<DestaquePreco> {
-  return apiRequest<DestaquePreco>('/featured-ads/pricing')
+  return cachePrecoDestaque.obter('preco', () => apiRequest<DestaquePreco>('/featured-ads/pricing'))
 }
 
 export async function iniciarCheckoutDestaque(anuncioId: string): Promise<DestaqueCheckout> {

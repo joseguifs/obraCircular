@@ -1,4 +1,5 @@
 import { apiRequest } from '../../lib/api'
+import { criarCacheMemoria } from '../../lib/cacheMemoria'
 import type {
   Categoria,
   CategoriaAtualizacao,
@@ -13,6 +14,17 @@ interface ParametrosListagem {
   limit: number
 }
 
+/** Categorias mudam raramente (só pela administração); 5 minutos evitam buscar a cada tela. */
+const VALIDADE_CATEGORIAS_MS = 5 * 60_000
+const cacheCategoriasAtivas = criarCacheMemoria<Categoria[]>(VALIDADE_CATEGORIAS_MS)
+const cacheCategoria = criarCacheMemoria<Categoria>(VALIDADE_CATEGORIAS_MS)
+
+/** Chamado depois de criar ou alterar uma categoria, para esta aba ver a mudança na hora. */
+function invalidarCacheDeCategorias() {
+  cacheCategoriasAtivas.invalidar()
+  cacheCategoria.invalidar()
+}
+
 export function listarCategorias({
   status,
   offset,
@@ -24,27 +36,33 @@ export function listarCategorias({
 }
 
 export function buscarCategoria(categoriaId: string): Promise<Categoria> {
-  return apiRequest<Categoria>(`/categories/${categoriaId}`)
+  return cacheCategoria.obter(categoriaId, () => apiRequest<Categoria>(`/categories/${categoriaId}`))
 }
 
-export async function listarCategoriasAtivas(): Promise<Categoria[]> {
-  const resposta = await listarCategorias({ status: 'ATIVA', offset: 0, limit: 100 })
-  return resposta.items
+export function listarCategoriasAtivas(): Promise<Categoria[]> {
+  return cacheCategoriasAtivas.obter('ativas', async () => {
+    const resposta = await listarCategorias({ status: 'ATIVA', offset: 0, limit: 100 })
+    return resposta.items
+  })
 }
 
-export function criarCategoria(dados: CategoriaCriacao): Promise<Categoria> {
-  return apiRequest<Categoria>('/categories', {
+export async function criarCategoria(dados: CategoriaCriacao): Promise<Categoria> {
+  const categoria = await apiRequest<Categoria>('/categories', {
     method: 'POST',
     body: JSON.stringify(dados),
   })
+  invalidarCacheDeCategorias()
+  return categoria
 }
 
-export function atualizarCategoria(
+export async function atualizarCategoria(
   categoriaId: string,
   dados: CategoriaAtualizacao,
 ): Promise<Categoria> {
-  return apiRequest<Categoria>(`/categories/${categoriaId}`, {
+  const categoria = await apiRequest<Categoria>(`/categories/${categoriaId}`, {
     method: 'PATCH',
     body: JSON.stringify(dados),
   })
+  invalidarCacheDeCategorias()
+  return categoria
 }

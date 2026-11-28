@@ -5,9 +5,9 @@ from contextlib import asynccontextmanager, suppress
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
 
 from app.api.router import api_router
+from app.core.arquivos_estaticos import ArquivosImutaveis
 from app.core.config import get_settings
 from app.core.database import engine
 from app.core.errors import (
@@ -54,9 +54,10 @@ app.add_middleware(
 )
 app.add_exception_handler(AppError, app_error_handler)
 app.include_router(api_router, prefix=settings.api_v1_prefix)
+# Uploads têm nome único e nunca são sobrescritos: o navegador pode guardá-los por muito tempo.
 app.mount(
     "/uploads",
-    StaticFiles(directory=settings.storage_path, check_dir=False),
+    ArquivosImutaveis(directory=settings.storage_path, check_dir=False),
     name="uploads",
 )
 
