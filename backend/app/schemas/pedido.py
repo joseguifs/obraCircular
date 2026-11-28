@@ -6,6 +6,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.models.enums import (
+    AnuncioStatus,
     ModalidadeEntrega,
     PagamentoStatus,
     PedidoStatus,
@@ -59,6 +60,15 @@ class ReembolsoResponse(BaseModel):
     reembolso_externo_id: str | None
 
 
+class AnuncioResumoPedido(BaseModel):
+    """O que foi comprado, para a listagem não mostrar só o código do pedido."""
+
+    id: UUID
+    titulo: str
+    status: AnuncioStatus
+    imagem_capa_url: str | None
+
+
 class PedidoResponse(BaseModel):
     id: UUID
     anuncio_id: UUID
@@ -74,6 +84,7 @@ class PedidoResponse(BaseModel):
     reembolso: ReembolsoResponse | None = None
     entrega: EntregaResponse | None = None
     repasse_status: RepasseStatus | None = None
+    anuncio: AnuncioResumoPedido | None = None
 
 
 class PedidoListResponse(BaseModel):

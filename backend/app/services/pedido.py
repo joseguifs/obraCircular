@@ -23,8 +23,10 @@ from app.models.pagamento import Pagamento
 from app.models.pedido import MODELO_REPASSE_POSTERIOR, Pedido
 from app.models.reembolso import Reembolso
 from app.models.repasse import Repasse
+from app.repositories.anuncio_imagem import AnuncioImagemRepository
 from app.schemas.entrega import EntregaResponse
 from app.schemas.pedido import (
+    AnuncioResumoPedido,
     CheckoutCreate,
     CheckoutResponse,
     PagamentoResumo,
@@ -32,6 +34,7 @@ from app.schemas.pedido import (
     PedidoResponse,
     ReembolsoResponse,
 )
+from app.services.armazenamento import ArmazenamentoLocal
 from app.services.credencial_pagamento import token_do_pedido, token_marketplace
 
 CENTAVOS = Decimal("0.01")
@@ -606,6 +609,7 @@ class PedidoService:
         repasse_status = await self.session.scalar(
             select(Repasse.status).where(Repasse.pedido_id == pedido.id)
         )
+        anuncio = await self._resumo_anuncio(pedido.anuncio_id)
         return PedidoResponse(
             id=pedido.id,
             anuncio_id=pedido.anuncio_id,
@@ -621,6 +625,25 @@ class PedidoService:
             reembolso=ReembolsoResponse.model_validate(reembolso) if reembolso else None,
             entrega=EntregaResponse.model_validate(entrega) if entrega else None,
             repasse_status=repasse_status,
+            anuncio=anuncio,
+        )
+
+    async def _resumo_anuncio(self, anuncio_id: UUID) -> AnuncioResumoPedido | None:
+        """Título, situação e capa atuais do anúncio comprado (o pedido tem um só)."""
+        anuncio = await self.session.scalar(select(Anuncio).where(Anuncio.id == anuncio_id))
+        if anuncio is None:
+            return None
+        capas = await AnuncioImagemRepository(self.session).listar_capas([anuncio.id])
+        chave_capa = capas.get(anuncio.id)
+        return AnuncioResumoPedido(
+            id=anuncio.id,
+            titulo=anuncio.titulo,
+            status=anuncio.status,
+            imagem_capa_url=(
+                ArmazenamentoLocal.url_publica(chave_capa)
+                if chave_capa is not None
+                else anuncio.imagem_url
+            ),
         )
 
     @staticmethod

@@ -60,6 +60,9 @@ PREPARANDO_ENTREGA -> EM_ENTREGA -> ENTREGUE -> CONCLUIDO
   a cobrança e encaminhar seu reembolso integral sem consumir estoque novamente.
 - A consulta/listagem do comprador inclui o estado próprio do reembolso. Um pedido
   cancelado com pagamento aprovado não significa, por si só, devolução em andamento.
+- A consulta/listagem de pedidos inclui um resumo do anúncio comprado (título,
+  situação e foto de capa atuais), para identificar o pedido sem abrir o anúncio.
+  O valor pago continua vindo do próprio pedido (`preco_unitario`/`valor_total`).
 
 ## Independência dos processos
 

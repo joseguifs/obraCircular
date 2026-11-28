@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import { mensagemApiErro } from '../../lib/api'
+import { mensagemApiErro, resolverUrlDaApi } from '../../lib/api'
 import { formatarMoeda } from '../../lib/formatarTempo'
 import { listarPedidos } from './pagamentoApi'
 import { STATUS_PEDIDO, tomDoStatus } from './pedidoApresentacao'
@@ -37,16 +37,24 @@ export function PedidosPage() {
         {!carregando && !erro && pedidos.length === 0 && <p>Você ainda não tem pedidos.</p>}
         {!carregando && !erro && (
           <ul className="payment-order-list">
-            {pedidos.map((pedido) => (
+            {pedidos.map((pedido) => {
+              const codigo = pedido.id.slice(0, 8)
+              const titulo = pedido.anuncio?.titulo ?? 'Anúncio indisponível'
+              const capa = pedido.anuncio?.imagem_capa_url
+              return (
               <li key={pedido.id}>
                 <Link
                   to={`/pedidos/${pedido.id}`}
-                  aria-label={`Pedido ${pedido.id.slice(0, 8)}, ${STATUS_PEDIDO[pedido.status]}, ${formatarMoeda(pedido.valor_total)}. Ver pedido`}
+                  aria-label={`Pedido ${codigo}: ${titulo}, ${STATUS_PEDIDO[pedido.status]}, ${formatarMoeda(pedido.valor_total)}. Ver pedido`}
                 >
+                  <span className="payment-order-foto" aria-hidden="true">
+                    {capa && <img src={resolverUrlDaApi(capa)} alt="" />}
+                  </span>
                   <span className="payment-order-id">
-                    <strong>Pedido {pedido.id.slice(0, 8)}</strong>
+                    <strong>{titulo}</strong>
                     <span>
-                      {pedido.quantidade} {pedido.quantidade === 1 ? 'unidade' : 'unidades'}
+                      Pedido {codigo} · {pedido.quantidade}{' '}
+                      {pedido.quantidade === 1 ? 'unidade' : 'unidades'}
                     </span>
                   </span>
                   <span className={`status-chip status-chip--${tomDoStatus(pedido.status)}`}>
@@ -55,7 +63,8 @@ export function PedidosPage() {
                   <strong className="payment-order-valor">{formatarMoeda(pedido.valor_total)}</strong>
                 </Link>
               </li>
-            ))}
+              )
+            })}
           </ul>
         )}
         {erro && (

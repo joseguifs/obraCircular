@@ -51,6 +51,15 @@ export interface Pedido {
   entrega?: Entrega | null
   repasse_status?: 'AGUARDANDO_ENTREGA' | 'EM_PERIODO_CONTESTACAO' | 'BLOQUEADO'
     | 'PRONTO_PARA_LIBERACAO' | 'PROCESSANDO' | 'PAGO' | 'FALHOU' | 'CANCELADO' | 'REEMBOLSADO' | null
+  /** Resumo atual do anúncio comprado (cada pedido tem um só). */
+  anuncio?: AnuncioDoPedido | null
+}
+
+export interface AnuncioDoPedido {
+  id: string
+  titulo: string
+  status: 'ATIVO' | 'ESGOTADO' | 'ENCERRADO'
+  imagem_capa_url: string | null
 }
 
 export interface EntregaPin {
