@@ -13,6 +13,8 @@
   com status `ATIVA`.
 - O endereço do anúncio deve pertencer ao vendedor.
 - O vendedor não pode comprar o próprio anúncio.
+- A consulta de um anúncio (`GET /ads/{id}`) informa o nome do vendedor em
+  `vendedor_nome`. E-mail, telefone e demais dados pessoais do vendedor não são expostos.
 - Preço e quantidade não podem ser negativos.
 - Apenas anúncio `ATIVO`, não excluído e com estoque suficiente pode ser comprado.
 - Na aprovação do pagamento, o anúncio é bloqueado com `SELECT ... FOR UPDATE` e a

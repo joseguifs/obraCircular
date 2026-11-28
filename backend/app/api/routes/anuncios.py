@@ -6,6 +6,7 @@ from fastapi import APIRouter, File, Query, Response, UploadFile, status
 from app.api.dependencies import CurrentUser, DatabaseSession
 from app.schemas.anuncio import (
     AnuncioCreate,
+    AnuncioDetalheResponse,
     AnuncioFilters,
     AnuncioListResponse,
     AnuncioResponse,
@@ -146,12 +147,11 @@ async def listar_meus_anuncios(
 
 @router.get(
     "/{anuncio_id}",
-    response_model=AnuncioResponse,
+    response_model=AnuncioDetalheResponse,
     summary="Consulta um anúncio",
 )
-async def buscar_anuncio(anuncio_id: UUID, session: DatabaseSession) -> AnuncioResponse:
-    anuncio = await AnuncioService(session).buscar(anuncio_id)
-    return AnuncioResponse.model_validate(anuncio)
+async def buscar_anuncio(anuncio_id: UUID, session: DatabaseSession) -> AnuncioDetalheResponse:
+    return await AnuncioService(session).buscar_detalhe(anuncio_id)
 
 
 @router.patch(

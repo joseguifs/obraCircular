@@ -4,7 +4,6 @@ import { BrowserRouter } from 'react-router'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import App from './App'
 import { AuthProvider } from './features/autenticacao/AuthProvider'
-import { chamadasAlemDaVitrine } from './test/chamadasApi'
 
 const usuario = {
   id: 'd68c0c92-ab56-4f8e-862e-bbc91e31eb70',
@@ -56,14 +55,12 @@ it('abre o login pela raiz sem depender da API', async () => {
   expect(screen.getByLabelText('E-mail')).toBeInTheDocument()
   expect(screen.getByLabelText('Senha')).toBeInTheDocument()
   expect(window.location.pathname).toBe('/login')
-  expect(chamadasAlemDaVitrine(fetchMock)).toHaveLength(0)
+  expect(fetchMock).not.toHaveBeenCalled()
 })
 
 it('redireciona para a home após o login e permite encerrar a sessão', async () => {
   const fetchMock = vi
     .fn()
-    // Login: vitrine "Em destaque agora", carregada ao abrir a tela
-    .mockResolvedValueOnce(respostaListaVazia())
     .mockResolvedValueOnce(
       respostaJson({
         access_token: 'access-token',

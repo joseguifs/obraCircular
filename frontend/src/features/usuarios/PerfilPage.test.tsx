@@ -8,7 +8,6 @@ import {
   obterSessaoArmazenada,
   salvarSessaoArmazenada,
 } from '../autenticacao/sessaoStorage'
-import { chamadasAlemDaVitrine } from '../../test/chamadasApi'
 
 const usuario = {
   id: 'd68c0c92-ab56-4f8e-862e-bbc91e31eb70',
@@ -165,7 +164,7 @@ it.each(['/perfil', '/perfil/enderecos'])(
     renderPagina()
     expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeInTheDocument()
     expect(window.location.pathname).toBe('/login')
-    expect(chamadasAlemDaVitrine(fetchMock)).toHaveLength(0)
+    expect(fetchMock).not.toHaveBeenCalled()
   },
 )
 

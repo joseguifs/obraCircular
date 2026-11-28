@@ -6,7 +6,6 @@ import { AppRouter } from '../../app/router'
 import { AuthProvider } from '../autenticacao/AuthProvider'
 import { salvarSessaoArmazenada } from '../autenticacao/sessaoStorage'
 import type { Contestacao, Entrega, Pedido } from './types'
-import { chamadasAlemDaVitrine } from '../../test/chamadasApi'
 
 const pedidoBase: Pedido = {
   id: 'pedido-1', anuncio_id: 'anuncio-1', comprador_id: 'comprador-1', quantidade: 2,
@@ -205,7 +204,7 @@ it('exige login para consultar vendas', async () => {
   const { fetchMock } = prepararApi()
   renderEm('/vendas')
   expect(await screen.findByRole('button', { name: 'Entrar na plataforma' })).toBeInTheDocument()
-  expect(chamadasAlemDaVitrine(fetchMock)).toHaveLength(0)
+  expect(fetchMock).not.toHaveBeenCalled()
 })
 
 it('permite recuperar a listagem de vendas após uma falha de consulta', async () => {
