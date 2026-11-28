@@ -58,7 +58,7 @@ async def test_erro_de_dominio_possui_formato_padronizado(monkeypatch: Any) -> N
         def __init__(self, _: object) -> None:
             pass
 
-        async def buscar(self, _: object) -> None:
+        async def buscar_detalhe(self, _: object) -> None:
             raise AppError(status_code=404, detail="Anúncio não encontrado.", code="AD_NOT_FOUND")
 
     monkeypatch.setattr(anuncios_routes, "AnuncioService", FakeService)

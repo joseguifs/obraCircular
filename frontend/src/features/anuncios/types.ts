@@ -23,6 +23,8 @@ export interface Anuncio {
   atualizado_em: string
   encerrado_em: string | null
   destaque_ate?: string | null
+  /** Só na consulta de um anúncio (`GET /ads/{id}`). */
+  vendedor_nome?: string
   em_destaque?: boolean
 }
 

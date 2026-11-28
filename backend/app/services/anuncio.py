@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
@@ -12,10 +13,12 @@ from app.models.enums import (
     ContaPagamentoStatus,
     UsuarioStatus,
 )
+from app.models.usuario import Usuario
 from app.repositories.anuncio import AnuncioRepository
 from app.repositories.anuncio_imagem import AnuncioImagemRepository
 from app.schemas.anuncio import (
     AnuncioCreate,
+    AnuncioDetalheResponse,
     AnuncioFilters,
     AnuncioListResponse,
     AnuncioResponse,
@@ -66,6 +69,17 @@ class AnuncioService:
                 code="AD_NOT_FOUND",
             )
         return anuncio
+
+    async def buscar_detalhe(self, anuncio_id: UUID) -> AnuncioDetalheResponse:
+        """Anúncio com o nome do vendedor, para a página de detalhe."""
+        anuncio = await self.buscar(anuncio_id)
+        vendedor_nome = await self.session.scalar(
+            select(Usuario.nome).where(Usuario.id == anuncio.vendedor_id)
+        )
+        return AnuncioDetalheResponse(
+            **AnuncioResponse.model_validate(anuncio).model_dump(exclude={"em_destaque"}),
+            vendedor_nome=vendedor_nome or "Vendedor",
+        )
 
     async def listar(
         self,

@@ -1,12 +1,9 @@
 import type { ReactNode } from 'react'
-import { DestaquesAgora } from './DestaquesAgora'
 
 interface AuthLayoutProps {
   children: ReactNode
   /** Atalho no canto direito do cabeçalho (ex.: "Criar conta" no login). */
   acaoCabecalho?: ReactNode
-  /** Mostra os anúncios pagos no painel de apresentação. */
-  mostrarDestaques?: boolean
 }
 
 /**
@@ -15,7 +12,7 @@ interface AuthLayoutProps {
  * vem primeiro no HTML, para o foco e o celular começarem por ele; no desktop o painel
  * ocupa a coluna da esquerda.
  */
-export function AuthLayout({ children, acaoCabecalho, mostrarDestaques = false }: AuthLayoutProps) {
+export function AuthLayout({ children, acaoCabecalho }: AuthLayoutProps) {
   return (
     <div className="app-shell auth-shell">
       <header className="app-header">
@@ -55,7 +52,6 @@ export function AuthLayout({ children, acaoCabecalho, mostrarDestaques = false }
             </li>
           </ul>
 
-          {mostrarDestaques && <DestaquesAgora />}
         </section>
       </main>
     </div>

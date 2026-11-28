@@ -560,6 +560,53 @@
   line-height: 1.45;
 }
 
+/* Quem vende: só o nome, com as iniciais no lugar de foto. */
+.ad-detail-vendedor {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+}
+
+.ad-detail-vendedor-avatar {
+  display: grid;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--planta);
+  background: var(--planta-suave);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.ad-detail-vendedor-texto {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.ad-detail-vendedor-texto span {
+  color: var(--cinza-texto);
+  font-size: 12.5px;
+}
+
+.ad-detail-vendedor-texto strong {
+  overflow: hidden;
+  font-size: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ad-detail-vendedor-perguntar {
+  flex: none;
+  color: var(--planta);
+  font-size: 13.5px;
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
 /* Área do dono do anúncio: destaque pago */
 .ad-detail-dono {
   display: grid;

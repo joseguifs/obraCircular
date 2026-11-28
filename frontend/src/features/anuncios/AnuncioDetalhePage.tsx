@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ApiError, resolverUrlDaApi } from '../../lib/api'
 import { formatarDataHora, formatarMoeda, formatarTempoRelativo } from '../../lib/formatarTempo'
+import { obterIniciais } from '../../lib/texto'
 import { buscarCategoria } from '../categorias/categoriaApi'
 import type { Categoria } from '../categorias/types'
 import { listarEnderecos } from '../enderecos/enderecoApi'
@@ -440,6 +441,19 @@ export function AnuncioDetalhePage() {
                     <span>O vendedor só recebe depois da entrega e desse prazo.</span>
                   </li>
                 </ul>
+              )}
+
+              {!ehDono && anuncio.vendedor_nome && (
+                <section className="ad-detail-card ad-detail-vendedor" aria-label="Vendedor">
+                  <span className="ad-detail-vendedor-avatar" aria-hidden="true">
+                    {obterIniciais(anuncio.vendedor_nome)}
+                  </span>
+                  <span className="ad-detail-vendedor-texto">
+                    <span>Vendido por</span>
+                    <strong>{anuncio.vendedor_nome}</strong>
+                  </span>
+                  <a href="#perguntas" className="ad-detail-vendedor-perguntar">Perguntar</a>
+                </section>
               )}
             </aside>
           </div>

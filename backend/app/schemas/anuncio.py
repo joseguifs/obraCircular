@@ -100,6 +100,12 @@ class AnuncioResponse(BaseModel):
         return self.destaque_ate is not None and self.destaque_ate > datetime.now(UTC)
 
 
+class AnuncioDetalheResponse(AnuncioResponse):
+    """Consulta de um anúncio: inclui o nome do vendedor (nunca e-mail ou telefone)."""
+
+    vendedor_nome: str
+
+
 class AnuncioListResponse(BaseModel):
     items: list[AnuncioResponse]
     total: int

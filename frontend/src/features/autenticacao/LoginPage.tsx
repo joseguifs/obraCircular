@@ -71,7 +71,6 @@ export function LoginPage({
 
   return (
     <AuthLayout
-      mostrarDestaques
       acaoCabecalho={
         <p className="auth-header-texto">
           Ainda não tem conta?{' '}

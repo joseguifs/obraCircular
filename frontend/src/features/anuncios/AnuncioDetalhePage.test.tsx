@@ -203,6 +203,26 @@ describe('AnuncioDetalhePage', () => {
     expect(within(outros).queryByText(comum.titulo)).not.toBeInTheDocument()
   })
 
+  it('mostra o nome do vendedor com atalho para perguntar', async () => {
+    vi.stubGlobal('fetch', apiPorUrl({ anuncio: { ...anuncio, vendedor_nome: 'Carlos Mendes' } }))
+
+    renderPagina()
+
+    const vendedor = await screen.findByRole('region', { name: 'Vendedor' })
+    expect(within(vendedor).getByText('Carlos Mendes')).toBeInTheDocument()
+    expect(within(vendedor).getByText('CM')).toBeInTheDocument()
+    expect(within(vendedor).getByRole('link', { name: 'Perguntar' })).toHaveAttribute('href', '#perguntas')
+  })
+
+  it('não mostra o card do vendedor quando a API não informa o nome', async () => {
+    vi.stubGlobal('fetch', apiPorUrl())
+
+    renderPagina()
+
+    await screen.findByRole('heading', { level: 1, name: anuncio.titulo })
+    expect(screen.queryByRole('region', { name: 'Vendedor' })).not.toBeInTheDocument()
+  })
+
   it('permite tentar novamente e tolera falha nos dados complementares', async () => {
     let tentativas = 0
     const fetchMock = vi.fn(async (url: string) => {

@@ -7,7 +7,6 @@ import { AuthProvider } from '../autenticacao/AuthProvider'
 import { salvarSessaoArmazenada } from '../autenticacao/sessaoStorage'
 import { ContestacaoTestePage } from './ContestacaoTestePage'
 import type { Contestacao, Pedido } from './types'
-import { chamadasAlemDaVitrine } from '../../test/chamadasApi'
 
 const pedidoBase: Pedido = {
   id: 'pedido-1', anuncio_id: 'anuncio-1', comprador_id: 'comprador-1', quantidade: 2,
@@ -216,7 +215,7 @@ it('exige login para acessar a rota de teste', async () => {
   const { fetchMock } = prepararApi()
   renderizar(undefined, true)
   expect(await screen.findByRole('button', { name: 'Entrar na plataforma' })).toBeInTheDocument()
-  expect(chamadasAlemDaVitrine(fetchMock)).toHaveLength(0)
+  expect(fetchMock).not.toHaveBeenCalled()
 })
 
 it('preserva o pedido da URL ao redirecionar para o login', async () => {

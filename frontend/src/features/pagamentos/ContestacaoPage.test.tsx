@@ -6,7 +6,6 @@ import { AppRouter } from '../../app/router'
 import { AuthProvider } from '../autenticacao/AuthProvider'
 import { salvarSessaoArmazenada } from '../autenticacao/sessaoStorage'
 import type { Contestacao, Pedido } from './types'
-import { chamadasAlemDaVitrine } from '../../test/chamadasApi'
 
 const pedido: Pedido = {
   id: 'pedido-1', anuncio_id: 'anuncio-1', comprador_id: 'comprador-1', quantidade: 2,
@@ -96,7 +95,7 @@ it('exige autenticação antes de consultar o pedido', async () => {
   const { fetchMock } = prepararApi()
   renderizar()
   expect(await screen.findByRole('button', { name: 'Entrar na plataforma' })).toBeInTheDocument()
-  expect(chamadasAlemDaVitrine(fetchMock)).toHaveLength(0)
+  expect(fetchMock).not.toHaveBeenCalled()
 })
 
 it('mantém a rota do pedido depois do login', async () => {
